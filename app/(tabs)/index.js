@@ -33,7 +33,7 @@ const Home = () => {
 
       
 
-        const response = await axios.post(`${config.VITE_REACT_APP_API_BASE_URL}/auth/signin`, {email:'b@gmail.com',password:'112233'});
+        const response = await axios.post(`${config.VITE_REACT_APP_API_BASE_URL}/auth/signin`, {email:'a@gmail.com',password:'112233'});
         await AsyncStorage.setItem('token', response.data.token);
         const token = await AsyncStorage.getItem('token');
 
@@ -113,7 +113,7 @@ const Home = () => {
     <View className="min-h-screen bg-white py-6 px-3 sm:p-6">
       <View className="relative mb-[18px] w-full h-[120px] rounded-xl overflow-hidden">
         <View className="absolute inset-0 w-full flex-row space-x-[8px] items-center pb-[8px]">
-          <Image source={require('@/assets//Themes/1.jpg')} 
+          <Image source={require('@/assets/Themes/1.jpg')} 
             className="h-[120px] w-full object-cover"
           />
         </View>
@@ -194,10 +194,10 @@ const Home = () => {
                   onPress={() => navigate(`/task/${usersId}/${task._id}`)}
                   className="px-4 pt-4 pb-[-12px] bg-white border-[2px] rounded-lg transform transition duration-300 hover:scale-[1.01]"
                 >
-                  <View className="flex-row space-x-[8px] xsx:flex-row space-x-[8px]-row flex-row space-x-[8px]-col xsx:items-center xsx:justify-between">
+                  <View className="flex-row space-x-[8px]">
                     <Text className="text-[17px] xsx:text-[19px] flex-row space-x-[8px] items-center font-[600]">
                       <View className="bg-gray-400 p-[5px] xsx:p-[8px] rounded-full">
-                        <FontAwesome name="clipboard-list" className="text-white text-[17px] xsx:text-[20px]" />
+                        <FontAwesome5 name="clipboard-list" className="text-white text-[17px] xsx:text-[20px]" />
                       </View>
                       <Text className="ml-[8px] text-[14px] sm:text-[17px] mt-[-3px]">{task.title.slice(0, 48)}{task.title.length > 29 && '...'}</Text>
                     </Text>

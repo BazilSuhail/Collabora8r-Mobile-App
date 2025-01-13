@@ -12,7 +12,9 @@ export default function TabsLayout() {
       }}
     >
       <Drawer.Screen name="index" options={{ drawerLabel: 'Home' }} />
-      <Drawer.Screen name="admin" options={{ drawerLabel: 'admin' }} />
+      <Drawer.Screen name="admin" options={{ drawerLabel: 'Admin' }} />
+      <Drawer.Screen name="joined" options={{ drawerLabel: 'Joined' }} />
+      <Drawer.Screen name="manager" options={{ drawerLabel: 'manager' }} />
     </Drawer>
   );
 }
