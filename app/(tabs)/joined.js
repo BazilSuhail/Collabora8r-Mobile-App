@@ -7,6 +7,7 @@ import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import config from '@/Config/Config';
+import { Link } from 'expo-router';
 
 
 const colors = [
@@ -89,7 +90,7 @@ const JoinedProjects = () => {
             }}
           >
             {/* Project Image */}
-            <View style={{ height: 140, backgroundColor: '#f7d774', position: 'relative' }}>
+            <Link href={`/joinedProjects/${project._id}`} replace={true} style={{ height: 140, backgroundColor: '#f7d774', position: 'relative' }}>
               <Image
               source={{ uri: `assets/Themes/${project.theme}.jpg` }}
                 style={{ height: 140, width: '100%', resizeMode: 'cover' }}
@@ -116,7 +117,7 @@ const JoinedProjects = () => {
                   <FontAwesome5 name="eye" size={25} color="white" />
                 </TouchableOpacity>*/}
               </View>
-            </View>
+            </Link>
 
             {/* Avatar and Details */}
             <View style={{ alignItems: 'center', marginTop: -45 }}>
