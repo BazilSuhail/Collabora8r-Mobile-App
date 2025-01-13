@@ -120,7 +120,7 @@ const ProjectDetail = () => {
     <ScrollView style={{ flex: 1, backgroundColor: "#F9FAFB", padding: 16 }}>
       {/*showModal && <EditProject project={project} setShowModal={setShowModal} />*/}
 
-      {showModal && <EditProject project={project} editModal={editModal} setShowModal={setShowModal} />}
+      {showModal && <EditProject project={project} editModal={showModal} setShowModal={setShowModal} />}
       {/* Project Details */}
       <View
         style={{

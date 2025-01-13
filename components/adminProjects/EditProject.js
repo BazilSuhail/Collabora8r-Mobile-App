@@ -8,7 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import config from '@/Config/Config';
 
 
-const EditProject = ({ setShowModal, project, editModal, heading = "Edit Project" }) => {
+const EditProject = ({ setShowModal, project, showModal, heading = "Edit Project" }) => {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [projectManagerEmail, setProjectManagerEmail] = useState('');
@@ -48,7 +48,7 @@ const EditProject = ({ setShowModal, project, editModal, heading = "Edit Project
     };
 
     return (
-        <Modal transparent={true} visible={editModal} animationType="none">
+        <Modal transparent={true} visible={showModal} animationType="none">
             <View
                 style={{
                     flex: 1,
@@ -67,7 +67,7 @@ const EditProject = ({ setShowModal, project, editModal, heading = "Edit Project
                     }}
                 >
                     <TouchableOpacity
-                        onPress={() => setShowModal(!showModal)}
+                        onPress={() => setShowModal(false)}
                         style={{ alignSelf: 'flex-end', marginBottom: 10 }}
                     >
                         <Text style={{ fontSize: 22, color: 'gray' }}>&times;</Text>
@@ -81,7 +81,7 @@ const EditProject = ({ setShowModal, project, editModal, heading = "Edit Project
                             marginBottom: 10,
                         }}
                     >
-                        Create A New Project
+                        Update Project
                     </Text>
                     <View
                         style={{

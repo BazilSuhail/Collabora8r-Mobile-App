@@ -9,6 +9,8 @@ import { useRouter } from 'expo-router';
 
 import NoTasks from "@/assets/logo.png";
 import decodeJWT from '@/Config/DecodeJWT';
+import avatarImages from '@/constants/avatar';
+import themeImages from '@/constants/themes';
 
 const colors = [
   'bg-red-400', 'bg-blue-400', 'bg-green-700', 'bg-yellow-600', 'bg-indigo-400', 'bg-orange-400', 'bg-cyan-400', 'bg-violet-400'
@@ -113,7 +115,7 @@ const Home = () => {
     <View className="min-h-screen bg-white py-6 px-3 sm:p-6">
       <View className="relative mb-[18px] w-full h-[120px] rounded-xl overflow-hidden">
         <View className="absolute inset-0 w-full flex-row space-x-[8px] items-center pb-[8px]">
-          <Image source={require('@/assets/Themes/1.jpg')} 
+          <Image  source={themeImages["1"]}
             className="h-[120px] w-full object-cover"
           />
         </View>

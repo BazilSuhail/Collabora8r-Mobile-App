@@ -76,7 +76,7 @@ const CreateProject = ({ setShowModal, showModal }) => {
                             marginBottom: 10,
                         }}
                     >
-                        Create A New Project
+                        Create A sss New Project
                     </Text>
                     <View
                         style={{

@@ -28,10 +28,11 @@ const Profile = () => {
                     }
                 });
                 setProfile(response.data);
+                //console.log(response.data.avatar)
                 setSelectedAvatar(response.data.avatar); // Initialize selectedAvatar with current avatar
                 setProfileImage(`@/assets/Themes/${profile.avatar}.jpg`)
             } catch (err) {
-                setError(err.response ? err.response.data.error : 'Error fetching profile');
+                setError('Error fetching sdsd profile');
             } finally {
                 setLoading(false);
             }
@@ -44,13 +45,15 @@ const Profile = () => {
         e.preventDefault();
         try {
             const token = await AsyncStorage.getItem('token');
-            const config = {
+            const updatedProfile = { ...profile, avatar: selectedAvatar }; // Include avatar in profile update
+            console.log("Sd")
+            const response = await axios.put(`${config.VITE_REACT_APP_API_BASE_URL}/auth`, updatedProfile, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
-            };
-            const updatedProfile = { ...profile, avatar: selectedAvatar }; // Include avatar in profile update
-            const response = await axios.put(`${config.VITE_REACT_APP_API_BASE_URL}/profile`, updatedProfile, config);
+            });
+            console.log("11")
+
             setProfile(response.data);
             setIsEditing(false);
         } catch (err) {
@@ -67,17 +70,14 @@ const Profile = () => {
     };
 
     const selectAvatar = (index) => {
-        setSelectedAvatar(index);
-        closeAvatarModal();
+        setSelectedAvatar(index + 1);
+        console.log("is "+selectedAvatar)
+        setIsAvatarModalOpen(false);
     };
 
     if (loading) {
         return <View><Text>loading</Text></View>;
     }
-    if (error) {
-        return <View><Text>{error}</Text></View>;
-    }
-
     return (
         <View style={{ flex: 1, backgroundColor: "white", padding: 16 }}>
             <View style={{ borderWidth: 1, borderColor: "#ddd", borderRadius: 10, padding: 16, shadowColor: "#000", shadowOpacity: 0.1, shadowRadius: 5 }}>
@@ -87,7 +87,7 @@ const Profile = () => {
                             <Image source={themeImages["1"]} style={{ width: "100%", height: "100%", position: "absolute" }} />
                             <View style={{ backgroundColor: "rgba(0,0,0,0.3)", padding: 20, height: "100%", justifyContent: "flex-end" }}>
                                 <View style={{ flexDirection: "row", alignItems: "center" }}>
-                                    <Image source={profileImage} style={{ width: 68, height: 68, borderRadius: 34, borderWidth: 1, borderColor: "#ccc" }} />
+                                    <Image source={avatarImages[profile.avatar]} style={{ width: 68, height: 68, borderRadius: 34, borderWidth: 1, borderColor: "#ccc" }} />
                                     <View style={{ marginLeft: 16 }}>
                                         <Text style={{ fontSize: 24, color: "white", fontWeight: "bold" }}>Hello,</Text>
                                         <Text style={{ fontSize: 32, color: "white", fontWeight: "bold" }}>{profile.name}</Text>
@@ -122,7 +122,7 @@ const Profile = () => {
                 ) : (
                     <View>
                         <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 20 }}>
-                            <Image source={avatarImages[selectAvatar]} style={{ width: 68, height: 68, borderRadius: 34, borderWidth: 1, borderColor: "#ccc" }} />
+                            <Image source={avatarImages[selectedAvatar]} style={{ width: 68, height: 68, borderRadius: 34, borderWidth: 1, borderColor: "#ccc" }} />
                             <TouchableOpacity onPress={openAvatarModal} style={{ marginLeft: 10, backgroundColor: "#275ca2", padding: 10, borderRadius: 8 }}>
                                 <Text style={{ color: "white", fontSize: 14 }}>Change Avatar</Text>
                             </TouchableOpacity>
@@ -130,7 +130,8 @@ const Profile = () => {
 
                         {[
                             { placeholder: "Name", value: profile.name, name: "name" },
-                            { placeholder: "Email", value: profile.email, name: "email", keyboardType: "email-address" },
+                            { placeholder: "Gender", value: profile.gender, gender: "name" },
+                            { placeholder: "Date of Birth", value: new Date(profile.dob).toLocaleDateString(), gender: "dob" },
                             { placeholder: "Phone", value: profile.phone, name: "phone", keyboardType: "phone-pad" },
                         ].map((field, index) => (
                             <TextInput
@@ -161,12 +162,12 @@ const Profile = () => {
                             keyExtractor={(item, index) => index.toString()}
                             numColumns={3}
                             renderItem={({ index }) => (
-                                <TouchableOpacity onPress={() => selectAvatar(index + 1)}>
-                                    <Image source={avatarImages[selectAvatar]} style={{ width: 80, height: 80, margin: 5, borderRadius: 40 }} />
+                                <TouchableOpacity onPress={() => selectAvatar(index)}>
+                                    <Image source={avatarImages[index + 1]} style={{ width: 80, height: 80, margin: 5, borderRadius: 40 }} />
                                 </TouchableOpacity>
                             )}
                         />
-                        <TouchableOpacity onPress={closeAvatarModal} style={{ backgroundColor: "red", padding: 10, borderRadius: 8, alignItems: "center", marginTop: 10 }}>
+                        <TouchableOpacity onPress={() => setIsAvatarModalOpen(false)} style={{ backgroundColor: "red", padding: 10, borderRadius: 8, alignItems: "center", marginTop: 10 }}>
                             <Text style={{ color: "white", fontSize: 16 }}>Close</Text>
                         </TouchableOpacity>
                     </View>

@@ -11,6 +11,7 @@ import decodeJWT from '@/Config/DecodeJWT';
 import { usePathname } from 'expo-router';
 import ProjectTasks from '@/components/joinedProjects/ProjectTasks';
 import TeamMembers from '@/components/joinedProjects/TeamMember';
+import themeImages from '@/constants/themes';
 
 const JoinedProjectDetails = () => {
 
@@ -135,7 +136,7 @@ const JoinedProjectDetails = () => {
 
           {/* Project Header */}
           <View style={styles.projectImageContainer}>
-            <Image source={{ uri: `/Themes/${project.theme}.jpg` }} style={styles.projectImage} />
+            <Image  source={themeImages[project.theme]} style={styles.projectImage} />
             <View style={styles.overlay}>
               <View>
                 <Text style={[styles.overlayText, { fontSize: 24, marginTop: 30 }]}>{project.name}</Text>

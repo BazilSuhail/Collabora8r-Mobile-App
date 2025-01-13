@@ -6,6 +6,7 @@ import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import config from '@/Config/Config';
 import { useRouter } from 'expo-router';
+import themeImages from '@/constants/themes';
 
 
 const colors = [

@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, Image, ScrollView, StyleSheet } from 'react-native';
 import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
+import avatarImages from '@/constants/avatar';
 
 const TeamMembers = ({ teamDetails }) => {
   return (
@@ -15,7 +16,7 @@ const TeamMembers = ({ teamDetails }) => {
           teamDetails.map((member) => (
             <View key={member._id} style={styles.memberCard}>
               <Image
-                source={{ uri: `/Assets/${member.avatar}.jpg` }} // Replace with a valid remote or local URI
+                source={avatarImages[member.avatar]}
                 style={styles.memberAvatar}
               />
               <View>
