@@ -49,7 +49,7 @@ const Admin = () => {
     }, []);
 
     const handleTaskManagement = (projectId) => {
-        navigate.push(`/tasks/${projectId}`);
+        navigate.push(`/adminProjects/tasks/${projectId}`);
     };
 
     const handleProjectClick = (projectId) => {
