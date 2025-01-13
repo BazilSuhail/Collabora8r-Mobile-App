@@ -10,6 +10,8 @@ import config from '@/Config/Config';
 //import CreateProject from './CreateProject'; 
 //import EditProject from './EditProject';
 import { useRouter } from 'expo-router';
+import CreateProject from '@/components/adminProjects/CreateProject';
+import EditProject from '@/components/adminProjects/EditProject';
 
 const colors = [
     'bg-red-400', 'bg-blue-400', 'bg-green-700', 'bg-yellow-600', 'bg-indigo-400', 'bg-orange-400', 'bg-cyan-400', 'bg-violet-400'
@@ -64,6 +66,9 @@ const Admin = () => {
 
     return (
         <View style={{ flex: 1, padding: 10, backgroundColor: '#f5f5f5' }}>
+            {showModal && <CreateProject showModal={showModal} setShowModal={setShowModal} />}
+            {editModal && <EditProject project={projectDetails}  heading={'Assign a Manager'} editModal={editModal} setShowModal={showEditModal} />}
+
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <FontAwesome name="folder" size={24} color="gray" />

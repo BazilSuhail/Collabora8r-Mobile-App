@@ -16,7 +16,7 @@ const TaskModal = ({
 
     return (
         <Modal visible={isOpen} transparent={true} animationType="none">
-            <View style={styles.overlay}>
+            <View className='flex-1 justify-center items-center bg-black/60'>
                 <View style={styles.modalContainer}>
                     <TouchableOpacity onPress={onClose} style={styles.closeButton}>
                         <Text style={styles.closeButtonText}>&times;</Text>
@@ -67,7 +67,7 @@ const TaskModal = ({
                                     onValueChange={(value) =>
                                         handleChange('priority', value)
                                     }
-                                    style={styles.picker}
+                                    mode="dialog"
                                 >
                                     <Picker.Item label="Low" value="Low" />
                                     <Picker.Item label="Medium" value="Medium" />
@@ -128,7 +128,7 @@ const TaskModal = ({
                                 multiline
                                 numberOfLines={4}
                                 onChangeText={(text) =>
-                                    handleChange('description',text)
+                                    handleChange('description', text)
                                 }
                             />
                         </View>
@@ -155,12 +155,6 @@ const TaskModal = ({
 };
 
 const styles = StyleSheet.create({
-    overlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
     modalContainer: {
         backgroundColor: '#FFFFFF',
         width: '90%',

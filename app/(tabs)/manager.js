@@ -5,6 +5,7 @@ import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import config from '@/Config/Config';
+import { useRouter } from 'expo-router';
 
 
 const colors = [
@@ -13,6 +14,7 @@ const colors = [
 const getRandomColor = () => colors[Math.floor(Math.random() * colors.length)];
 
 const Manager = () => {
+    const navigate = useRouter();
     const [projects, setProjects] = useState([]);
     const [error, setError] = useState('');
 
@@ -83,7 +85,7 @@ const Manager = () => {
                                     style={{ height: 100, width: '100%', transform: [{ scaleX: -1 }], resizeMode: 'cover' }}
                                 />
                                 <TouchableOpacity
-                                    onPress={() => console.log(`Navigate to /tasks/${project._id}`)}
+                                    onPress={() => navigate.push(`/adminProjects/tasks/${project._id}`)}
                                     style={{
                                         position: 'absolute',
                                         top: 0,
