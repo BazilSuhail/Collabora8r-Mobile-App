@@ -9,7 +9,7 @@ import config from '@/Config/Config';
 //import Loader from '../../Assets/Loader';
 import logo from "@/assets/logo.png"
 import AsyncStorage from '@react-native-async-storage/async-storage';
-const LoginUser = () => {
+const Login = () => {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
@@ -146,4 +146,4 @@ const LoginUser = () => {
   )
 };
 
-export default LoginUser;
+export default Login;

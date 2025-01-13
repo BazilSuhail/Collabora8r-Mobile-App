@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, Image, TouchableOpacity, ScrollView } from 'react-native';
-import { FontAwesome, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons'; // Updated import
+import { FontAwesome, FontAwesome5 } from '@expo/vector-icons'; // Updated import
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import config from '@/Config/Config';
+
 import { useRouter } from 'expo-router';
 
 import NoTasks from "@/assets/logo.png";
@@ -29,20 +30,25 @@ const Home = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-         
 
+      
+
+        const response = await axios.post(`${config.VITE_REACT_APP_API_BASE_URL}/auth/signin`, {email:'b@gmail.com',password:'112233'});
+        await AsyncStorage.setItem('token', response.data.token);
         const token = await AsyncStorage.getItem('token');
-        console.log(token);
+
+        //console.log(token);
         if (!token) {
           throw new Error('No token found, please sign in again.');
         }
         setUserName("asdasd");
         setUsersId('kkkk');
-        console.log('jjjj');
+
         const tasksResponse = await axios.get(`${config.VITE_REACT_APP_API_BASE_URL}/overview/assigned-tasks`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
+        console.log('jjsjj');
         const fetchedTasks = tasksResponse.data.tasks;
         setTasks(fetchedTasks);
         setFilteredTasks(fetchedTasks);

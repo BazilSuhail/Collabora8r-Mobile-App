@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage'; 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import decodeJWT from '@/Config/DecodeJWT';
-import { Text, View } from 'react-native';
+import { Text, View, ActivityIndicator, StyleSheet } from 'react-native';
+
 export default function RootLayout() {
   const [initialRoute, setInitialRoute] = useState(null);
 
@@ -10,15 +11,15 @@ export default function RootLayout() {
     const checkToken = async () => {
       try {
         const token = await AsyncStorage.getItem('token');
-        //console.log(token)
+
         if (token && !isTokenExpired(token)) {
           setInitialRoute('(tabs)');
         } else {
-          setInitialRoute('(tabs)');
+          setInitialRoute('authentication/login');
         }
       } catch (error) {
         console.error('Error checking token:', error);
-        setInitialRoute('(tabs)'); // Default to login on error
+        setInitialRoute('authentication/login');
       }
     };
 
@@ -27,12 +28,12 @@ export default function RootLayout() {
 
   // Show a loading screen until the route is determined
   if (initialRoute === null) {
-    return <LoadingScreen />; // Use a custom loading screen component
+    return <LoadingScreen />;
   }
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} /> 
+      <Stack.Screen name={initialRoute} options={{ headerShown: false }} />
     </Stack>
   );
 }
@@ -41,7 +42,7 @@ function isTokenExpired(token) {
   try {
     const payload = decodeJWT(token); // Decode the token
     const currentTime = Math.floor(Date.now() / 1000); // Current time in seconds
-    return payload.exp < currentTime; // Check if token's expiration is in the past
+    return payload.exp < currentTime; // Token expired if its expiration is in the past
   } catch (error) {
     console.error('Error decoding token:', error);
     return true; // Treat token as expired if decoding fails
@@ -50,8 +51,22 @@ function isTokenExpired(token) {
 
 function LoadingScreen() {
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Loading...</Text>
+    <View style={styles.loadingContainer}>
+      <ActivityIndicator size="large" color="#007AFF" />
+      <Text style={styles.loadingText}>Loading...</Text>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#333',
+  },
+});
