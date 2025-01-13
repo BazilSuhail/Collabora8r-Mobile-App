@@ -81,7 +81,7 @@ const Manager = () => {
                             {/* Project Image */}
                             <View style={{ height: 75, backgroundColor: '#f7d774', position: 'relative' }}>
                                 <Image
-                                    source={{ uri: `/Themes/${project.theme}.jpg` }}
+                                 source={themeImages[project.theme]} 
                                     style={{ height: 100, width: '100%', transform: [{ scaleX: -1 }], resizeMode: 'cover' }}
                                 />
                                 <TouchableOpacity
