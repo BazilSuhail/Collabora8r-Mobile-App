@@ -53,7 +53,7 @@ const Admin = () => {
     };
 
     const handleProjectClick = (projectId) => {
-        navigate.push(`/projects/${projectId}`);
+        navigate.push(`/adminProjects/${projectId}`);
     };
 
     const handleManagerAssignmentClick = (project) => {
