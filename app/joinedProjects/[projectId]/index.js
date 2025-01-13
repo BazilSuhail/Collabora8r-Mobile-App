@@ -10,6 +10,7 @@ import config from '@/Config/Config';
 import decodeJWT from '@/Config/DecodeJWT';
 import { usePathname } from 'expo-router';
 import ProjectTasks from '@/components/joinedProjects/ProjectTasks';
+import TeamMembers from '@/components/joinedProjects/TeamMember';
 
 const JoinedProjectDetails = () => {
 
@@ -42,15 +43,15 @@ const JoinedProjectDetails = () => {
         if (response.data.project) {
           setProject(response.data.project)
           setTeamDetails(response.data.project.team)
-          console.log(teamDetails.length)
-          console.log(teamDetails)
+          //console.log(teamDetails.length)
+          //console.log(teamDetails)
         }
         else {
           setError((prev) => ({ ...prev, project: 'Project not found.' }));
         }
       }
       catch (err) {
-        console.error(err);
+        //console.error(err);
         setError((prev) => ({ ...prev, project: 'Failed to fetch project details.' }));
       }
     };
@@ -136,19 +137,19 @@ const JoinedProjectDetails = () => {
           <View style={styles.projectImageContainer}>
             <Image source={{ uri: `/Themes/${project.theme}.jpg` }} style={styles.projectImage} />
             <View style={styles.overlay}>
-              <TouchableOpacity onPress={() => console.log(`Navigate to /joinedprojects/${project._id}`)}>
+              <View>
                 <Text style={[styles.overlayText, { fontSize: 24, marginTop: 30 }]}>{project.name}</Text>
                 <Text style={[styles.overlayText, { fontSize: 14, marginTop: 10 }]}>{project.description}</Text>
-              </TouchableOpacity>
-              
+              </View>
+
             </View>
           </View>
 
-          {/* Team Members Button */}
+          {/* Team Members Button 
           <TouchableOpacity onPress={openModal} style={styles.button}>
             <FontAwesome5 name="users" size={17} color="#fff" style={{ marginRight: 8 }} />
             <Text style={styles.buttonText}>Team Members</Text>
-          </TouchableOpacity>
+          </TouchableOpacity>*/}
 
           {/* Section: Team and Tasks */}
           <View style={styles.sectionContainer}>
@@ -184,14 +185,16 @@ const JoinedProjectDetails = () => {
                 </TouchableOpacity>
               </View>
 
-              {/* Team Members List 
+              {/* Team Members List */}
               <TeamMembers teamDetails={teamDetails} isOpen={isModalOpen} onClose={closeModal} />
-              */}
+              {/*
+
+
               <Text style={[styles.buttonText, { color: '#1E40AF', fontSize: 17 }]}>
                 <FontAwesome5 name="users" size={20} color="#1E40AF" style={{ marginRight: 8 }} />
                 Team Members
               </Text>
-              
+
               {teamDetails.length > 0 ? (
                 teamDetails
                   .filter((member) => member._id !== loggedUser)
@@ -210,6 +213,7 @@ const JoinedProjectDetails = () => {
               ) : (
                 <Text style={styles.noMembersText}>No team members found.</Text>
               )}
+*/}
             </View>
 
             {/* Tasks Section */}
@@ -220,8 +224,8 @@ const JoinedProjectDetails = () => {
                 <ProjectTasks creator={project.createdBy} tasks={myTasks} />
               )}
             </View>
-            
-            
+
+
           </View>
         </View>
       ) : (

@@ -8,6 +8,7 @@ import config from '@/Config/Config';
 import { useRouter } from 'expo-router';
 
 import NoTasks from "@/assets/logo.png";
+import decodeJWT from '@/Config/DecodeJWT';
 
 const colors = [
   'bg-red-400', 'bg-blue-400', 'bg-green-700', 'bg-yellow-600', 'bg-indigo-400', 'bg-orange-400', 'bg-cyan-400', 'bg-violet-400'
@@ -31,8 +32,6 @@ const Home = () => {
     const fetchUserData = async () => {
       try {
 
-      
-
         const response = await axios.post(`${config.VITE_REACT_APP_API_BASE_URL}/auth/signin`, {email:'a@gmail.com',password:'112233'});
         await AsyncStorage.setItem('token', response.data.token);
         const token = await AsyncStorage.getItem('token');
@@ -42,13 +41,14 @@ const Home = () => {
           throw new Error('No token found, please sign in again.');
         }
         setUserName("asdasd");
-        setUsersId('kkkk');
+        const userId = decodeJWT(token);
+        setUsersId(userId); 
 
         const tasksResponse = await axios.get(`${config.VITE_REACT_APP_API_BASE_URL}/overview/assigned-tasks`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 
-        console.log('jjsjj');
+        //console.log('jjsjj');
         const fetchedTasks = tasksResponse.data.tasks;
         setTasks(fetchedTasks);
         setFilteredTasks(fetchedTasks);
@@ -191,7 +191,7 @@ const Home = () => {
               filteredTasks.map((task) => (
                 <TouchableOpacity
                   key={task._id}
-                  onPress={() => navigate(`/task/${usersId}/${task._id}`)}
+                  onPress={() => navigate.push(`/${task._id}-${usersId}`)}
                   className="px-4 pt-4 pb-[-12px] bg-white border-[2px] rounded-lg transform transition duration-300 hover:scale-[1.01]"
                 >
                   <View className="flex-row space-x-[8px]">

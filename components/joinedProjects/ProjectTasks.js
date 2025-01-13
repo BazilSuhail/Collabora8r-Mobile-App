@@ -1,13 +1,16 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
 import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 
 const ProjectTasks = ({ creator, tasks }) => {
-  const navigation = useNavigation();
+  const router = useRouter();
 
   const handleTaskClick = (taskId) => {
-    navigation.navigate('TaskDetails', { creator, taskId });
+    const makeRoute = taskId +"-" + creator;
+    const taskDetails = makeRoute.toString();
+    console.log(taskDetails);
+    router.push(`/${taskDetails}`);
   };
 
   const statusStyles = {
@@ -33,8 +36,8 @@ const ProjectTasks = ({ creator, tasks }) => {
                 task.status === 'Not Started'
                   ? statusStyles.NotStarted
                   : task.status === 'Completed'
-                  ? statusStyles.Completed
-                  : statusStyles.InProgress;
+                    ? statusStyles.Completed
+                    : statusStyles.InProgress;
 
               return (
                 <TouchableOpacity
