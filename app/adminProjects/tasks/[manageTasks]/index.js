@@ -18,6 +18,7 @@ import {
 import { usePathname } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import config from '@/Config/Config';
+import TaskModal from '@/components/TaskModal';
 
 const AssignTasks = () => {
     //const { projectId } = useParams();
@@ -62,11 +63,10 @@ const AssignTasks = () => {
 
         fetchTasksAndUsers();
     }, [projectId]);
-
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setNewTask((prevState) => ({ ...prevState, [name]: value }));
-    };
+ 
+    const handleChange = (name, value) => {
+        setNewTask({ ...newTask, [name]: value });
+      };
 
     const handleCreateTask = async (e) => {
         e.preventDefault();
@@ -228,7 +228,15 @@ const AssignTasks = () => {
                     </View>
                 )}
             />
-
+            <TaskModal
+                isOpen={isModalOpen}
+                onClose={handleCloseModal}
+                onSubmit={editingTaskId ? handleUpdateTask : handleCreateTask}
+                newTask={newTask}
+                users={users}
+                handleChange={handleChange}
+                editingTaskId={editingTaskId}
+            />
             {/* Task Modal 
             <Modal
                 visible={isModalOpen}
