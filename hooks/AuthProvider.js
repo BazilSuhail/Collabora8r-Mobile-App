@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from "react";
-import axios from "axios";
-import { io } from "socket.io-client";
+import axios from "axios"
+import { io } from "socket.io-client"
+import config from '@/Config/Config'
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const AuthContext = createContext();
 
@@ -19,7 +21,7 @@ export const AuthProvider = ({ children }) => {
     avatar: '1',
   }
   );
-  const [userLoginStatus, setUserLoginStatus] = useState(false); 
+  const [userLoginStatus, setUserLoginStatus] = useState(false);
   const [loading, setLoading] = useState(true);
 
   // notifications
@@ -29,29 +31,40 @@ export const AuthProvider = ({ children }) => {
 
   // toasts
   const [toast, setToast] = useState({ message: "", visible: false });
-  const toastTimeoutRef = useRef(null); 
+  const toastTimeoutRef = useRef(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("token"); 
-    if (token) {
-      const isValid = validateToken(token);
-      if (isValid) {
-        fetchUserData(token);
-        fetchUserNotifications(token);
-        connectSocket(token);
-      } else {
-        handleLogout();
+    const initialize = async () => {
+      try {
+        const token = await AsyncStorage.getItem("token");
+        console.log("aksjdkasdn ============")
+        console.log(token)
+        if (token) {
+          const isValid = validateToken(token); // Assuming validateToken is synchronous
+          if (isValid) {
+            await fetchUserData(token);
+            await fetchUserNotifications(token);
+            connectSocket(token);
+          } else {
+            handleLogout();
+          }
+        } else {
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error("Error during initialization:", error);
       }
-    } else {
-      setLoading(false);
-    }
+    };
+
+    initialize();
 
     return () => {
       if (socket) {
         socket.disconnect();
       }
     };
-  }, []);
+  }, []); // Dependency array remains unchanged
+
 
   const validateToken = (token) => {
     try {
@@ -73,8 +86,9 @@ export const AuthProvider = ({ children }) => {
           Authorization: `Bearer ${token}`
         }
       };
-      const response = await axios.get(`${import.meta.env.VITE_REACT_APP_API_BASE_URL}/profile`, config);
+      const response = await axios.get(`${config.VITE_REACT_APP_API_BASE_URL}/profile`, config);
       setUser(response.data);
+      console.log(response.data)
       setUserLoginStatus(true)
 
     } catch (error) {
@@ -84,14 +98,14 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     }
   };
- 
+
   const fetchUserNotifications = async (token) => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_REACT_APP_API_BASE_URL}/profile/get-notifications`, {
+      const response = await axios.get(`${config.VITE_REACT_APP_API_BASE_URL}/profile/get-notifications`, {
         headers: { Authorization: `Bearer ${token}` },
       }
       );
-      setUserNotifications(response.data); 
+      setUserNotifications(response.data);
       //console.log(response.data) 
 
     }
@@ -108,7 +122,7 @@ export const AuthProvider = ({ children }) => {
     const payload = JSON.parse(atob(token.split(".")[1]));
     const userId = payload.id;
 
-    const newSocket = io(import.meta.env.VITE_REACT_APP_API_BASE_URL, {
+    const newSocket = io(config.VITE_REACT_APP_API_BASE_URL, {
       auth: { token, userId },
     });
 
@@ -133,27 +147,31 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (token) => {
-    localStorage.setItem("token", token);
+    await AsyncStorage.setItem("token", token);
     await fetchUserData(token);
     connectSocket(token);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    setUserLoginStatus(false);
-    setUser({
-      _id: '',
-      name: '',
-      gender: '',
-      phone: '',
-      email: '',
-      dob: '',
-      avatar: '1',
-    });
-    setNotifications([]);
-    if (socket) {
-      socket.disconnect();
-      setSocket(null);
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem("token");
+      setUserLoginStatus(false);
+      setUser({
+        _id: '',
+        name: '',
+        gender: '',
+        phone: '',
+        email: '',
+        dob: '',
+        avatar: '1',
+      });
+      setNotifications([]);
+      if (socket) {
+        socket.disconnect();
+        setSocket(null);
+      }
+    } catch (error) {
+      console.error("Error during logout:", error);
     }
   };
 
@@ -190,7 +208,9 @@ export const AuthProvider = ({ children }) => {
         notifications,
         notificationsCount,
         userNotifications,
-        toast, showToast, closeToast,
+        toast,
+        showToast,
+        closeToast,
       }}
     >
       {children}

@@ -19,7 +19,7 @@ const colors = [
 const getRandomColor = () => colors[Math.floor(Math.random() * colors.length)];
 
 const Home = () => {
-  const navigate = useRouter();
+  const router = useRouter();
   const [tasks, setTasks] = useState([]);
   const [filteredTasks, setFilteredTasks] = useState([]);
   const [statusFilter, setStatusFilter] = useState('All');
@@ -34,17 +34,19 @@ const Home = () => {
     const fetchUserData = async () => {
       try {
 
-        const response = await axios.post(`${config.VITE_REACT_APP_API_BASE_URL}/auth/signin`, {email:'a@gmail.com',password:'112233'});
-        await AsyncStorage.setItem('token', response.data.token);
+        //const response = await axios.post(`${config.VITE_REACT_APP_API_BASE_URL}/auth/signin`, {email:'a@gmail.com',password:'112233'});
+        //await AsyncStorage.setItem('token', response.data.token);
         const token = await AsyncStorage.getItem('token');
 
         //console.log(token);
         if (!token) {
-          throw new Error('No token found, please sign in again.');
+          //throw new Error('No token found, please sign in again.');
+          router.push("/authentication/login")
         }
+
         setUserName("asdasd");
-        const userId = decodeJWT(token);
-        setUsersId(userId); 
+        //const userId = decodeJWT(token);
+        //setUsersId(userId);
 
         const tasksResponse = await axios.get(`${config.VITE_REACT_APP_API_BASE_URL}/overview/assigned-tasks`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -115,7 +117,7 @@ const Home = () => {
     <View className="min-h-screen bg-white py-6 px-3 sm:p-6">
       <View className="relative mb-[18px] w-full h-[120px] rounded-xl overflow-hidden">
         <View className="absolute inset-0 w-full flex-row space-x-[8px] items-center pb-[8px]">
-          <Image  source={themeImages["1"]}
+          <Image source={themeImages["1"]}
             className="h-[120px] w-full object-cover"
           />
         </View>
@@ -193,7 +195,7 @@ const Home = () => {
               filteredTasks.map((task) => (
                 <TouchableOpacity
                   key={task._id}
-                  onPress={() => navigate.push(`/${task._id}-${usersId}`)}
+                  onPress={() => router.push(`/${task._id}-${usersId}`)}
                   className="px-4 pt-4 pb-[-12px] bg-white border-[2px] rounded-lg transform transition duration-300 hover:scale-[1.01]"
                 >
                   <View className="flex-row space-x-[8px]">
@@ -208,7 +210,7 @@ const Home = () => {
               ))
             ) : (
               <View className="flex-row space-x-[8px]   space-x-[8px]-col items-center">
-                    <Image source={NoTasks} className="scale-[0.75] mt-[55px] md:mt-[-80px]" />
+                <Image source={NoTasks} className="scale-[0.75] mt-[55px] md:mt-[-80px]" />
                 <Text className="text-center text-blue-500 mt-[-45px] md:mt-[-105px] bg-blue-100 rounded-lg px-[35px] py-2">No tasks found.</Text>
               </View>
             )}

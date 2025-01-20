@@ -9,14 +9,16 @@ import config from '@/Config/Config';
 //import Loader from '../../Assets/Loader';
 import logo from "@/assets/logo.png"
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAuthContext } from '@/hooks/AuthProvider';
 const Login = () => {
+  const {login }=useAuthContext();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
   const [focusField, setFocusField] = useState('');
-  const navigate = useRouter();
+  const router = useRouter();
   const { email, password } = formData;
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -46,11 +48,11 @@ const Login = () => {
       setLoading(true);
 
       const response = await axios.post(`${config.VITE_REACT_APP_API_BASE_URL}/auth/signin`, formData);
-      await AsyncStorage.setItem('token', response.data);
+      //await AsyncStorage.setItem('token', response.data);
+      login(response.data.token)
+      //console.log('FasdasdasdasdormData:', response.data.token);
 
-      console.log('FasdasdasdasdormData:', response.data.token);
-
-      navigate.push('(tabs)');
+      router.push('(tabs)');
     }
     catch (error) {
       setErrorMessage(error.response?.data?.error || 'Something went wrong');
