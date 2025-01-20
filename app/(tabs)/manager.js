@@ -7,6 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import config from '@/Config/Config';
 import { useRouter } from 'expo-router';
 import themeImages from '@/constants/themes';
+import avatarImages from '@/constants/avatar';
 
 
 const colors = [
@@ -107,7 +108,7 @@ const Manager = () => {
                             <TouchableOpacity onPress={() => console.log(`Navigate to /tasks/${project._id}`)} style={{ flexDirection: 'row' }}>
                                 <View style={{ marginLeft: 40, marginTop: -45 }}>
                                     <Image
-                                        source={{ uri: `/Assets/${project.createdBy.avatar}.jpg` }}
+                                    source={avatarImages[project.createdBy.avatar]} 
                                         style={{
                                             height: 85,
                                             width: 85,

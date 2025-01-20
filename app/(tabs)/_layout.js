@@ -16,6 +16,7 @@ export default function TabsLayout() {
       <Drawer.Screen name="joined" options={{ drawerLabel: 'Joined' }} />
       <Drawer.Screen name="manager" options={{ drawerLabel: 'Manager' }} />
       <Drawer.Screen name="profile" options={{ drawerLabel: 'Profile' }} />
+      <Drawer.Screen name="workflow" options={{ drawerLabel: 'Workflow' }} />
     </Drawer>
   );
 }

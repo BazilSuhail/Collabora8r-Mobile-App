@@ -9,6 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import config from '@/Config/Config';
 import { Link } from 'expo-router';
 import themeImages from '@/constants/themes';
+import avatarImages from '@/constants/avatar';
 
 
 const colors = [
@@ -123,7 +124,7 @@ const JoinedProjects = () => {
               {/* Avatar and Details */}
               <View style={{ alignItems: 'center', marginTop: -45 }}>
                 <Image
-                  source={{ uri: `@/assets/Assets/${project.createdBy.avatar}.jpg` }}
+                source={avatarImages[project.createdBy.avatar]} 
                   style={{
                     height: 95,
                     width: 95,

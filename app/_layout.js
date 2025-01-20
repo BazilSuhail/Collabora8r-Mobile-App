@@ -3,6 +3,7 @@ import { Stack } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import decodeJWT from '@/Config/DecodeJWT';
 import { Text, View, ActivityIndicator, StyleSheet } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 export default function RootLayout() {
   const [initialRoute, setInitialRoute] = useState(null);
@@ -32,9 +33,13 @@ export default function RootLayout() {
   }
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name={initialRoute} options={{ headerShown: false }} />
-    </Stack>
+
+    <GestureHandlerRootView>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name={initialRoute} options={{ headerShown: false }} />
+      </Stack>
+
+    </GestureHandlerRootView>
   );
 }
 
