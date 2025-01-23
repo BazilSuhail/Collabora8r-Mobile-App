@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import axios from 'axios';
 
-import { View, Text, TouchableOpacity,TextInput,ScrollView,Image, FlatList, Modal } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, ScrollView, Image, FlatList, Modal } from 'react-native';
 import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import config from '@/Config/Config'; 
+import config from '@/Config/Config';
+import themeImages from '@/constants/themes';
 
 
 const CreateProject = ({ setShowModal, showModal }) => {
@@ -56,16 +57,16 @@ const CreateProject = ({ setShowModal, showModal }) => {
                     style={{
                         backgroundColor: 'white',
                         borderRadius: 10,
-                        padding: 20,
+                        paddingHorizontal: 20,
                         width: '90%',
                         maxWidth: 400,
                     }}
                 >
                     <TouchableOpacity
                         onPress={() => setShowModal(!showModal)}
-                        style={{ alignSelf: 'flex-end', marginBottom: 10 }}
+                        style={{ alignSelf: 'flex-end' }}
                     >
-                        <Text style={{ fontSize: 22, color: 'gray' }}>&times;</Text>
+                        <Text style={{ fontSize: 28, color: 'gray' }}>&times;</Text>
                     </TouchableOpacity>
 
                     <Text
@@ -76,7 +77,7 @@ const CreateProject = ({ setShowModal, showModal }) => {
                             marginBottom: 10,
                         }}
                     >
-                        Create A sss New Project
+                        Create A New Project
                     </Text>
                     <View
                         style={{
@@ -163,7 +164,7 @@ const CreateProject = ({ setShowModal, showModal }) => {
                         <View style={{ width: '48%' }}>
                             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                 <FontAwesome name="envelope" size={16} color="#4B5563" />
-                                <Text
+                                <Text 
                                     style={{
                                         marginLeft: 5,
                                         fontSize: 14,
@@ -177,14 +178,7 @@ const CreateProject = ({ setShowModal, showModal }) => {
                             <TextInput
                                 value={projectManagerEmail}
                                 onChangeText={setProjectManagerEmail}
-                                style={{
-                                    borderWidth: 1,
-                                    borderColor: '#D1D5DB',
-                                    borderRadius: 5,
-                                    marginTop: 5,
-                                    padding: 8,
-                                    fontSize: 14,
-                                }}
+                                className="border border-gray-300 rounded-md mt-1 p-2 h-[38px] placeholder:text-[8px] text-[14px]"
                                 placeholder="Enter manager's email"
                                 keyboardType="email-address"
                             />
@@ -228,10 +222,11 @@ const CreateProject = ({ setShowModal, showModal }) => {
                         onPress={handleCreateProject}
                         style={{
                             backgroundColor: '#275ca2',
-                            marginTop: 15,
+                            marginTop: 22,
                             padding: 10,
                             borderRadius: 5,
                             flexDirection: 'row',
+                            marginBottom:18,
                             justifyContent: 'center',
                             alignItems: 'center',
                         }}
@@ -251,35 +246,31 @@ const CreateProject = ({ setShowModal, showModal }) => {
 
                 {showThemeModal && (
                     <Modal transparent={true} visible={showThemeModal} animationType="none">
-                        <View className='bg-black/40 flex-1 items-center justify-center'
+                        <View className='bg-black/40 flex-1 py-[55px] items-center justify-center'
                         >
-                            <TouchableOpacity
-                                onPress={() => setShowThemeModal(false)}
-                                style={{
-                                    marginBottom: 20,
-                                    backgroundColor: 'red',
-                                    padding: 10,
-                                    borderRadius: 5,
-                                }}
+                            <ScrollView
+                                className='w-[90vw] pt-[10px] pb-[45px] rounded-[10px] px-[15px] bg-white'
+                                showsVerticalScrollIndicator={false}
                             >
-                                <Text style={{ color: 'white' }}>Close</Text>
-                            </TouchableOpacity>
-                            <ScrollView className='h-[50vh] w-[90vw] py-[25px] mt-[-15px] rounded-[15px] px-[15px] bg-white'
-                            showsVerticalScrollIndicator={false}
-                            >
+                                <TouchableOpacity
+                                    onPress={() => setShowThemeModal(false)}
+                                >
+                                    <Text className='scale-x-[1.4] font-[700] text-gray-700 mb-[10px] ml-auto'>X</Text>
+                                </TouchableOpacity>
+
                                 {Array.from({ length: 6 }).map((_, index) => (
                                     <TouchableOpacity key={index}
                                         onPress={() => {
                                             setTheme(index);
                                             setShowThemeModal(false);
                                         }}
-                                       className='overflow-hidden w-full h-[150px]'
+                                        className='overflow-hidden w-full h-[120px] mb-[8px] rounded-[10px]'
                                     >
-                                        <View className='bg-red-400 w-full rounded-lg h-[120px]'></View>
-                                        {/*<Image
-                                            source={{ uri: `/Themes/${index + 1}.jpg` }}
+                                        {/*<View className='bg-red-400 w-full rounded-lg h-[120px]'></View>*/}
+                                        <Image
+                                            source={themeImages[index + 1]}
                                             style={{ width: '100%', height: '100%' }}
-                                        />*/}
+                                        />
                                     </TouchableOpacity>
                                 ))}
                             </ScrollView>

@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-import { View, Text, TouchableOpacity, TextInput, ScrollView, Image, FlatList, Modal } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, ScrollView, Image, Modal } from 'react-native';
 import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import config from '@/Config/Config';
 
 
-const EditProject = ({ setShowModal, project, showModal, heading = "Edit Project" }) => {
+const EditProject = ({ setShowModal, project, showModal }) => {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [projectManagerEmail, setProjectManagerEmail] = useState('');
