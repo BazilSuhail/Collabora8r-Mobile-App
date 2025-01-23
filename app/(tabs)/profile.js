@@ -7,10 +7,19 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import config from '@/Config/Config';
 import avatarImages from '@/constants/avatar';
 import themeImages from '@/constants/themes';
+import { useAuthContext } from '@/hooks/AuthProvider';
 
 const Profile = () => {
-    const [profile, setProfile] = useState(null);
-    const [profileImage, setProfileImage] = useState(null);
+    const [profile, setProfile] = useState({
+        _id: '',
+        name: '',
+        gender: '',
+        phone: '',
+        email: '',
+        dob: '',
+        avatar: '1',
+    });
+    const { user, reFetchProfile } = useAuthContext();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
@@ -18,6 +27,22 @@ const Profile = () => {
     const [selectedAvatar, setSelectedAvatar] = useState(null);
 
     useEffect(() => {
+        const fetchProfile = () => {
+            try {
+
+                setProfile(user);
+                setSelectedAvatar(user.avatar);
+            } catch (err) {
+                setError('Error fetching sdsd profile');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchProfile();
+    }, []);
+
+    /*useEffect(() => {
         const fetchProfile = async () => {
             try {
                 const token = await AsyncStorage.getItem('token');
@@ -39,24 +64,25 @@ const Profile = () => {
         };
 
         fetchProfile();
-    }, []);
+    }, []);*/
 
     const handleUpdate = async (e) => {
         e.preventDefault();
         try {
             const token = await AsyncStorage.getItem('token');
-            const updatedProfile = { ...profile, avatar: selectedAvatar }; // Include avatar in profile update
-            console.log("Sd")
-            const response = await axios.put(`${config.VITE_REACT_APP_API_BASE_URL}/auth`, updatedProfile, {
+            const updatedProfile = { ...profile, avatar: selectedAvatar };
+
+            const response = await axios.put(`${config.VITE_REACT_APP_API_BASE_URL}/profile`, updatedProfile, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
             });
-            console.log("11")
 
             setProfile(response.data);
             setIsEditing(false);
-        } catch (err) {
+            reFetchProfile();
+        }
+        catch (err) {
             setError(err.response ? err.response.data.error : 'Error updating profile');
         }
     };
@@ -71,7 +97,7 @@ const Profile = () => {
 
     const selectAvatar = (index) => {
         setSelectedAvatar(index + 1);
-        console.log("is "+selectedAvatar)
+        console.log("is " + selectedAvatar)
         setIsAvatarModalOpen(false);
     };
 
@@ -87,7 +113,7 @@ const Profile = () => {
                             <Image source={themeImages["1"]} style={{ width: "100%", height: "100%", position: "absolute" }} />
                             <View style={{ backgroundColor: "rgba(0,0,0,0.3)", padding: 20, height: "100%", justifyContent: "flex-end" }}>
                                 <View style={{ flexDirection: "row", alignItems: "center" }}>
-                                    <Image source={avatarImages[profile.avatar]} style={{ width: 68, height: 68, borderRadius: 34, borderWidth: 1, borderColor: "#ccc" }} />
+                                    <Image source={avatarImages[user.avatar]} style={{ width: 68, height: 68, borderRadius: 34, borderWidth: 1, borderColor: "#ccc" }} />
                                     <View style={{ marginLeft: 16 }}>
                                         <Text style={{ fontSize: 24, color: "white", fontWeight: "bold" }}>Hello,</Text>
                                         <Text style={{ fontSize: 32, color: "white", fontWeight: "bold" }}>{profile.name}</Text>
@@ -130,18 +156,26 @@ const Profile = () => {
 
                         {[
                             { placeholder: "Name", value: profile.name, name: "name" },
-                            { placeholder: "Gender", value: profile.gender, gender: "name" },
-                            { placeholder: "Date of Birth", value: new Date(profile.dob).toLocaleDateString(), gender: "dob" },
+                            { placeholder: "Gender", value: profile.gender, name: "gender" }, // Fix: Use `name` instead of `gender`
+                            { placeholder: "Date of Birth", value: new Date(profile.dob).toLocaleDateString(), name: "dob" }, // Fix: Use `name` instead of `gender`
                             { placeholder: "Phone", value: profile.phone, name: "phone", keyboardType: "phone-pad" },
                         ].map((field, index) => (
                             <TextInput
                                 key={index}
-                                style={{ borderWidth: 1, borderColor: "#ddd", borderRadius: 8, padding: 10, marginBottom: 10 }}
+                                style={{
+                                    borderWidth: 1,
+                                    borderColor: "#ddd",
+                                    borderRadius: 8,
+                                    padding: 10,
+                                    marginBottom: 10,
+                                }}
                                 placeholder={field.placeholder}
                                 value={field.value}
+                                keyboardType={field.keyboardType} // Optional: Use keyboardType if provided
                                 onChangeText={(text) => setProfile({ ...profile, [field.name]: text })}
                             />
                         ))}
+
 
                         <TouchableOpacity onPress={handleUpdate} style={{ backgroundColor: "#275ca2", padding: 10, borderRadius: 8, alignItems: "center", marginTop: 10 }}>
                             <Text style={{ color: "white", fontSize: 16 }}>Update Profile</Text>

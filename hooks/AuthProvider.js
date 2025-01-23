@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import axios from "axios"
 import { io } from "socket.io-client"
-import config from '@/Config/Config'
+import config from '@/Config/Config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const AuthContext = createContext();
@@ -40,18 +40,21 @@ export const AuthProvider = ({ children }) => {
         console.log("aksjdkasdn ============")
         console.log(token)
         if (token) {
-          const isValid = validateToken(token); // Assuming validateToken is synchronous
+          const isValid = validateToken(token);
           if (isValid) {
             await fetchUserData(token);
             await fetchUserNotifications(token);
             connectSocket(token);
-          } else {
+          } 
+          else {
             handleLogout();
           }
-        } else {
+        } 
+        else {
           setLoading(false);
         }
-      } catch (error) {
+      } 
+      catch (error) {
         console.error("Error during initialization:", error);
       }
     };
@@ -81,18 +84,26 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUserData = async (token) => {
     try {
-      const config = {
+      /*const config = {
         headers: {
           Authorization: `Bearer ${token}`
         }
-      };
-      const response = await axios.get(`${config.VITE_REACT_APP_API_BASE_URL}/profile`, config);
+      };*/
+      console.log("token is ",token);
+      console.log("profile is ",`${config.VITE_REACT_APP_API_BASE_URL}/profile`);
+
+      //const response = await axios.get(`${config.VITE_REACT_APP_API_BASE_URL}/profile`, config);
+      const response = await axios.get(`${config.VITE_REACT_APP_API_BASE_URL}/profile`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
       setUser(response.data);
       console.log(response.data)
       setUserLoginStatus(true)
 
     } catch (error) {
       console.error("Error fetching user data:", error);
+      console.log(error);
       handleLogout();
     } finally {
       setLoading(false);
@@ -152,6 +163,11 @@ export const AuthProvider = ({ children }) => {
     connectSocket(token);
   };
 
+  const reFetchProfile=async ()=>{
+    await AsyncStorage.getItem("token");
+    await fetchUserData(token);
+  };
+
   const handleLogout = async () => {
     try {
       await AsyncStorage.removeItem("token");
@@ -209,6 +225,7 @@ export const AuthProvider = ({ children }) => {
         notificationsCount,
         userNotifications,
         toast,
+        reFetchProfile,
         showToast,
         closeToast,
       }}
