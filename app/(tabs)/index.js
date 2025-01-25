@@ -116,6 +116,7 @@ const Home = () => {
   return (
     <View className="min-h-screen bg-white py-6 px-3 sm:p-6">
       <View className="relative mb-[18px] w-full h-[120px] rounded-xl overflow-hidden">
+        dsjd
         <View className="absolute inset-0 w-full flex-row space-x-[8px] items-center pb-[8px]">
           <Image source={themeImages["1"]}
             className="h-[120px] w-full object-cover"

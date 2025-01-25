@@ -199,110 +199,101 @@ const TaskDetails = () => {
   }
 
   return (
-    <ScrollView style={{ backgroundColor: "#f9fafb", flex: 1, padding: 10 }}>
-      <View style={styles.section}>
+    <ScrollView className="bg-gray-50 flex-1 p-4">
+      <View className="space-y-6">
 
-        <View style={styles.card}>
-          <View style={styles.taskHeader}>
-            <FontAwesome5 name="clipboard-list" size={28} color="#2563eb" style={styles.icon} />
-            <Text style={styles.taskTitle}>{task.title}</Text>
+        {/* Task Card */}
+        <View className="bg-white p-4 rounded-lg border border-gray-300 shadow-sm">
+          <View className="flex-row items-center space-x-3 mb-3">
+            <FontAwesome5 name="clipboard-list" size={28} className="text-blue-600" />
+            <Text className="text-lg font-bold text-gray-800">{task.title}</Text>
           </View>
-          <View style={styles.taskInfoRow}>
-            <Text style={styles.textGray}>{creatorName}</Text>
-            <View style={styles.dot} />
-            <Text style={styles.textGray}>{new Date(task.createdAt).toLocaleDateString()}</Text>
+          <View className="flex-row items-center space-x-2">
+            <Text className="text-gray-600">{creatorName}</Text>
+            <View className="w-1.5 h-1.5 bg-gray-400 rounded-full" />
+            <Text className="text-gray-600">{new Date(task.createdAt).toLocaleDateString()}</Text>
           </View>
-          <View style={styles.taskMetaRow}>
+          <View className="flex-row items-center justify-between mt-4">
             <Text
-              style={{
-                ...styles.priority,
-                backgroundColor:
-                  task.priority === "High"
-                    ? "#fee2e2"
-                    : task.priority === "Medium"
-                      ? "#fef3c7"
-                      : "#dcfce7",
-                color:
-                  task.priority === "High"
-                    ? "#b91c1c"
-                    : task.priority === "Medium"
-                      ? "#ca8a04"
-                      : "#15803d",
-              }}
+              className={`
+            px-3 py-1 rounded-full font-bold text-sm
+            ${task.priority === 'High' ? 'bg-red-100 text-red-800' : ''}
+            ${task.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' : ''}
+            ${task.priority === 'Low' ? 'bg-green-100 text-green-800' : ''}
+          `}
             >
               {task.priority}
             </Text>
-            <Text style={styles.dueDate}>Due: {new Date(task.dueDate).toLocaleDateString()}</Text>
+            <Text className="text-gray-600">Due: {new Date(task.dueDate).toLocaleDateString()}</Text>
           </View>
         </View>
 
-        <View style={styles.card}>
-          <View style={styles.taskHeaderSmall}>
-            <FontAwesome5 name="file-alt" size={20} color="#2563eb" style={styles.icon} />
-            <Text style={styles.textBlue}>Task Guidelines</Text>
+        {/* Guidelines Card */}
+        <View className="bg-white p-4 rounded-lg border border-gray-300 shadow-sm">
+          <View className="flex-row items-center space-x-2 mb-3">
+            <FontAwesome5 name="file-alt" size={20} className="text-blue-600" />
+            <Text className="text-blue-600 font-medium">Task Guidelines</Text>
           </View>
-          <Text style={styles.textGray}>{task.description}</Text>
+          <Text className="text-gray-600">{task.description}</Text>
         </View>
 
-        <View style={styles.card}>
+        {/* Comments Section */}
+        <View className="bg-white p-4 rounded-lg border border-gray-300 shadow-sm">
           {comments.length === 0 ? (
-            <View style={styles.noCommentsRow}>
-              <FontAwesome5 name="snowboarding" size={22} color="#2563eb" />
-              <Text style={styles.noCommentsText}>No comments yet.</Text>
+            <View className="flex-row items-center space-x-2">
+              <FontAwesome5 name="snowboarding" size={22} className="text-blue-600" />
+              <Text className="text-gray-500">No comments yet.</Text>
             </View>
           ) : (
-            <View className='w-full'>
-              <View style={styles.commentHeaderRow}>
-                <FontAwesome5 name="users" size={18} color="#6b7280" />
-                <Text style={styles.textGray}>{comments.length} task comments</Text>
+            <View>
+              <View className="flex-row items-center space-x-2 mb-3">
+                <FontAwesome5 name="users" size={18} className="text-gray-500" />
+                <Text className="text-gray-600">{comments.length} task comments</Text>
               </View>
-
               {comments.map((comment) => (
-                <View key={comment._id} className='flex-1 bg-red-50 mt-[15px]'>
-                  <View className='flex-row items-center justify-between'>
-                    <View className='flex-row items-center'>
+                <View key={comment._id} className="bg-red-50 mt-4 p-3 rounded-lg border border-red-100">
+                  <View className="flex-row items-center justify-between">
+                    <View className="flex-row items-center space-x-3">
                       {comment.user && (
                         <Image
                           source={avatarImages[comment.user.avatar]}
-                          className='w-[35px] bg-yellow-50 h-[35px] rounded-full'
+                          className="w-9 h-9 rounded-full bg-yellow-50"
                         />
                       )}
                       <View>
-                        <Text style={styles.commentUserName}>{comment.user?.name || "Unknown User"}</Text>
-                        <Text className='text-[11px]'>{comment.user?.email}</Text>
+                        <Text className="font-medium">{comment.user?.name || 'Unknown User'}</Text>
+                        <Text className="text-xs">{comment.user?.email}</Text>
                       </View>
                     </View>
-
                     {comment.userId === currentUserId && (
-                      <View className='flex-row items-center'>
+                      <View className="flex-row space-x-4">
                         <Pressable onPress={() => handleStartEditing(comment)}>
-                          <FontAwesome5 name="edit" size={18} color="#2563eb" />
+                          <FontAwesome5 name="edit" size={18} className="text-blue-600" />
                         </Pressable>
                         <Pressable onPress={() => handleDeleteComment(comment._id)}>
-                          <FontAwesome5 name="trash-alt" size={18} color="#b91c1c" />
+                          <FontAwesome5 name="trash-alt" size={18} className="text-red-600" />
                         </Pressable>
                       </View>
                     )}
                   </View>
-
                   {editCommentId === comment._id ? (
                     <View>
                       <TextInput
                         value={editCommentContent}
                         onChangeText={setEditCommentContent}
-                        style={styles.editCommentInput}
+                        className="border border-gray-300 rounded-md p-2 mt-2"
                       />
-                      <View style={styles.commentEditActions}>
-                        <Pressable onPress={() => handleEditComment(comment._id)} style={styles.saveButton}>
-                          <Text style={styles.buttonText}>Save</Text>
+                      <View className="flex-row space-x-3 mt-2">
+                        <Pressable onPress={() => handleEditComment(comment._id)} className="bg-blue-500 px-4 py-2 rounded-md">
+                          <Text className="text-white font-medium">Save</Text>
                         </Pressable>
-                        <Pressable onPress={handleCancelEditing} style={styles.cancelButton}>
-                          <Text style={styles.buttonText}>Cancel</Text>
+                        <Pressable onPress={handleCancelEditing} className="bg-gray-400 px-4 py-2 rounded-md">
+                          <Text className="text-white font-medium">Cancel</Text>
                         </Pressable>
                       </View>
                     </View>
                   ) : (
-                    <Text style={styles.commentContent}>{comment.content}</Text>
+                    <Text className="mt-2 text-gray-600">{comment.content}</Text>
                   )}
                 </View>
               ))}
@@ -310,193 +301,38 @@ const TaskDetails = () => {
           )}
         </View>
 
-
-      </View>
-
-
-
-      <View style={{ flex: 1, padding: 20 }}>
         {/* Task Status */}
-        <View
-          style={{
-            marginBottom: 25,
-            backgroundColor: 'white',
-            padding: 15,
-            borderRadius: 10,
-            borderWidth: 1,
-            borderColor: '#e0e0e0',
-          }}
-        >
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              borderBottomWidth: 2,
-              borderColor: '#e0e0e0',
-              paddingBottom: 3,
-              marginBottom: 15,
-            }}
-          >
-            <Ionicons name="checkmark-done" size={23} color="#606060" />
-            <Text style={{ marginLeft: 8, fontSize: 17, fontWeight: '500', color: '#606060' }}>
-              Task Status
-            </Text>
+        <View className="bg-white p-4 rounded-lg border border-gray-300 shadow-sm">
+          <View className="flex-row items-center border-b-2 border-gray-200 pb-1 mb-3">
+            <Ionicons name="checkmark-done" size={23} className="text-gray-600" />
+            <Text className="ml-2 text-lg font-medium text-gray-600">Task Status</Text>
           </View>
-
-          <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-            <Text style={{ fontSize: 40, color: '#1eb720', fontWeight: 'bold' }}>{taskProgress}%</Text>
+          <View className="flex items-center justify-center">
+            <Text className="text-4xl text-green-600 font-bold">{taskProgress}%</Text>
           </View>
-
           <Text
-            style={{
-              marginTop: 10,
-              textAlign: 'center',
-              paddingVertical: 4,
-              fontWeight: '600',
-              backgroundColor: taskProgress === 0 ? '#e0f7ff' : taskProgress === 100 ? '#e0ffe0' : '#fff7e0',
-              color: taskProgress === 0 ? '#0073e6' : taskProgress === 100 ? '#1eb720' : '#e6a800',
-              borderRadius: 5,
-            }}
+            className={`
+          mt-4 text-center py-2 rounded-md font-semibold
+          ${taskProgress === 0 ? 'bg-blue-50 text-blue-600' : ''}
+          ${taskProgress === 100 ? 'bg-green-50 text-green-600' : ''}
+          ${taskProgress > 0 && taskProgress < 100 ? 'bg-yellow-50 text-yellow-600' : ''}
+        `}
           >
             {status}
           </Text>
-
           <TouchableOpacity
             onPress={toggleModal}
-            style={{
-              marginTop: 15,
-              paddingVertical: 8,
-              backgroundColor: '#007bff',
-              borderRadius: 5,
-              alignItems: 'center',
-            }}
+            className="mt-4 bg-blue-500 py-2 rounded-md items-center"
           >
-            <Text style={{ color: '#fff', fontSize: 15, fontWeight: '600' }}>Update Task</Text>
+            <Text className="text-white font-semibold">Update Task</Text>
           </TouchableOpacity>
-          <Text
-            style={{
-              marginTop: 10,
-              color: '#606060',
-              textAlign: 'center',
-              fontStyle: 'italic',
-              fontSize: 13,
-              fontWeight: '600',
-            }}
-          >
+          <Text className="mt-2 text-center text-sm text-gray-500 italic">
             Task Status Cannot be Updated After the Due Date
           </Text>
         </View>
-
-        {/* Add Comments */}
-        <View
-          style={{
-            backgroundColor: 'white',
-            padding: 15,
-            borderRadius: 10,
-            borderWidth: 1,
-            borderColor: '#e0e0e0',
-          }}
-        >
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
-            <FontAwesome5 name="user-circle" size={18} color="#606060" />
-            <Text style={{ marginLeft: 8, fontSize: 14, fontWeight: '500', color: '#606060' }}>
-              Add Comments to{' '}
-              <Text style={{ color: '#007bff', textDecorationLine: 'underline', fontWeight: '600' }}>
-                {creatorName}
-              </Text>
-            </Text>
-          </View>
-          <TextInput
-            value={commentContent}
-            onChangeText={setCommentContent}
-            placeholder="Add a comment..."
-            style={{
-              borderWidth: 1,
-              borderColor: '#e0e0e0',
-              borderRadius: 7,
-              height: 165,
-              paddingHorizontal: 10,
-              paddingVertical: 8,
-              textAlignVertical: 'top',
-            }}
-            multiline
-          />
-          <TouchableOpacity onPress={handleAddComment} style={{ alignSelf: 'flex-end', marginTop: 10 }}>
-            <FontAwesome5 name="paper-plane" size={20} color="#007bff" />
-          </TouchableOpacity>
-        </View>
-
-        {/* Modal */}
-        <Modal visible={isModalOpen} transparent animationType="fade">
-          <View
-            style={{
-              flex: 1,
-              backgroundColor: 'rgba(0, 0, 0, 0.5)',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          >
-            <View
-              style={{
-                width: 300,
-                backgroundColor: 'white',
-                padding: 20,
-                borderRadius: 10,
-              }}
-            >
-              <TouchableOpacity onPress={toggleModal} style={{ alignSelf: 'flex-end' }}>
-                <Entypo name="cross" size={24} color="#606060" />
-              </TouchableOpacity>
-              <Text style={{ fontSize: 18, fontWeight: '600', textAlign: 'center', marginVertical: 10 }}>
-                Edit Task
-              </Text>
-
-              <Text style={{ fontSize: 15, fontWeight: '600', marginBottom: 8 }}>Progress</Text>
-              <Slider
-                minimumValue={0}
-                maximumValue={100}
-                value={taskProgress}
-                onValueChange={setTaskProgress}
-                minimumTrackTintColor="#1eb720"
-                style={{ marginBottom: 15 }}
-              />
-
-              <Text style={{ fontSize: 15, fontWeight: '600', marginBottom: 8 }}>Status</Text>
-              <Picker
-                selectedValue={status}
-                onValueChange={(itemValue) => setStatus(itemValue)}
-                style={{
-                  borderWidth: 1,
-                  borderColor: '#e0e0e0',
-                  borderRadius: 5,
-                  marginBottom: 20,
-                }}
-              >
-                <Picker.Item label="Not Started" value="Not Started" />
-                <Picker.Item label="In Progress" value="In Progress" />
-                <Picker.Item label="Paused" value="Paused" />
-                <Picker.Item label="Completed" value="Completed" />
-              </Picker>
-
-              <TouchableOpacity
-                onPress={handleSaveChanges}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: '#007bff',
-                  paddingVertical: 8,
-                  borderRadius: 5,
-                }}
-              >
-                <Ionicons name="checkmark-circle-outline" size={18} color="#fff" />
-                <Text style={{ color: '#fff', marginLeft: 5, fontSize: 14, fontWeight: '600' }}>Save</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Modal>
       </View>
     </ScrollView>
+
   );
 };
 

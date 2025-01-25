@@ -129,110 +129,65 @@ const JoinedProjectDetails = () => {
 
 
   return (
-    <ScrollView style={styles.mainContainer}>
+    <ScrollView className="flex-1 bg-gray-50 p-4">
       {project ? (
         <View>
-          {error.project && <Text style={styles.errorMessage}>{error.project}</Text>}
+          {error.project && <Text className="text-red-500 text-center">{error.project}</Text>}
 
           {/* Project Header */}
-          <View style={styles.projectImageContainer}>
-            <Image  source={themeImages[project.theme]} style={styles.projectImage} />
-            <View style={styles.overlay}>
-              <View>
-                <Text style={[styles.overlayText, { fontSize: 24, marginTop: 30 }]}>{project.name}</Text>
-                <Text style={[styles.overlayText, { fontSize: 14, marginTop: 10 }]}>{project.description}</Text>
-              </View>
+          <View className="relative">
+            <Image source={themeImages[project.theme]} className="w-full absolute top-0 left-0 h-64 rounded-md" />
 
+            <View className="absolute top-0 left-0 w-full h-full bg-black/50 flex items-center justify-center">
+              <View>
+                <Text className="text-white text-2xl mt-7 font-bold text-center">{project.name}</Text>
+                <Text className="text-white text-base mt-2 text-center">{project.description}</Text>
+              </View>
             </View>
           </View>
 
-          {/* Team Members Button 
-          <TouchableOpacity onPress={openModal} style={styles.button}>
-            <FontAwesome5 name="users" size={17} color="#fff" style={{ marginRight: 8 }} />
-            <Text style={styles.buttonText}>Team Members</Text>
-          </TouchableOpacity>*/}
-
           {/* Section: Team and Tasks */}
-          <View style={styles.sectionContainer}>
+          <View className="mt-6">
             {/* Team Members */}
-            <View style={{ flex: 2, marginBottom: 15 }}>
-              <View style={{ flexDirection: 'row', marginBottom: 15 }}>
+            <View className="flex-1 mb-4">
+              <View className="flex-row mb-4">
                 <TouchableOpacity
                   onPress={() => setView('my')}
-                  style={[
-                    styles.button,
-                    {
-                      backgroundColor: view === 'my' ? '#3B82F6' : '#E5E7EB',
-                      paddingVertical: 5,
-                      marginRight: 10,
-                    },
-                  ]}
+                  className={`flex-row items-center px-3 py-1.5 rounded-md ${view === 'my' ? 'bg-blue-500' : 'bg-gray-200'
+                    } mr-2`}
                 >
-                  <FontAwesome5 name="border-all" size={16} color={view === 'my' ? '#fff' : '#1F2937'} style={{ marginRight: 5 }} />
-                  <Text style={{ color: view === 'my' ? '#fff' : '#1F2937' }}>All Tasks</Text>
+                  <FontAwesome5 name="border-all" size={16} color={view === 'my' ? '#ffffff' : '#1F2937'} className="mr-2" />
+                  <Text className={`${view === 'my' ? 'text-white' : 'text-gray-800'}`}>All Tasks</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => setView('all')}
-                  style={[
-                    styles.button,
-                    {
-                      backgroundColor: view === 'all' ? '#3B82F6' : '#E5E7EB',
-                      paddingVertical: 5,
-                    },
-                  ]}
+                  className={`flex-row items-center px-3 py-1.5 rounded-md ${view === 'all' ? 'bg-blue-500' : 'bg-gray-200'
+                    }`}
                 >
-                  <FontAwesome5 name="tasks" size={16} color={view === 'all' ? '#fff' : '#1F2937'} style={{ marginRight: 5 }} />
-                  <Text style={{ color: view === 'all' ? '#fff' : '#1F2937' }}>My Tasks</Text>
+                  <FontAwesome5 name="tasks" size={16} color={view === 'all' ? '#ffffff' : '#1F2937'} className="mr-2" />
+                  <Text className={`${view === 'all' ? 'text-white' : 'text-gray-800'}`}>My Tasks</Text>
                 </TouchableOpacity>
               </View>
 
               {/* Team Members List */}
               <TeamMembers teamDetails={teamDetails} isOpen={isModalOpen} onClose={closeModal} />
-              {/*
-
-
-              <Text style={[styles.buttonText, { color: '#1E40AF', fontSize: 17 }]}>
-                <FontAwesome5 name="users" size={20} color="#1E40AF" style={{ marginRight: 8 }} />
-                Team Members
-              </Text>
-
-              {teamDetails.length > 0 ? (
-                teamDetails
-                  .filter((member) => member._id !== loggedUser)
-                  .map((member) => (
-                    <View key={member._id} style={styles.memberCard}>
-                      <Image
-                        source={{ uri: `/Assets/${member.avatar}.jpg` }}
-                        style={styles.memberAvatar}
-                      />
-                      <View style={styles.memberInfo}>
-                        <Text style={styles.memberName}>{member.name}</Text>
-                        <Text style={styles.memberEmail}>{member.email}</Text>
-                      </View>
-                    </View>
-                  ))
-              ) : (
-                <Text style={styles.noMembersText}>No team members found.</Text>
-              )}
-*/}
             </View>
 
             {/* Tasks Section */}
-            <View style={{ flex: 5, marginLeft: 15 }}>
+            <View className="flex-1 ml-4">
               {view === 'my' ? (
                 <ProjectTasks creator={project.createdBy} tasks={otherTasks} />
               ) : (
                 <ProjectTasks creator={project.createdBy} tasks={myTasks} />
               )}
             </View>
-
-
           </View>
         </View>
       ) : (
-        <Text>Project not found.</Text>
+        <Text className="text-center text-lg text-gray-800">Project not found.</Text>
       )}
     </ScrollView>
+
   );
 };
 

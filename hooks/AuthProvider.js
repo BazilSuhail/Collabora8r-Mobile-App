@@ -37,7 +37,7 @@ export const AuthProvider = ({ children }) => {
     const initialize = async () => {
       try {
         const token = await AsyncStorage.getItem("token");
-        console.log("aksjdkasdn ============")
+        //console.log("aksjdkasdn ============")
         console.log(token)
         if (token) {
           const isValid = validateToken(token);
@@ -55,7 +55,7 @@ export const AuthProvider = ({ children }) => {
         }
       } 
       catch (error) {
-        console.error("Error during initialization:", error);
+        //console.error("Error during initialization:", error);
       }
     };
 
@@ -121,7 +121,7 @@ export const AuthProvider = ({ children }) => {
 
     }
     catch (error) {
-      console.error("Error fetching user data:", error);
+      //console.error("Error fetching user data:", error);
     }
   };
 

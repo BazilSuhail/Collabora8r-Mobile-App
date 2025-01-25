@@ -50,7 +50,7 @@ const Login = () => {
       const response = await axios.post(`${config.VITE_REACT_APP_API_BASE_URL}/auth/signin`, formData);
       //await AsyncStorage.setItem('token', response.data);
       login(response.data.token)
-      //console.log('FasdasdasdasdormData:', response.data.token);
+      console.log('FasdasdasdasdormData:', response.data.token);
 
       router.push('(tabs)');
     }

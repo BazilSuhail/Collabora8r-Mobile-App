@@ -149,6 +149,7 @@ const ProjectDetail = () => {
           </View>
           <Text style={{ fontSize: 24, fontWeight: "600" }}>{project.name}</Text>
         </View>
+        
         <TouchableOpacity
           onPress={() => setShowModal(true)}
           style={{
