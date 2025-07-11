@@ -1,4 +1,3 @@
-// MultiDropZonesDraggable.js
 import React from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import Animated, {
@@ -49,11 +48,11 @@ const DROP_ZONES = [
   },
 ];
 
-export default function MultiDropZonesDraggable() {
+function DraggableBox({ initialX, initialY, emoji }) {
   const boxSize = 100;
 
-  const translateX = useSharedValue(100);
-  const translateY = useSharedValue(600);
+  const translateX = useSharedValue(initialX);
+  const translateY = useSharedValue(initialY);
   const offsetX = useSharedValue(translateX.value);
   const offsetY = useSharedValue(translateY.value);
 
@@ -125,19 +124,22 @@ export default function MultiDropZonesDraggable() {
     ],
   }));
 
+  return (
+    <GestureDetector gesture={panGesture}>
+      <Animated.View style={[styles.box, boxStyle]}>
+        <Text style={styles.emoji}>{emoji}</Text>
+      </Animated.View>
+    </GestureDetector>
+  );
+}
+
+export default function MultiDropZonesDraggable() {
   const getZoneStyle = (zone) =>
     useAnimatedStyle(() => {
-      const isHover = hoveredZone.value === zone.id;
-      const isActive = currentZone.value === zone.id;
-
+      // Not animating drop zones based on hover for all boxes (optional enhancement)
       return {
-        backgroundColor: isHover
-          ? zone.hoverColor
-          : zone.color,
-        borderColor: isHover || isActive
-          ? zone.activeBorder
-          : zone.borderColor,
-        transform: [{ scale: withSpring(isHover ? 1.03 : 1) }],
+        backgroundColor: zone.color,
+        borderColor: zone.borderColor,
       };
     });
 
@@ -164,11 +166,8 @@ export default function MultiDropZonesDraggable() {
         );
       })}
 
-      <GestureDetector gesture={panGesture}>
-        <Animated.View style={[styles.box, boxStyle]}>
-          <Text style={styles.emoji}>📦</Text>
-        </Animated.View>
-      </GestureDetector>
+      <DraggableBox initialX={100} initialY={600} emoji="📦" />
+      <DraggableBox initialX={220} initialY={600} emoji="🎁" />
     </View>
   );
 }

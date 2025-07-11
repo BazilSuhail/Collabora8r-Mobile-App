@@ -105,18 +105,18 @@ const Profile = () => {
         return <View><Text>loading</Text></View>;
     }
     return (
-        <View style={{ flex: 1, backgroundColor: "white", padding: 16 }}>
-            <View style={{ borderWidth: 1, borderColor: "#ddd", borderRadius: 10, padding: 16, shadowColor: "#000", shadowOpacity: 0.1, shadowRadius: 5 }}>
+        <View className="flex-1 bg-white p-4">
+            <View className="border border-gray-200 rounded-xl p-4 shadow-md shadow-black/10">
                 {!isEditing ? (
                     <View>
-                        <View style={{ marginBottom: 20, height: 180, borderRadius: 10, overflow: "hidden" }}>
-                            <Image source={themeImages["1"]} style={{ width: "100%", height: "100%", position: "absolute" }} />
-                            <View style={{ backgroundColor: "rgba(0,0,0,0.3)", padding: 20, height: "100%", justifyContent: "flex-end" }}>
-                                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                                    <Image source={avatarImages[user.avatar]} style={{ width: 68, height: 68, borderRadius: 34, borderWidth: 1, borderColor: "#ccc" }} />
-                                    <View style={{ marginLeft: 16 }}>
-                                        <Text style={{ fontSize: 24, color: "white", fontWeight: "bold" }}>Hello,</Text>
-                                        <Text style={{ fontSize: 32, color: "white", fontWeight: "bold" }}>{profile.name}</Text>
+                        <View className="mb-5 h-44 rounded-xl overflow-hidden relative">
+                            <Image source={themeImages["1"]} className="absolute w-full h-full" />
+                            <View className="bg-black/30 p-5 h-full justify-end">
+                                <View className="flex-row items-center">
+                                    <Image source={avatarImages[user.avatar]} className="w-17 h-17 rounded-full border border-gray-300" />
+                                    <View className="ml-4">
+                                        <Text className="text-white text-xl font-bold">Hello,</Text>
+                                        <Text className="text-white text-2xl font-bold">{profile.name}</Text>
                                     </View>
                                 </View>
                             </View>
@@ -130,84 +130,98 @@ const Profile = () => {
                                 { icon: "venus-mars", label: "Gender", value: profile.gender },
                                 { icon: "calendar", label: "Date of Birth", value: new Date(profile.dob).toLocaleDateString() },
                             ].map((item, index) => (
-                                <View key={index} style={{ flexDirection: "row", alignItems: "center", backgroundColor: "#f9f9f9", borderWidth: 1, borderColor: "#ddd", borderRadius: 8, padding: 10, marginBottom: 10 }}>
-                                    <FontAwesome5 name={item.icon} size={24} color="#275ca2" style={{ marginRight: 10 }} />
+                                <View
+                                    key={index}
+                                    className="flex-row items-center bg-gray-50 border border-gray-200 rounded-lg p-3 mb-2"
+                                >
+                                    <FontAwesome5 name={item.icon} size={20} color="#275ca2" className="mr-3" />
                                     <View>
-                                        <Text style={{ fontSize: 16, fontWeight: "600", color: "#333" }}>{item.label}</Text>
-                                        <Text style={{ fontSize: 14, color: "#666" }}>{item.value}</Text>
+                                        <Text className="text-base font-semibold text-gray-800">{item.label}</Text>
+                                        <Text className="text-sm text-gray-600">{item.value}</Text>
                                     </View>
                                 </View>
                             ))}
                         </View>
 
-                        <TouchableOpacity onPress={() => setIsEditing(true)} style={{ backgroundColor: "#275ca2", padding: 10, borderRadius: 8, alignItems: "center", marginTop: 20 }}>
-                            <FontAwesome5 name="edit" size={18} color="white" style={{ marginRight: 5 }} />
-                            <Text style={{ color: "white", fontSize: 16 }}>Edit Profile</Text>
+                        <TouchableOpacity
+                            onPress={() => setIsEditing(true)}
+                            className="flex-row justify-center items-center bg-[#275ca2] p-3 rounded-lg mt-5"
+                        >
+                            <FontAwesome5 name="edit" size={18} color="white" className="mr-2" />
+                            <Text className="text-white text-base">Edit Profile</Text>
                         </TouchableOpacity>
                     </View>
                 ) : (
                     <View>
-                        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 20 }}>
-                            <Image source={avatarImages[selectedAvatar]} style={{ width: 68, height: 68, borderRadius: 34, borderWidth: 1, borderColor: "#ccc" }} />
-                            <TouchableOpacity onPress={openAvatarModal} style={{ marginLeft: 10, backgroundColor: "#275ca2", padding: 10, borderRadius: 8 }}>
-                                <Text style={{ color: "white", fontSize: 14 }}>Change Avatar</Text>
+                        <View className="flex-row items-center mb-5">
+                            <Image source={avatarImages[selectedAvatar]} className="w-17 h-17 rounded-full border border-gray-300" />
+                            <TouchableOpacity
+                                onPress={openAvatarModal}
+                                className="ml-3 bg-[#275ca2] px-3 py-2 rounded-lg"
+                            >
+                                <Text className="text-white text-sm">Change Avatar</Text>
                             </TouchableOpacity>
                         </View>
 
                         {[
                             { placeholder: "Name", value: profile.name, name: "name" },
-                            { placeholder: "Gender", value: profile.gender, name: "gender" }, // Fix: Use `name` instead of `gender`
-                            { placeholder: "Date of Birth", value: new Date(profile.dob).toLocaleDateString(), name: "dob" }, // Fix: Use `name` instead of `gender`
+                            { placeholder: "Gender", value: profile.gender, name: "gender" },
+                            { placeholder: "Date of Birth", value: new Date(profile.dob).toLocaleDateString(), name: "dob" },
                             { placeholder: "Phone", value: profile.phone, name: "phone", keyboardType: "phone-pad" },
                         ].map((field, index) => (
                             <TextInput
                                 key={index}
-                                style={{
-                                    borderWidth: 1,
-                                    borderColor: "#ddd",
-                                    borderRadius: 8,
-                                    padding: 10,
-                                    marginBottom: 10,
-                                }}
+                                className="border border-gray-200 rounded-lg p-3 mb-3"
                                 placeholder={field.placeholder}
                                 value={field.value}
-                                keyboardType={field.keyboardType} // Optional: Use keyboardType if provided
+                                keyboardType={field.keyboardType}
                                 onChangeText={(text) => setProfile({ ...profile, [field.name]: text })}
                             />
                         ))}
 
-
-                        <TouchableOpacity onPress={handleUpdate} style={{ backgroundColor: "#275ca2", padding: 10, borderRadius: 8, alignItems: "center", marginTop: 10 }}>
-                            <Text style={{ color: "white", fontSize: 16 }}>Update Profile</Text>
+                        <TouchableOpacity
+                            onPress={handleUpdate}
+                            className="bg-[#275ca2] p-3 rounded-lg items-center mt-3"
+                        >
+                            <Text className="text-white text-base">Update Profile</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={() => setIsEditing(false)} style={{ backgroundColor: "red", padding: 10, borderRadius: 8, alignItems: "center", marginTop: 10 }}>
-                            <Text style={{ color: "white", fontSize: 16 }}>Cancel</Text>
+
+                        <TouchableOpacity
+                            onPress={() => setIsEditing(false)}
+                            className="bg-red-500 p-3 rounded-lg items-center mt-3"
+                        >
+                            <Text className="text-white text-base">Cancel</Text>
                         </TouchableOpacity>
                     </View>
                 )}
             </View>
 
-            <Modal visible={isAvatarModalOpen} transparent={true} animationType="fade">
-                <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "center", alignItems: "center" }}>
-                    <View style={{ backgroundColor: "white", padding: 20, borderRadius: 10, width: "90%" }}>
-                        <Text style={{ fontSize: 18, fontWeight: "bold", marginBottom: 20 }}>Select an Avatar</Text>
+            {/* Avatar Modal */}
+            <Modal visible={isAvatarModalOpen} transparent animationType="fade">
+                <View className="flex-1 bg-black/50 justify-center items-center">
+                    <View className="bg-white p-5 rounded-xl w-[90%]">
+                        <Text className="text-lg font-bold mb-5">Select an Avatar</Text>
                         <FlatList
                             data={Array.from({ length: 12 })}
-                            keyExtractor={(item, index) => index.toString()}
+                            keyExtractor={(_, index) => index.toString()}
                             numColumns={3}
                             renderItem={({ index }) => (
                                 <TouchableOpacity onPress={() => selectAvatar(index)}>
-                                    <Image source={avatarImages[index + 1]} style={{ width: 80, height: 80, margin: 5, borderRadius: 40 }} />
+                                    <Image source={avatarImages[index + 1]} className="w-20 h-20 m-1.5 rounded-full" />
                                 </TouchableOpacity>
                             )}
                         />
-                        <TouchableOpacity onPress={() => setIsAvatarModalOpen(false)} style={{ backgroundColor: "red", padding: 10, borderRadius: 8, alignItems: "center", marginTop: 10 }}>
-                            <Text style={{ color: "white", fontSize: 16 }}>Close</Text>
+                        <TouchableOpacity
+                            onPress={() => setIsAvatarModalOpen(false)}
+                            className="bg-red-500 p-3 rounded-lg items-center mt-4"
+                        >
+                            <Text className="text-white text-base">Close</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
             </Modal>
         </View>
+
     );
 };
 
