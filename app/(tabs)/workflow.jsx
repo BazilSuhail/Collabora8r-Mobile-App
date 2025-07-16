@@ -1,204 +1,256 @@
-import React from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-} from 'react-native-reanimated';
+import React, { useState, useEffect } from 'react';
 import {
-  GestureDetector,
-  Gesture,
-} from 'react-native-gesture-handler';
+  View,
+  Text,
+  TouchableOpacity,
+  Alert,
+  ScrollView,
+  Dimensions,
+  Modal,
+  FlatList,
+} from 'react-native';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
+import config from '@/config/config';
+import decodeJWT from '@/config/decodeJWT';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const STATUS_TYPES = ['Not Started', 'In Progress', 'Completed'];
 
-const DROP_ZONES = [
-  {
-    id: 1,
-    x: 40,
-    y: 100,
-    width: SCREEN_WIDTH - 80,
-    height: 100,
-    color: '#dbeafe',
-    hoverColor: '#bfdbfe',
-    borderColor: '#3b82f6',
-    activeBorder: '#1d4ed8',
-  },
-  {
-    id: 2,
-    x: 40,
-    y: 250,
-    width: SCREEN_WIDTH - 80,
-    height: 100,
-    color: '#f0fdf4',
-    hoverColor: '#bbf7d0',
-    borderColor: '#22c55e',
-    activeBorder: '#15803d',
-  },
-  {
-    id: 3,
-    x: 40,
-    y: 400,
-    width: SCREEN_WIDTH - 80,
-    height: 100,
-    color: '#faf5ff',
-    hoverColor: '#e9d5ff',
-    borderColor: '#a855f7',
-    activeBorder: '#6b21a8',
-  },
-];
+const TaskCard = ({ task, onPress }) => (
+  <TouchableOpacity
+    onPress={() => onPress(task)}
+    style={{
+      padding: 10,
+      backgroundColor: '#f9f9f9',
+      borderWidth: 1,
+      borderColor: '#ddd',
+      borderRadius: 10,
+      marginBottom: 10,
+    }}
+  >
+    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 5 }}>
+      <FontAwesome5 name="tasks" size={18} color="#4a4a4a" />
+      <Text style={{ marginLeft: 8, fontSize: 16, fontWeight: '600' }}>
+        {task.title.slice(0, 17) || 'Untitled Task'}
+        {task.title.length > 15 && '...'}
+      </Text>
+    </View>
+    <Text style={{ fontSize: 14, color: '#d9534f', marginBottom: 5 }}>
+      <Text style={{ fontWeight: '600' }}>Due: </Text>
+      {task.dueDate ? new Date(task.dueDate.$date || task.dueDate).toLocaleDateString() : 'N/A'}
+    </Text>
+    <Text
+      style={{
+        fontSize: 12,
+        color: '#ffffff',
+        backgroundColor: '#007bff',
+        alignSelf: 'flex-start',
+        paddingVertical: 2,
+        paddingHorizontal: 10,
+        borderRadius: 15,
+      }}
+    >
+      {task.projectName}
+    </Text>
+  </TouchableOpacity>
+);
 
-function DraggableBox({ initialX, initialY, emoji }) {
-  const boxSize = 100;
+const Workflow = () => {
+  const [tasks, setTasks] = useState({
+    'Not Started': [],
+    'In Progress': [],
+    Completed: [],
+  });
+  const [selectedTask, setSelectedTask] = useState(null);
+  const [updatedTasks, setUpdatedTasks] = useState({});
+  const [isModalVisible, setModalVisible] = useState(false);
 
-  const translateX = useSharedValue(initialX);
-  const translateY = useSharedValue(initialY);
-  const offsetX = useSharedValue(translateX.value);
-  const offsetY = useSharedValue(translateY.value);
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        const token = await AsyncStorage.getItem('token');
+        if (!token) throw new Error('No token found, please sign in again.');
 
-  const hoveredZone = useSharedValue(0);
-  const currentZone = useSharedValue(0);
+        const userId = decodeJWT(token);
 
-  const panGesture = Gesture.Pan()
-    .onStart(() => {
-      offsetX.value = translateX.value;
-      offsetY.value = translateY.value;
-    })
-    .onUpdate((event) => {
-      translateX.value = offsetX.value + event.translationX;
-      translateY.value = offsetY.value + event.translationY;
+        const response = await axios.get(
+          `${config.VITE_REACT_APP_API_BASE_URL}/overview/assigned-tasks`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
 
-      const centerX = translateX.value + boxSize / 2;
-      const centerY = translateY.value + boxSize / 2;
+        const initialTasks = STATUS_TYPES.reduce((acc, status) => {
+          acc[status] = response.data.tasks.filter((task) => task.status === status);
+          return acc;
+        }, {});
 
-      let zoneFound = 0;
-      for (let zone of DROP_ZONES) {
-        if (
-          centerX >= zone.x &&
-          centerX <= zone.x + zone.width &&
-          centerY >= zone.y &&
-          centerY <= zone.y + zone.height
-        ) {
-          zoneFound = zone.id;
-          break;
-        }
+        setTasks(initialTasks);
+      } catch (err) {
+        Alert.alert('Error', err.message || 'Error fetching tasks');
       }
+    };
 
-      hoveredZone.value = zoneFound;
-    })
-    .onEnd(() => {
-      const centerX = translateX.value + boxSize / 2;
-      const centerY = translateY.value + boxSize / 2;
+    fetchTasks();
+  }, []);
 
-      let droppedZone = null;
-      for (let zone of DROP_ZONES) {
-        if (
-          centerX >= zone.x &&
-          centerX <= zone.x + zone.width &&
-          centerY >= zone.y &&
-          centerY <= zone.y + zone.height
-        ) {
-          droppedZone = zone;
-          break;
-        }
-      }
+  const openStatusModal = (task) => {
+    setSelectedTask(task);
+    setModalVisible(true);
+  };
 
-      if (droppedZone) {
-        const centerZoneX = droppedZone.x + droppedZone.width / 2 - boxSize / 2;
-        const centerZoneY = droppedZone.y + droppedZone.height / 2 - boxSize / 2;
+  const changeTaskStatus = (newStatus) => {
+    if (!selectedTask) return;
 
-        translateX.value = withSpring(centerZoneX);
-        translateY.value = withSpring(centerZoneY);
-        currentZone.value = droppedZone.id;
-      }
+    setTasks((prev) => {
+      const oldStatus = selectedTask.status;
+      const updatedTask = { ...selectedTask, status: newStatus };
 
-      offsetX.value = translateX.value;
-      offsetY.value = translateY.value;
-      hoveredZone.value = 0;
-    });
-
-  const boxStyle = useAnimatedStyle(() => ({
-    transform: [
-      { translateX: translateX.value },
-      { translateY: translateY.value },
-    ],
-  }));
-
-  return (
-    <GestureDetector gesture={panGesture}>
-      <Animated.View style={[styles.box, boxStyle]}>
-        <Text style={styles.emoji}>{emoji}</Text>
-      </Animated.View>
-    </GestureDetector>
-  );
-}
-
-export default function MultiDropZonesDraggable() {
-  const getZoneStyle = (zone) =>
-    useAnimatedStyle(() => {
-      // Not animating drop zones based on hover for all boxes (optional enhancement)
       return {
-        backgroundColor: zone.color,
-        borderColor: zone.borderColor,
+        ...prev,
+        [oldStatus]: prev[oldStatus].filter((t) => t._id !== selectedTask._id),
+        [newStatus]: [...(prev[newStatus] || []), updatedTask],
       };
     });
 
-  return (
-    <View style={styles.container}>
-      {DROP_ZONES.map((zone) => {
-        const animatedZoneStyle = getZoneStyle(zone);
-        return (
-          <Animated.View
-            key={zone.id}
-            style={[
-              styles.dropZone,
-              {
-                left: zone.x,
-                top: zone.y,
-                width: zone.width,
-                height: zone.height,
-              },
-              animatedZoneStyle,
-            ]}
-          >
-            <Text style={styles.zoneLabel}>Zone {zone.id}</Text>
-          </Animated.View>
-        );
-      })}
+    setUpdatedTasks((prev) => ({
+      ...prev,
+      [selectedTask._id]: newStatus,
+    }));
 
-      <DraggableBox initialX={100} initialY={600} emoji="📦" />
-      <DraggableBox initialX={220} initialY={600} emoji="🎁" />
-    </View>
+    setModalVisible(false);
+    setSelectedTask(null);
+  };
+
+  const confirmUpdate = async () => {
+    const updates = Object.entries(updatedTasks).map(([taskId, newStatus]) => ({
+      id: taskId,
+      status: newStatus,
+    }));
+
+    try {
+      await axios.patch(
+        `${config.VITE_REACT_APP_API_BASE_URL}/projecttasks/tasks/update`,
+        { updates }
+      );
+      Alert.alert('Success', 'Tasks updated successfully.');
+    } catch (error) {
+      Alert.alert('Error', 'Error updating tasks');
+    } finally {
+      setUpdatedTasks({});
+    }
+  };
+
+  const renderItem = ({ item }) => (
+    <TaskCard task={item} onPress={openStatusModal} />
   );
-}
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f9fafb',
-  },
-  dropZone: {
-    position: 'absolute',
-    borderWidth: 3,
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  zoneLabel: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1e293b',
-  },
-  box: {
-    position: 'absolute',
-    width: 100,
-    height: 100,
-    backgroundColor: '#f97316',
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  emoji: {
-    fontSize: 32,
-  },
-});
+  return (
+    <ScrollView contentContainerStyle={{ paddingBottom: 100, paddingHorizontal: 10 }}>
+      <View style={{ marginBottom: 30 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <FontAwesome name="group" size={24} color="#6c757d" />
+          <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#6c757d', marginLeft: 10 }}>
+            Task Workflow Manager
+          </Text>
+        </View>
+      </View>
+
+      {STATUS_TYPES.map((status) => (
+        <View
+          key={status}
+          style={{
+            marginVertical: 10,
+            padding: 10,
+            backgroundColor: '#f8f8f8',
+            borderWidth: 1,
+            borderColor: '#ccc',
+            borderRadius: 10,
+          }}
+        >
+          <Text
+            style={{
+              fontSize: 16,
+              fontWeight: '600',
+              marginBottom: 10,
+              textAlign: 'center',
+              color:
+                status === 'Not Started'
+                  ? '#007bff'
+                  : status === 'Completed'
+                  ? '#28a745'
+                  : '#ffc107',
+            }}
+          >
+            {status}
+          </Text>
+
+          <FlatList
+            data={tasks[status] || []}
+            renderItem={renderItem}
+            keyExtractor={(item) => item._id}
+            scrollEnabled={false}
+          />
+        </View>
+      ))}
+
+      <TouchableOpacity
+        onPress={confirmUpdate}
+        style={{
+          marginTop: 20,
+          backgroundColor: '#007bff',
+          paddingVertical: 10,
+          borderRadius: 10,
+          alignItems: 'center',
+        }}
+      >
+        <Text style={{ color: '#ffffff', fontSize: 16, fontWeight: '600' }}>Update Tasks</Text>
+      </TouchableOpacity>
+
+      <Modal
+        visible={isModalVisible}
+        animationType="fade-in"
+        transparent={true}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'flex-end',
+            backgroundColor: 'rgba(0, 0, 0, 0.4)',
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: 'white',
+              padding: 20,
+              borderTopLeftRadius: 20,
+              borderTopRightRadius: 20,
+            }}
+          >
+            <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 10 }}>
+              Change Status
+            </Text>
+            {STATUS_TYPES.map((statusOption) => (
+              <TouchableOpacity
+                key={statusOption}
+                onPress={() => changeTaskStatus(statusOption)}
+                style={{
+                  paddingVertical: 12,
+                  borderBottomWidth: 1,
+                  borderColor: '#eee',
+                }}
+              >
+                <Text style={{ fontSize: 16 }}>{statusOption}</Text>
+              </TouchableOpacity>
+            ))}
+            <TouchableOpacity onPress={() => setModalVisible(false)} style={{ marginTop: 15 }}>
+              <Text style={{ textAlign: 'center', color: 'red' }}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    </ScrollView>
+  );
+};
+
+export default Workflow;

@@ -1,292 +1,229 @@
-import React, { useCallback, useEffect, useState } from 'react'; 
-import { View, Text, TextInput, ScrollView, Image, TouchableOpacity, Modal } from 'react-native';
-import { usePathname } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import {
+  View, Text, TextInput, TouchableOpacity,
+  FlatList, ScrollView, Modal
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
+import { useRoute } from '@react-navigation/native';
 import config from '@/config/config';
-import decodeJWT from '@/config/decodeJWT';
-import { useAuthContext } from '../../hooks/AuthProvider'; 
+import axios from 'axios';
 import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
- 
-const TaskDetails = () => {
+import Svg, { Circle } from 'react-native-svg';
+import { usePathname } from 'expo-router';
+import { useAuthContext } from '../../hooks/AuthProvider';
+
+const JoinedTaskDetailsScreen = () => {
   const pathname = usePathname().split("/").pop();
   const [taskId, creatorId] = pathname.split("-");
+  //console.log("task is " + taskId);
+  //console.log("task is " + creatorId);
+  const { user } = useAuthContext();
+  //console.log("task is " + user._id);
 
-  console.log("task is isis" + creatorId);
-  //console.log("cr is " + creatorId);
 
   const [task, setTask] = useState(null);
   const [taskProgress, setTaskProgress] = useState(1);
-  const [status, setStatus] = useState("Not Started");
+  const [status, setStatus] = useState('Not Started');
   const [comments, setComments] = useState([]);
   const [commentContent, setCommentContent] = useState('');
-  const [error, setError] = useState(null);
-  const [currentUserId, setCurrentUserId] = useState(null);
-  const [editCommentId, setEditCommentId] = useState(null);
-  const [editCommentContent, setEditCommentContent] = useState('');
+  const [modalVisible, setModalVisible] = useState(false);
   const [creatorName, setCreatorName] = useState('');
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [userId, setUserId] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchTaskDetails = async () => {
-      try {
-        const token = await AsyncStorage.getItem('token');
-        const userId = decodeJWT(token);
-        setCurrentUserId(userId);
-
-        const response = await axios.get(`${config.VITE_REACT_APP_API_BASE_URL}/project-tasks/${taskId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setTask(response.data);
-        setTaskProgress(response.data.progress);
-        setStatus(response.data.status)
-
-        const commentsResponse = await axios.get(`${config.VITE_REACT_APP_API_BASE_URL}/comments/tasks/${taskId}/comments`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setComments(commentsResponse.data.comments);
-      } catch (err) {
-        console.error(err);
-        setError('Failed to fetch task details or comments.');
-      }
-    };
-
-    const fetchCreatorName = async () => {
-      try {
-        const response = await axios.get(`${config.VITE_REACT_APP_API_BASE_URL}/comments/${creatorId}/name`);
-        setCreatorName(response.data.name);
-      } catch (err) {
-        setError('Failed to fetch creator name');
-      }
-    };
-
-    fetchCreatorName();
-    fetchTaskDetails();
-  }, [taskId, creatorId]);
-
-  const toggleModal = () => setIsModalOpen((prev) => !prev);
-
-  const handleSaveChanges = async () => {
-    try {
-      const token = await AsyncStorage.getItem("token");
-      await axios.put(
-        `${config.VITE_REACT_APP_API_BASE_URL}/projecttasks/update-task-progress/${taskId}`,
-        { progress: taskProgress, status },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      setTask((prev) => ({
-        ...prev,
-        progress: taskProgress,
-        status,
-      }));
-      toggleModal();
-    } catch (err) {
-      console.error(err);
-      setError("Failed to update task details.");
-    }
-  };
-
-  const handleAddComment = useCallback(async () => {
-    try {
+    const fetchData = async () => {
       const token = await AsyncStorage.getItem('token');
-      const userId = decodeJWT(token);
-      const response = await axios.post(
-        `${config.VITE_REACT_APP_API_BASE_URL}/comments/tasks/${taskId}/comments`,
-        { content: commentContent, userId },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      const newComment = {
-        ...response.data.comment,
-        user: {
-          _id: currentUserId,
-          name: 'Reload Page',
-          email: '',
-          avatar: '1',
-        },
-      };
+      //const user = JSON.parse(await AsyncStorage.getItem('user')); 
+      setUserId(user._id);
 
-      setComments((prev) => [...prev, newComment]);
-      setCommentContent('');
-    } catch (err) {
-      console.error(err);
-      setError('Failed to add comment.');
-    }
-  }, [commentContent]);
 
-  const handleEditComment = async (commentId) => {
-    try {
-      const token = await AsyncStorage.getItem('token');
-      const response = await axios.put(
-        `${config.VITE_REACT_APP_API_BASE_URL}/comments/${commentId}`,
-        { content: editCommentContent },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      setComments((prev) =>
-        prev.map((comment) =>
-          comment._id === commentId
-            ? { ...comment, content: response.data.comment.content }
-            : comment
-        )
-      );
-
-      setEditCommentId(null);
-    } catch (err) {
-      console.error(err);
-      setError('Failed to edit comment.');
-    }
-  };
-
-  const handleDeleteComment = async (commentId) => {
-    try {
-      const token = await AsyncStorage.getItem('token');
-      await axios.delete(`${config.VITE_REACT_APP_API_BASE_URL}/comments/${commentId}`, {
+      const taskRes = await axios.get(`${config.VITE_REACT_APP_API_BASE_URL}/project-tasks/${taskId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      setComments((prev) => prev.filter((comment) => comment._id !== commentId));
-    } catch (err) {
-      console.error(err);
-      setError('Failed to delete comment.');
-    }
+      const commentRes = await axios.get(`${config.VITE_REACT_APP_API_BASE_URL}/comments/tasks/${taskId}/comments`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      console.log(commentRes.data)
+      // const creatorRes = await axios.get(`${config.VITE_REACT_APP_API_BASE_URL}/users/${user._id}`, {
+      //   headers: { Authorization: `Bearer ${token}` },
+      // });
+
+
+      setTask(taskRes.data);
+      setTaskProgress(taskRes.data.progress);
+      setStatus(taskRes.data.status);
+      setComments(commentRes.data.comments);
+
+      console.log("s85d")
+      //setCreatorName(creatorRes.data.name);
+      setLoading(false);
+    };
+
+    fetchData();
+  }, []);
+
+  const handleAddComment = async () => {
+    if (!commentContent.trim()) return;
+    const token = await AsyncStorage.getItem('token');
+    const res = await axios.post(
+      `${config.VITE_REACT_APP_API_BASE_URL}/comments/tasks/${taskId}/comments`,
+      { content: commentContent },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    setComments([...comments, res.data.comment]);
+    setCommentContent('');
   };
 
-
-  const clampedProgress = Math.min(Math.max(taskProgress, 0), 100);
-
-  // Calculate the stroke dash offset
-  const radius = 50; // Radius of the circle
-  const circumference = 2 * Math.PI * radius;
-  // const offset = circumference - (clampedProgress / 100) * circumference;
-
-  const handleStartEditing = (comment) => {
-    setEditCommentId(comment._id);
-    setEditCommentContent(comment.content);
+  const updateStatus = async (newStatus) => {
+    const token = await AsyncStorage.getItem('token');
+    await axios.put(
+      `${config.VITE_REACT_APP_API_BASE_URL}/project-tasks/${taskId}`,
+      { status: newStatus },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    setStatus(newStatus);
+    setModalVisible(false);
   };
 
-  const handleCancelEditing = () => {
-    setEditCommentId(null);
-    setEditCommentContent('');
+  const renderProgress = () => {
+    const radius = 50;
+    const strokeWidth = 8;
+    const normalizedRadius = radius - strokeWidth / 2;
+    const circumference = normalizedRadius * 2 * Math.PI;
+    const strokeDashoffset = circumference - (taskProgress / 100) * circumference;
+
+    return (
+      <Svg height={radius * 2} width={radius * 2}>
+        <Circle
+          stroke="#E5E7EB"
+          fill="transparent"
+          strokeWidth={strokeWidth}
+          r={normalizedRadius}
+          cx={radius}
+          cy={radius}
+        />
+        <Circle
+          stroke="#10B981"
+          fill="transparent"
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+          strokeDasharray={`${circumference} ${circumference}`}
+          strokeDashoffset={strokeDashoffset}
+          r={normalizedRadius}
+          cx={radius}
+          cy={radius}
+        />
+      </Svg>
+    );
   };
 
- 
-
-  if (error) return <Text className="text-red-500 p-4">{error}</Text>;
-  if (!task) return <View className="h-screen w-screen bg-red-100"></View>;
+  if (loading) {
+    return (
+      <View className="flex-1 justify-center items-center">
+        <Text className="text-lg text-gray-600">Loading.sdf..</Text>
+      </View>
+    );
+  }
 
   return (
-    <ScrollView className="bg-gray-100 p-4">
-      <View className="bg-white p-4 rounded-xl mb-4">
-        <View className="flex-row items-center space-x-3 mb-2">
-         <FontAwesome5 name="clipboard-list" size={26} color="#2563EB" />
-          <Text className="text-lg font-bold">{task.title}</Text>
-        </View>
-        <Text className="text-sm text-gray-500">{creatorName}</Text>
-        <Text className="text-sm text-gray-500">
-          Due: {new Date(task.dueDate?.$date || task.dueDate).toLocaleDateString()}
+    <ScrollView className="flex-1 bg-white p-4">
+      <Text className="text-2xl font-bold text-gray-800 mb-2">{task.title}</Text>
+      <Text className="text-base text-gray-500 mb-4">By {user.name}</Text>
+
+      <View className="items-center mb-6">
+        {renderProgress()}
+        <Text className="absolute top-[45px] text-lg font-semibold text-green-600">
+          {taskProgress}%
         </Text>
-        <Text className="text-sm mt-1 text-gray-600">{task.description}</Text>
       </View>
 
-      {/* Comments Section */}
-      <View className="bg-white p-4 rounded-xl mb-4">
-        <Text className="text-lg font-semibold mb-2">Comments</Text>
-        {comments.map((comment) => (
-          <View key={comment._id} className="mb-3 border-b pb-2">
-            <View className="flex-row justify-between items-center">
-              <Text className="font-semibold text-gray-800">{comment?.user?.name || 'Unknown'}</Text>
-              {comment?.userId === currentUserId && (
-                <View className="flex-row space-x-3">
-                  <TouchableOpacity onPress={() => handleDeleteComment(comment._id)}>
-                   <FontAwesome5 name="clipboard-list" size={26} color="#2563EB" />
+      <TouchableOpacity
+        onPress={() => setModalVisible(true)}
+        className="bg-blue-500 rounded-full px-4 py-2 self-center mb-4"
+      >
+        <Text className="text-white text-sm font-medium">Change Status</Text>
+      </TouchableOpacity>
+
+      <Modal
+        visible={modalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View className="flex-1 justify-center items-center bg-black/40">
+          <View className="bg-white p-6 rounded-xl w-4/5 space-y-4">
+            <Text className="text-lg font-semibold text-gray-700">Set Task Status</Text>
+            {['Not Started', 'In Progress', 'Completed'].map((s) => (
+              <TouchableOpacity
+                key={s}
+                onPress={() => updateStatus(s)}
+                className="p-3 bg-gray-100 rounded-lg"
+              >
+                <Text className="text-center text-gray-800">{s}</Text>
+              </TouchableOpacity>
+            ))}
+            <TouchableOpacity onPress={() => setModalVisible(false)}>
+              <Text className="text-center text-red-500 mt-2">Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      <Text className="text-lg font-semibold text-gray-800 mt-6 mb-2">Comments</Text>
+      <View>
+        {comments.map((item) => (
+          <View key={item._id} className="bg-gray-100 rounded-md p-3 mb-2">
+            <Text className="text-sm font-medium text-gray-700">{item.user.name}</Text>
+            <Text className="text-sm font-medium text-gray-700">{item.user.email}</Text>
+
+            <View>
+
+              {item.userId === user._id && (
+                <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 6 }}>
+                  <TouchableOpacity onPress={() => handleStartEditing(comment)}>
+                    <FontAwesome5
+                      name="edit"
+                      size={17}
+                      color="#2563eb" // Tailwind's blue-600
+                      style={{ marginTop: -1 }}
+                    />
                   </TouchableOpacity>
-                  <TouchableOpacity onPress={() => {
-                    setEditCommentId(comment._id);
-                    setEditCommentContent(comment.content);
-                  }}>
-                    <FontAwesome5 name="clipboard-list" size={26} color="#2563EB" />
+
+                  <TouchableOpacity onPress={() => handleDeleteComment(comment._id)}>
+                    <FontAwesome
+                      name="trash-alt"
+                      size={15}
+                      color="#ef4444" // Tailwind's red-500
+                    />
                   </TouchableOpacity>
                 </View>
               )}
             </View>
-            {editCommentId === comment._id ? (
-              <>
-                <TextInput
-                  value={editCommentContent}
-                  onChangeText={setEditCommentContent}
-                  multiline
-                  className="border mt-2 rounded p-2 text-sm"
-                />
-                <View className="flex-row justify-end space-x-2 mt-1">
-                  <TouchableOpacity onPress={() => handleEditComment(comment._id)}>
-                    <Text className="text-blue-600">Save</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => setEditCommentId(null)}>
-                    <Text className="text-red-500">Cancel</Text>
-                  </TouchableOpacity>
-                </View>
-              </>
-            ) : (
-              <Text className="text-sm text-gray-600 mt-1">{comment.content}</Text>
-            )}
+
+            <Text className="text-gray-600">{item.content}</Text>
           </View>
         ))}
-        <TextInput
-          value={commentContent}
-          onChangeText={setCommentContent}
-          multiline
-          placeholder="Add comment..."
-          className="border p-2 rounded mb-2"
-        />
-        <TouchableOpacity onPress={handleAddComment} className="items-end">
-        <FontAwesome5 name="clipboard-list" size={26} color="#2563EB" />
-        </TouchableOpacity>
       </View>
 
-      {/* Update Button */}
-      {task.assignedTo === creatorId && (
-        <TouchableOpacity onPress={() => setIsModalOpen(true)} className="bg-blue-600 p-3 rounded-md">
-          <Text className="text-white text-center font-semibold">Update Task</Text>
-        </TouchableOpacity>
-      )}
 
-      {/* MODAL */}
-      <Modal visible={isModalOpen} animationType="slide" transparent>
-        <View className="flex-1 justify-center items-center bg-black bg-opacity-40 px-5">
-          <View className="bg-white p-4 rounded-lg w-full max-w-md">
-            <Text className="text-center text-lg font-bold mb-4">Update Task</Text>
-            <Text className="text-sm font-semibold mb-1">Progress: {taskProgress}%</Text>
-            <TextInput
-              keyboardType="numeric"
-              value={String(taskProgress)}
-              onChangeText={(v) => setTaskProgress(Number(v))}
-              className="border rounded p-2 mb-4"
-            />
-            <Text className="text-sm font-semibold mb-1">Status</Text>
-            <TextInput
-              value={status}
-              onChangeText={(v) => setStatus(v)}
-              className="border rounded p-2 mb-4"
-            />
-            <View className="flex-row justify-end space-x-3">
-              <TouchableOpacity onPress={handleSaveChanges} className="bg-blue-600 px-4 py-2 rounded">
-                <Text className="text-white">Save</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => setIsModalOpen(false)} className="bg-gray-300 px-4 py-2 rounded">
-                <Text className="text-black">Cancel</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
+      <View className="flex-row items-center space-x-2 mb-12">
+        <TextInput
+          className="flex-1 border border-gray-300 rounded-lg px-3 py-2"
+          placeholder="Add a comment..."
+          value={commentContent}
+          onChangeText={setCommentContent}
+        />
+        <TouchableOpacity
+          onPress={handleAddComment}
+          className="bg-green-500 p-3 rounded-full"
+        >
+          <FontAwesome name="send" size={16} color="white" />
+        </TouchableOpacity>
+      </View>
     </ScrollView>
   );
 };
 
-export default TaskDetails;
+export default JoinedTaskDetailsScreen;

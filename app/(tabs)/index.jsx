@@ -7,6 +7,7 @@ import config from '@/config/config';
 import { useRouter } from 'expo-router';
 import NoTasks from '@/assets/logo.png'; 
 import themeImages from '@/constants/themes';
+import { useAuthContext } from '@/hooks/AuthProvider';
 
 const colors = [
   'bg-red-400', 'bg-blue-400', 'bg-green-700', 'bg-yellow-600',
@@ -14,15 +15,15 @@ const colors = [
 ]; 
 
 const Home = () => {
+  const { user } = useAuthContext();
   const router = useRouter();
   const [tasks, setTasks] = useState([]);
   const [filteredTasks, setFilteredTasks] = useState([]);
   const [statusFilter, setStatusFilter] = useState('All');
   const [dateFilter, setDateFilter] = useState('All');
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [userName, setUserName] = useState('Bazil');
-  const [usersId, setUsersId] = useState('');
+  const [error, setError] = useState(null); 
+  //const [usersId, setUsersId] = useState('');
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -86,7 +87,7 @@ const Home = () => {
       <View className="relative h-[120px] rounded-xl overflow-hidden mb-6">
         <Image source={themeImages["1"]} className="absolute h-full w-full" />
         <View className="absolute inset-0 bg-black/50 justify-center pl-4">
-          <Text className="text-blue-100 text-xl font-bold underline">{userName}</Text>
+          <Text className="text-blue-100 text-xl font-bold underline">{user.name}</Text>
         </View>
       </View>
 
@@ -136,7 +137,7 @@ const Home = () => {
         filteredTasks.map(task => (
           <TouchableOpacity
             key={task._id}
-            onPress={() => router.push(`/${task._id}-${usersId}`)}
+            onPress={() => router.push(`/${task._id}-${user._id}`)}
             className="bg-white border p-4 rounded-lg mb-3 shadow-sm"
           >
             <View className="flex-row items-center">
