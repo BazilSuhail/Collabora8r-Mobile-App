@@ -2,13 +2,11 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 import { View, Text, TouchableOpacity, FlatList } from 'react-native';
-import { Feather, FontAwesome, FontAwesome5, MaterialIcons } from '@expo/vector-icons';
+import { Feather, FontAwesome, FontAwesome5, MaterialIcons, Ionicons } from '@expo/vector-icons';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import config from '@/config/config';
 
-//import CreateProject from './CreateProject'; 
-//import EditProject from './EditProject';
 import { useRouter } from 'expo-router';
 import CreateProject from '@/components/adminProjects/CreateProject';
 import EditProject from '@/components/adminProjects/EditProject';
@@ -36,7 +34,6 @@ const Admin = () => {
                         Authorization: `Bearer ${token}`,
                     },
                 });
-                //console.log(response.data)
                 const updatedProjects = response.data.map((project) => ({
                     ...project,
                     color: getRandomColor(),
@@ -63,9 +60,8 @@ const Admin = () => {
         setProjectDetails(project)
     };
 
-
     return (
-        <View className="flex-1 relative px-[10px] bg-gray-100">
+        <View className="flex-1 bg-gray-50">
             {showModal && <CreateProject showModal={showModal} setShowModal={setShowModal} />}
             {editModal && (
                 <EditProject
@@ -76,131 +72,176 @@ const Admin = () => {
                 />
             )}
 
-            <TouchableOpacity onPress={() => setShowModal(true)} className="absolute bg-blue-950 border w-[60px] h-[60px] border-gray-200 rounded-full right-[12px] z-[999] bottom-[12px] items-center">
-                <Text className='text-blue-50 font-[400] mt-[1px] text-[38px]'>+</Text>
+            {/* Header */}
+            <View className="px-5 py-4 shadow-sm">
+                <View className="flex-row items-center justify-between">
+                    <View>
+                        <Text className="text-2xl font-bold text-gray-900">Projects</Text>
+                        <Text className="text-sm text-gray-500 mt-1">Manage your team projects</Text>
+                    </View>
+                    <View className="bg-blue-50 px-3 py-1 rounded-full">
+                        <Text className="text-blue-600 font-semibold text-sm">{projects.length} Projects</Text>
+                    </View>
+                </View>
+            </View>
+
+            {/* Floating Action Button */}
+            <TouchableOpacity
+                onPress={() => setShowModal(true)}
+                className="absolute bg-blue-600 w-14 h-14 border border-blue-500 rounded-full right-5 z-50 bottom-6 items-center justify-center shadow-lg"
+                style={{ elevation: 8 }}
+            >
+                <Ionicons name="add" size={24} color="white" />
             </TouchableOpacity>
 
+            {/* Error State */}
             {error && !projects.length ? (
-                <View className="p-2.5 bg-red-100 border border-red-300 rounded-md">
-                    <Text className="text-red-500">{error} No projects found.</Text>
+                <View className="mx-5 mt-4 p-4 bg-red-50 border border-red-200 rounded-xl">
+                    <View className="flex-row items-center">
+                        <Ionicons name="alert-circle" size={20} color="#ef4444" />
+                        <Text className="text-red-600 ml-2 font-medium">{error} No projects found.</Text>
+                    </View>
                 </View>
             ) : (
                 <FlatList
                     data={projects}
                     showsVerticalScrollIndicator={false}
                     keyExtractor={(item) => item._id}
+                    contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 100 }}
                     renderItem={({ item: project }) => (
-                        <View className="bg-white overflow-hidden border  border-gray-200 rounded-[15px] mb-4">
-                            <View className="flex-row px-[15px] py-[15px] bg-blue-950 items-center justify-between">
-                                <View className="flex-row items-center">
-                                    <FontAwesome name="user-circle" size={25} color="white" />
-                                    <Text className="text-[17px] text-white  font-bold ml-[12px]">{project.name}</Text>
+                        <View className="bg-white rounded-2xl mb-4 shadow-sm border border-gray-100">
+                            {/* Project Header */}
+                            <View className="px-5 py-4 bg-gradient-to-r from-slate-800 to-slate-900 rounded-t-2xl">
+                                <View className="flex-row items-center justify-between">
+                                    <View className="flex-row items-center flex-1">
+                                        <View className="w-10 h-10 rounded-full items-center justify-center">
+                                            <Ionicons name="folder" size={21} color="black" />
+                                        </View>
+                                        <View className="ml-2 flex-1">
+                                            <Text className="text-gray-400 font-bold text-[14px]" numberOfLines={1}>
+                                                {project.name}
+                                            </Text> 
+                                        </View>
+                                    </View>
+                                    <View className="bg-green-100 px-3 ml-1 py-1 rounded-full">
+                                        <Text className="text-green-700 text-xs font-bold">Active</Text>
+                                    </View>
                                 </View>
-
-                                <Text className="text-green-300 bg-green-900 text-[10px] px-[15px] py-[2px] rounded-[20px] font-bold">Active</Text>
                             </View>
 
+                            {/* Project Stats */}
+                            <View className="px-5 py-4">
+                                <View className="flex-row justify-between mb-4">
+                                    <View className="flex-1 mr-2">
+                                        <View className="bg-blue-50 p-3 rounded-xl">
+                                            <View className="flex-row items-center">
+                                                <Ionicons name="people" size={16} color="#3b82f6" />
+                                                <Text className="ml-2 text-sm font-semibold text-blue-600">Team</Text>
+                                            </View>
+                                            <Text className="text-lg font-bold text-blue-800 mt-1">
+                                                {project.team.length}
+                                            </Text>
+                                            <Text className="text-xs text-blue-600">
+                                                {project.team.length === 1 ? "member" : "members"}
+                                            </Text>
+                                        </View>
+                                    </View>
 
-                            <View className='mt-[15px] ml-[23px] mr-[15px]'>
-                                <View className="flex-row items-center ml-[-3px] mb-[3px]">
-                                    <FontAwesome5 name="users" size={12} color="#1e90ff" />
-                                    <Text className="ml-2 text-[12px] font-[700] text-gray-500">
-                                        {project.team.length}{" "}
-                                        <Text className="text-[11px]">
-                                            {project.team.length === 1 ? "member" : "members"}
-                                        </Text>
-                                    </Text>
+                                    <View className="flex-1 ml-2">
+                                        <View className="bg-purple-50 p-3 rounded-xl">
+                                            <View className="flex-row items-center">
+                                                <Ionicons name="checkmark-circle" size={16} color="#8b5cf6" />
+                                                <Text className="ml-2 text-sm font-semibold text-purple-600">Tasks</Text>
+                                            </View>
+                                            <Text className="text-lg font-bold text-purple-800 mt-1">
+                                                {project.tasks.length}
+                                            </Text>
+                                            <Text className="text-xs text-purple-600">
+                                                {project.tasks.length === 1 ? "task" : "tasks"}
+                                            </Text>
+                                        </View>
+                                    </View>
                                 </View>
 
-                                <View className="flex-row items-center">
-                                    <FontAwesome5 name="tasks" size={12} color="#1e90ff" />
-                                    <Text className="ml-2 text-[12px] font-[700] bg-[ #dde2ed] text-gray-500">
-                                        {project.tasks.length}{" "}
-                                        <Text className="text-[11px]">
-                                            {project.tasks.length === 1 ? "task" : "tasks"}
-                                        </Text>
-                                    </Text>
-                                </View>
-                                <View className="flex-row mt-[4px] items-center">
-                                    <FontAwesome5 name="user-edit" size={12} color="#1e90ff" />
-                                    <Text className="ml-[4px] text-[12px] font-semibold text-gray-500">
-                                        {project.projectManager.status === "Pending" ? "" : ""}
-                                    </Text>
-                                    {project.projectManager.status === "Pending" ? (
-                                        <Text className="py-[3px] px-3 bg-[#e0f7ff] rounded-lg text-[8px] font-bold text-[#007acc]">
-                                            No manager assigned
-                                        </Text>
-                                    ) : (
-                                        <Text className="text-[11px] font-bold text-[#171716] underline">
-                                            {project.projectManager.email}
-                                        </Text>
-                                    )}
+                                {/* Manager Status */}
+                                <View className="bg-gray-50 p-3 rounded-xl mb-4">
+                                    <View className="flex-row items-center">
+                                        <Ionicons name="person-circle" size={16} color="#6b7280" />
+                                        <Text className="ml-2 text-sm font-semibold text-gray-600">Project Manager</Text>
+                                    </View>
+                                    <View className="mt-2">
+                                        {project.projectManager.status === "Pending" ? (
+                                            <View className="flex-row items-center">
+                                                <View className="w-2 h-2 bg-orange-400 rounded-full mr-2"></View>
+                                                <Text className="text-orange-600 font-medium text-sm">No manager assigned</Text>
+                                            </View>
+                                        ) : (
+                                            <View className="flex-row items-center">
+                                                <View className="w-2 h-2 bg-green-400 rounded-full mr-2"></View>
+                                                <Text className="text-gray-800 font-medium text-sm">
+                                                    {project.projectManager.email}
+                                                </Text>
+                                            </View>
+                                        )}
+                                    </View>
                                 </View>
 
-                                <TouchableOpacity
-                                    onPress={() => handleProjectClick(project._id)}
-                                    className="flex-row mt-[4px] items-center">
-                                    <Feather name="settings" size={13} color="#001C3D" />
-                                    <Text className="ml-2 text-[12px] font-[700]  text-blue-700">
-                                        Manage Projects
-                                    </Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    onPress={() => handleTaskManagement(project._id)}
-                                    className="flex-row mt-[4px] items-center">
-                                    <MaterialIcons name="workspaces-outline" size={14} color="#001C3D" />
-                                    <Text className="ml-2 text-[12px] font-[700]  text-blue-700">
-                                        Manage Project Tasks
-                                    </Text>
-                                </TouchableOpacity>
+                                {/* Action Buttons */}
+                                <View className="flex-row w-full">
+  <TouchableOpacity
+    onPress={() => handleProjectClick(project._id)}
+    className="flex-1 bg-slate-50 p-3 rounded-xl border border-slate-200 mr-2"
+  >
+    <View className="flex-row items-center">
+      <Ionicons name="settings-outline" size={16} color="#475569" />
+      <Text className="ml-3 text-slate-700 text-[13px] font-semibold">Manage Project</Text>
+      <View className="flex-1" />
+      <Ionicons name="chevron-forward" size={14} color="#94a3b8" />
+    </View>
+  </TouchableOpacity>
+
+  <TouchableOpacity
+    onPress={() => handleTaskManagement(project._id)}
+    className="flex-1 bg-slate-50 p-3 rounded-xl border border-slate-200 ml-2"
+  >
+    <View className="flex-row items-center">
+      <Ionicons name="list-outline" size={16} color="#475569" />
+      <Text className="ml-3 text-slate-700 text-[13px] font-semibold">Manage Tasks</Text>
+      <View className="flex-1" />
+      <Ionicons name="chevron-forward" size={14} color="#94a3b8" />
+    </View>
+  </TouchableOpacity>
+</View>
+
+
                             </View>
 
-                            {/*<View className="mt-2.5">
-                                <Text>Team Members: {project.team.length}</Text>
-                                <Text>Tasks: {project.tasks.length}</Text>
-                                {project.projectManager.status === 'Pending' && (
-                                    <Text>
-                                        Manager: <Text className="font-bold">{project.projectManager.email}</Text>
-                                    </Text>
+                            {/* Manager Assignment */}
+                            <View className="px-5 pb-4">
+                                {project.projectManager.status === 'Pending' ? (
+                                    <TouchableOpacity
+                                        onPress={() => handleManagerAssignmentClick(project)}
+                                        className="bg-blue-600 p-4 rounded-xl"
+                                    >
+                                        <View className="flex-row items-center justify-center">
+                                            <Ionicons name="person-add" size={18} color="white" />
+                                            <Text className="text-white ml-2 font-bold">Assign Manager</Text>
+                                        </View>
+                                    </TouchableOpacity>
+                                ) : (
+                                    <View className="bg-green-50 p-4 rounded-xl border border-green-200">
+                                        <View className="flex-row items-center justify-center">
+                                            <Ionicons name="checkmark-circle" size={18} color="#16a34a" />
+                                            <Text className="text-green-700 ml-2 font-bold">Manager Assigned</Text>
+                                        </View>
+                                    </View>
                                 )}
                             </View>
-                            <TouchableOpacity
-                                onPress={() => handleProjectClick(project._id)}
-                                className="mt-2.5"
-                            >
-                                <Text className="text-blue-500 font-bold">Manage Project</Text>
-                            </TouchableOpacity>
-
-                            <TouchableOpacity
-                                onPress={() => handleTaskManagement(project._id)}
-                                className="mt-1.5"
-                            >
-                                <Text className="text-blue-500 font-bold">Manage Project Tasks</Text>
-                            </TouchableOpacity>*/}
-
-
-                            {project.projectManager.status === 'Pending' ? (
-                                <TouchableOpacity
-                                    onPress={() => handleManagerAssignmentClick(project)}
-                                    className="mt-4 flex-row justify-center items-center bg-blue-50 p-2.5 mx-[15px] mb-[10px] rounded-md"
-                                >
-                                    <FontAwesome5 name="user-edit" size={15} color="blue" />
-                                    <Text className="text-blue-600 ml-[8px] font-bold ">Assign Manager</Text>
-                                </TouchableOpacity>
-                            ) : (
-                                <View className="mt-4 flex-row justify-center items-center bg-gray-100 p-2.5 mx-[15px] mb-[10px] rounded-md">
-                                    <FontAwesome5 name="user-check" size={15} color="gray" />
-                                    <Text className="text-gray-500 ml-[8px] font-bold ">
-                                        {project.projectManager.email}
-                                    </Text>
-                                </View>
-                            )}
                         </View>
                     )}
                 />
             )}
         </View>
-
     );
 };
 
