@@ -11,64 +11,64 @@ import avatarImages from '@/constants/avatar';
 
 
 const colors = [
-    'bg-red-400', 'bg-blue-400', 'bg-green-700', 'bg-yellow-600', 'bg-indigo-400', 'bg-orange-400', 'bg-cyan-400', 'bg-violet-400'
+  'bg-red-400', 'bg-blue-400', 'bg-green-700', 'bg-yellow-600', 'bg-indigo-400', 'bg-orange-400', 'bg-cyan-400', 'bg-violet-400'
 ];
 const getRandomColor = () => colors[Math.floor(Math.random() * colors.length)];
 
 const Manager = () => {
-    const navigate = useRouter();
-    const [projects, setProjects] = useState([]);
-    const [error, setError] = useState('');
+  const navigate = useRouter();
+  const [projects, setProjects] = useState([]);
+  const [error, setError] = useState('');
 
-    useEffect(() => {
-        const fetchAsManagerProjects = async () => {
-            try {
-                const token = await AsyncStorage.getItem('token');
-                const response = await axios.get(`${config.VITE_REACT_APP_API_BASE_URL}/joinedprojects/as-manager`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
+  useEffect(() => {
+    const fetchAsManagerProjects = async () => {
+      try {
+        const token = await AsyncStorage.getItem('token');
+        const response = await axios.get(`${config.VITE_REACT_APP_API_BASE_URL}/joinedprojects/as-manager`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
-                const updatedProjects = response.data.map((project) => ({
-                    ...project,
-                    color: getRandomColor(),
-                }));
+        const updatedProjects = response.data.map((project) => ({
+          ...project,
+          color: getRandomColor(),
+        }));
 
-                setProjects(updatedProjects);
-            } catch (err) {
-                console.error(err);
-                setError('Failed to fetch projects.');
-            }
-        };
+        setProjects(updatedProjects);
+      } catch (err) {
+        console.error(err);
+        setError('Failed to fetch projects.');
+      }
+    };
 
-        fetchAsManagerProjects();
-    }, []);
+    fetchAsManagerProjects();
+  }, []);
 
-    // Render conditional components
-    return (
-        <ScrollView className="flex-1 bg-white p-5">
-            {/* Header */}
-            <View className="flex-row items-center mb-2.5">
-                <FontAwesome5 name="users" size={24} color="gray" />
-                <Text className="text-2xl font-bold text-gray-500 ml-2.5">Joined Projects</Text>
-            </View>
-            <Text className="text-sm font-medium text-gray-500 mb-4">
-                View all of the projects associated with your account
-            </Text>
+  // Render conditional components
+  return (
+    <ScrollView className="flex-1 bg-white p-5">
+      {/* Header */}
+      <View className="flex-row items-center mb-2.5">
+        <FontAwesome5 name="users" size={24} color="gray" />
+        <Text className="text-2xl font-bold text-gray-500 ml-2.5">Joined Projects</Text>
+      </View>
+      <Text className="text-sm font-medium text-gray-500 mb-4">
+        View all of the projects associated with your account
+      </Text>
 
-            {/* Error Message */}
-            {error && !projects.length ? (
-                <View className="p-4 bg-red-100 border border-red-300 rounded-md">
-                    <Text className="text-red-500">{error} No projects found.</Text>
-                </View>
-            ) : (
-                <View className="flex-wrap flex-row justify-between">
-                    {projects.map((project) => (
-                        <View
-                            key={project._id}
-                            className="w-full max-w-[380px] h-[170px] bg-white border-2 border-gray-200 rounded-xl shadow-sm mb-4 overflow-hidden"
-                        >
-                  
-                  <Link href={`/joinedProjects/${project._id}`}>
+      {/* Error Message */}
+      {error && !projects.length ? (
+        <View className="p-4 bg-red-100 border border-red-300 rounded-md">
+          <Text className="text-red-500">{error} No projects found.</Text>
+        </View>
+      ) : (
+        <View className="flex-wrap flex-row justify-between">
+          {projects.map((project) => (
+            <View
+              key={project._id}
+              className="w-full max-w-[380px] h-[170px] bg-white border-2 border-gray-200 rounded-xl shadow-sm mb-4 overflow-hidden"
+            >
+
+              <Link href={`/adminProjects/tasks/${project._id}`}>
                 <View className="relative mb-[45px] w-full h-[100px] overflow-hidden">
                   <View className="absolute inset-0 w-full flex-row space-x-[8px] items-center pb-[8px]">
                     <Image source={themeImages[project.theme]}
@@ -108,11 +108,11 @@ const Manager = () => {
 
                 <View className="flex-row items-center mb-1">
                   <FontAwesome5 name="tasks" size={12} color="#1e90ff" />
-                  <Text className="ml-2 text-[12px] font-semibold text-gray-500">Tasks:</Text> 
+                  <Text className="ml-2 text-[12px] font-semibold text-gray-500">Tasks:</Text>
                   <Text className="ml-2 text-[12px] font-[700] text-[#1e90ff]">
                     {project.taskCount}{" "}
                     <Text className="text-[11px]">
-                    {project.taskCount === 1 ? "task" : "tasks"}
+                      {project.taskCount === 1 ? "task" : "tasks"}
                     </Text>
                   </Text>
                 </View>
@@ -135,7 +135,7 @@ const Manager = () => {
                 </View>*/}
               </View>
 
-                            {/* Project Image
+              {/* Project Image
                             <View className="h-[75px] bg-[#f7d774] relative">
                                 <Image
                                     source={themeImages[project.theme]}
@@ -193,12 +193,12 @@ const Manager = () => {
                                 </View>
                             </TouchableOpacity>
                              */}
-                        </View>
-                    ))}
-                </View>
-            )}
-        </ScrollView>
+            </View>
+          ))}
+        </View>
+      )}
+    </ScrollView>
 
-    )
+  )
 };
 export default Manager
