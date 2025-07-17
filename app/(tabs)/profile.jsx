@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { View, Text, TextInput, Image, TouchableOpacity, Modal, FlatList, Alert } from "react-native";
-import { FontAwesome5 } from "@expo/vector-icons";
+import { View, Text, TextInput, Image, TouchableOpacity, Modal, FlatList, Alert, ScrollView } from "react-native";
+import { FontAwesome5, Feather, MaterialIcons } from "@expo/vector-icons";
+import { LinearGradient } from 'expo-linear-gradient';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import config from '@/config/config';
@@ -29,11 +30,10 @@ const Profile = () => {
     useEffect(() => {
         const fetchProfile = () => {
             try {
-
                 setProfile(user);
                 setSelectedAvatar(user.avatar);
             } catch (err) {
-                setError('Error fetching sdsd profile');
+                setError('Error fetching profile');
             } finally {
                 setLoading(false);
             }
@@ -41,30 +41,6 @@ const Profile = () => {
 
         fetchProfile();
     }, []);
-
-    /*useEffect(() => {
-        const fetchProfile = async () => {
-            try {
-                const token = await AsyncStorage.getItem('token');
-
-                const response = await axios.get(`${config.VITE_REACT_APP_API_BASE_URL}/auth`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                });
-                setProfile(response.data);
-                //console.log(response.data.avatar)
-                setSelectedAvatar(response.data.avatar); // Initialize selectedAvatar with current avatar
-                setProfileImage(`@/assets/Themes/${profile.avatar}.jpg`)
-            } catch (err) {
-                setError('Error fetching sdsd profile');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchProfile();
-    }, []);*/
 
     const handleUpdate = async (e) => {
         e.preventDefault();
@@ -102,126 +78,189 @@ const Profile = () => {
     };
 
     if (loading) {
-        return <View><Text>loading</Text></View>;
+        return (
+            <View className="flex-1 bg-gray-50 justify-center items-center">
+                <View className="bg-white p-8 rounded-2xl shadow-lg">
+                    <MaterialIcons name="refresh" size={32} color="#6366f1" className="mb-4 self-center" />
+                    <Text className="text-gray-600 text-lg">Loading...</Text>
+                </View>
+            </View>
+        );
     }
+
     return (
-        <View className="flex-1 bg-white p-4">
-            <View className="border border-gray-200 rounded-xl p-4 shadow-md shadow-black/10">
+        <ScrollView className="flex-1 bg-gray-50">
+            <View className="px-6 py-4">
                 {!isEditing ? (
                     <View>
-                        <View className="mb-5 h-44 rounded-xl overflow-hidden relative">
-                            <Image source={themeImages["1"]} className="absolute w-full h-full" />
-                            <View className="bg-black/30 p-5 h-full justify-end">
-                                <View className="flex-row items-center">
-                                    <Image source={avatarImages[user.avatar]} className="w-17 h-17 rounded-full border border-gray-300" />
-                                    <View className="ml-4">
-                                        <Text className="text-white text-xl font-bold">Hello,</Text>
-                                        <Text className="text-white text-2xl font-bold">{profile.name}</Text>
+                        {/* Header Card */}
+                        <View className="bg-white rounded-3xl mb-6 overflow-hidden shadow-lg shadow-black/5">
+                            <View className="h-48 relative">
+                                <Image source={themeImages["1"]} className="absolute w-full h-full" />
+                                <LinearGradient
+                                    colors={['rgba(0,0,0,0.3)', 'rgba(0,0,0,0.7)']}
+                                    className="absolute w-full h-full"
+                                />
+                                <View className="absolute bottom-0 left-0 right-0 p-6">
+                                    <View className="flex-row items-center">
+                                        <View className="relative">
+                                            <Image 
+                                                source={avatarImages[user.avatar]} 
+                                                className="w-20 h-20 rounded-full border-4 border-white shadow-lg"
+                                            />
+                                            <View className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white" />
+                                        </View>
+                                        <View className="ml-4 flex-1">
+                                            <Text className="text-white text-lg font-medium opacity-90">Hello,</Text>
+                                            <Text className="text-white text-2xl font-bold">{profile.name}</Text>
+                                        </View>
                                     </View>
                                 </View>
                             </View>
                         </View>
 
-                        <View>
+                        {/* Profile Information */}
+                        <View className="bg-white rounded-3xl p-6 mb-6 shadow-lg shadow-black/5">
+                            <Text className="text-xl font-bold text-gray-800 mb-6">Profile Information</Text>
+                            
                             {[
-                                { icon: "user", label: "Full Name", value: profile.name },
-                                { icon: "envelope", label: "Email", value: profile.email },
-                                { icon: "phone", label: "Phone", value: profile.phone },
-                                { icon: "venus-mars", label: "Gender", value: profile.gender },
-                                { icon: "calendar", label: "Date of Birth", value: new Date(profile.dob).toLocaleDateString() },
+                                { icon: "user", label: "Full Name", value: profile.name, color: "#6366f1" },
+                                { icon: "mail", label: "Email", value: profile.email, color: "#ec4899" },
+                                { icon: "phone", label: "Phone", value: profile.phone, color: "#10b981" },
+                                { icon: "users", label: "Gender", value: profile.gender, color: "#f59e0b" },
+                                { icon: "calendar", label: "Date of Birth", value: new Date(profile.dob).toLocaleDateString(), color: "#8b5cf6" },
                             ].map((item, index) => (
                                 <View
                                     key={index}
-                                    className="flex-row items-center bg-gray-50 border border-gray-200 rounded-lg p-3 mb-2"
+                                    className="flex-row items-center p-4 mb-3 bg-gray-50 rounded-2xl border border-gray-100"
                                 >
-                                    <FontAwesome5 name={item.icon} size={20} color="#275ca2" className="mr-3" />
-                                    <View>
-                                        <Text className="text-base font-semibold text-gray-800">{item.label}</Text>
-                                        <Text className="text-sm text-gray-600">{item.value}</Text>
+                                    <View className="w-10 h-10 rounded-full justify-center items-center mr-4" style={{ backgroundColor: item.color + '20' }}>
+                                        <Feather name={item.icon} size={18} color={item.color} />
+                                    </View>
+                                    <View className="flex-1">
+                                        <Text className="text-sm font-medium text-gray-500 mb-1">{item.label}</Text>
+                                        <Text className="text-base font-semibold text-gray-800">{item.value}</Text>
                                     </View>
                                 </View>
                             ))}
                         </View>
 
+                        {/* Edit Button */}
                         <TouchableOpacity
                             onPress={() => setIsEditing(true)}
-                            className="flex-row justify-center items-center bg-[#275ca2] p-3 rounded-lg mt-5"
+                            className="bg-gradient-to-r from-indigo-500 to-purple-600 p-4 rounded-2xl flex-row justify-center items-center shadow-lg shadow-indigo-500/25"
                         >
-                            <FontAwesome5 name="edit" size={18} color="white" className="mr-2" />
-                            <Text className="text-white text-base">Edit Profile</Text>
+                            <Feather name="edit-3" size={20} color="white" className="mr-3" />
+                            <Text className="text-white text-base font-semibold">Edit Profile</Text>
                         </TouchableOpacity>
                     </View>
                 ) : (
                     <View>
-                        <View className="flex-row items-center mb-5">
-                            <Image source={avatarImages[selectedAvatar]} className="w-17 h-17 rounded-full border border-gray-300" />
-                            <TouchableOpacity
-                                onPress={openAvatarModal}
-                                className="ml-3 bg-[#275ca2] px-3 py-2 rounded-lg"
-                            >
-                                <Text className="text-white text-sm">Change Avatar</Text>
-                            </TouchableOpacity>
+                        {/* Edit Header */}
+                        <View className="bg-white rounded-3xl p-6 mb-6 shadow-lg shadow-black/5">
+                            <View className="flex-row items-center mb-6">
+                                <View className="relative">
+                                    <Image 
+                                        source={avatarImages[selectedAvatar]} 
+                                        className="w-20 h-20 rounded-full border-4 border-gray-200"
+                                    />
+                                    <TouchableOpacity
+                                        onPress={openAvatarModal}
+                                        className="absolute -bottom-1 -right-1 w-8 h-8 bg-indigo-500 rounded-full justify-center items-center shadow-lg"
+                                    >
+                                        <Feather name="camera" size={16} color="white" />
+                                    </TouchableOpacity>
+                                </View>
+                                <View className="ml-4">
+                                    <Text className="text-xl font-bold text-gray-800">Edit Profile</Text>
+                                    <Text className="text-gray-500">Update your information</Text>
+                                </View>
+                            </View>
                         </View>
 
-                        {[
-                            { placeholder: "Name", value: profile.name, name: "name" },
-                            { placeholder: "Gender", value: profile.gender, name: "gender" },
-                            { placeholder: "Date of Birth", value: new Date(profile.dob).toLocaleDateString(), name: "dob" },
-                            { placeholder: "Phone", value: profile.phone, name: "phone", keyboardType: "phone-pad" },
-                        ].map((field, index) => (
-                            <TextInput
-                                key={index}
-                                className="border border-gray-200 rounded-lg p-3 mb-3"
-                                placeholder={field.placeholder}
-                                value={field.value}
-                                keyboardType={field.keyboardType}
-                                onChangeText={(text) => setProfile({ ...profile, [field.name]: text })}
-                            />
-                        ))}
+                        {/* Edit Form */}
+                        <View className="bg-white rounded-3xl p-6 mb-6 shadow-lg shadow-black/5">
+                            {[
+                                { placeholder: "Full Name", value: profile.name, name: "name", icon: "user" },
+                                { placeholder: "Gender", value: profile.gender, name: "gender", icon: "users" },
+                                { placeholder: "Date of Birth", value: new Date(profile.dob).toLocaleDateString(), name: "dob", icon: "calendar" },
+                                { placeholder: "Phone Number", value: profile.phone, name: "phone", keyboardType: "phone-pad", icon: "phone" },
+                            ].map((field, index) => (
+                                <View key={index} className="mb-4">
+                                    <Text className="text-sm font-medium text-gray-700 mb-2">{field.placeholder}</Text>
+                                    <View className="flex-row items-center bg-gray-50 border border-gray-200 rounded-2xl p-4">
+                                        <Feather name={field.icon} size={18} color="#6b7280" className="mr-3" />
+                                        <TextInput
+                                            className="flex-1 text-base text-gray-800"
+                                            placeholder={`Enter ${field.placeholder.toLowerCase()}`}
+                                            value={field.value}
+                                            keyboardType={field.keyboardType}
+                                            onChangeText={(text) => setProfile({ ...profile, [field.name]: text })}
+                                        />
+                                    </View>
+                                </View>
+                            ))}
+                        </View>
 
-                        <TouchableOpacity
-                            onPress={handleUpdate}
-                            className="bg-[#275ca2] p-3 rounded-lg items-center mt-3"
-                        >
-                            <Text className="text-white text-base">Update Profile</Text>
-                        </TouchableOpacity>
+                        {/* Action Buttons */}
+                        <View className="space-y-3">
+                            <TouchableOpacity
+                                onPress={handleUpdate}
+                                className="bg-gradient-to-r from-green-500 to-emerald-600 p-4 rounded-2xl flex-row justify-center items-center shadow-lg shadow-green-500/25"
+                            >
+                                <Feather name="check" size={20} color="white" className="mr-3" />
+                                <Text className="text-white text-base font-semibold">Update Profile</Text>
+                            </TouchableOpacity>
 
-                        <TouchableOpacity
-                            onPress={() => setIsEditing(false)}
-                            className="bg-red-500 p-3 rounded-lg items-center mt-3"
-                        >
-                            <Text className="text-white text-base">Cancel</Text>
-                        </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => setIsEditing(false)}
+                                className="bg-gray-100 p-4 rounded-2xl flex-row justify-center items-center border border-gray-200"
+                            >
+                                <Feather name="x" size={20} color="#6b7280" className="mr-3" />
+                                <Text className="text-gray-700 text-base font-semibold">Cancel</Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
                 )}
             </View>
 
             {/* Avatar Modal */}
-            <Modal visible={isAvatarModalOpen} transparent animationType="fade">
-                <View className="flex-1 bg-black/50 justify-center items-center">
-                    <View className="bg-white p-5 rounded-xl w-[90%]">
-                        <Text className="text-lg font-bold mb-5">Select an Avatar</Text>
+            <Modal visible={isAvatarModalOpen} transparent animationType="slide">
+                <View className="flex-1 bg-black/60 justify-end">
+                    <View className="bg-white rounded-t-3xl p-6 max-h-[70%]">
+                        <View className="flex-row items-center justify-between mb-6">
+                            <Text className="text-xl font-bold text-gray-800">Choose Avatar</Text>
+                            <TouchableOpacity
+                                onPress={() => setIsAvatarModalOpen(false)}
+                                className="w-8 h-8 bg-gray-100 rounded-full justify-center items-center"
+                            >
+                                <Feather name="x" size={18} color="#6b7280" />
+                            </TouchableOpacity>
+                        </View>
+
                         <FlatList
                             data={Array.from({ length: 12 })}
                             keyExtractor={(_, index) => index.toString()}
                             numColumns={3}
+                            showsVerticalScrollIndicator={false}
                             renderItem={({ index }) => (
-                                <TouchableOpacity onPress={() => selectAvatar(index)}>
-                                    <Image source={avatarImages[index + 1]} className="w-20 h-20 m-1.5 rounded-full" />
+                                <TouchableOpacity 
+                                    onPress={() => selectAvatar(index)}
+                                    className="flex-1 items-center p-3"
+                                >
+                                    <View className={`rounded-full p-1 ${selectedAvatar === index + 1 ? 'bg-indigo-500' : 'bg-gray-200'}`}>
+                                        <Image 
+                                            source={avatarImages[index + 1]} 
+                                            className="w-20 h-20 rounded-full"
+                                        />
+                                    </View>
                                 </TouchableOpacity>
                             )}
                         />
-                        <TouchableOpacity
-                            onPress={() => setIsAvatarModalOpen(false)}
-                            className="bg-red-500 p-3 rounded-lg items-center mt-4"
-                        >
-                            <Text className="text-white text-base">Close</Text>
-                        </TouchableOpacity>
                     </View>
                 </View>
             </Modal>
-        </View>
-
+        </ScrollView>
     );
 };
 
