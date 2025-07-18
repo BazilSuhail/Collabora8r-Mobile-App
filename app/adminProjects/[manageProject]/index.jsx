@@ -45,6 +45,7 @@ const ProjectDetail = () => {
             },
           }
         );
+        console.log(projectResponse.data)
         setProject(projectResponse.data);
       } catch (err) {
         console.error(err);
