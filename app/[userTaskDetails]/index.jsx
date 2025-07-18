@@ -1,5 +1,5 @@
 import config from '@/config/config';
-import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
+import { FontAwesome, FontAwesome5, MaterialIcons, Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { usePathname } from 'expo-router';
@@ -12,7 +12,8 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
+  StatusBar
 } from 'react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, {
@@ -24,6 +25,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import Svg, { Circle } from 'react-native-svg';
 import { useAuthContext } from '../../hooks/AuthProvider';
+import ProgressModal from '../../components/ProgressModal';
 
 const JoinedTaskDetailsScreen = () => {
   const pathname = usePathname().split("/").pop();
@@ -145,7 +147,6 @@ const JoinedTaskDetailsScreen = () => {
 
       setComments((prev) => [...prev, newComment]);
       setCommentContent('');
-      console.log("dss")
 
     } catch (err) {
       console.error(err);
@@ -234,204 +235,238 @@ const JoinedTaskDetailsScreen = () => {
     setModalVisible(!modalVisible);
   };
 
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'Not Started':
+        return { bg: 'bg-gray-100', text: 'text-gray-700', icon: 'time-outline' };
+      case 'In Progress':
+        return { bg: 'bg-blue-100', text: 'text-blue-700', icon: 'play-circle-outline' };
+      case 'Completed':
+        return { bg: 'bg-green-100', text: 'text-green-700', icon: 'checkmark-circle-outline' };
+      default:
+        return { bg: 'bg-gray-100', text: 'text-gray-700', icon: 'clock-outline' };
+    }
+  };
+
   const renderProgress = () => {
-    const radius = 50;
+    const radius = 60;
     const strokeWidth = 8;
     const normalizedRadius = radius - strokeWidth / 2;
     const circumference = normalizedRadius * 2 * Math.PI;
     const strokeDashoffset = circumference - (taskProgress / 100) * circumference;
 
     return (
-      <Svg height={radius * 2} width={radius * 2}>
-        <Circle
-          stroke="#E5E7EB"
-          fill="transparent"
-          strokeWidth={strokeWidth}
-          r={normalizedRadius}
-          cx={radius}
-          cy={radius}
-        />
-        <Circle
-          stroke="#10B981"
-          fill="transparent"
-          strokeWidth={strokeWidth}
-          strokeLinecap="round"
-          strokeDasharray={`${circumference} ${circumference}`}
-          strokeDashoffset={strokeDashoffset}
-          r={normalizedRadius}
-          cx={radius}
-          cy={radius}
-        />
-      </Svg>
+      <View className="relative">
+        <Svg height={radius * 2} width={radius * 2}>
+          <Circle
+            stroke="#F3F4F6"
+            fill="transparent"
+            strokeWidth={strokeWidth}
+            r={normalizedRadius}
+            cx={radius}
+            cy={radius}
+          />
+          <Circle
+            stroke="#3B82F6"
+            fill="transparent"
+            strokeWidth={strokeWidth}
+            strokeLinecap="round"
+            strokeDasharray={`${circumference} ${circumference}`}
+            strokeDashoffset={strokeDashoffset}
+            r={normalizedRadius}
+            cx={radius}
+            cy={radius}
+          />
+        </Svg>
+        <View className="absolute inset-0 justify-center items-center">
+          <Text className="text-2xl font-bold text-blue-600">{taskProgress}%</Text>
+          <Text className="text-xs text-gray-500 mt-1">Complete</Text>
+        </View>
+      </View>
     );
   };
 
   if (loading) {
     return (
-      <View className="flex-1 justify-center items-center">
-        <ActivityIndicator size="large" color="#10B981" />
+      <View className="flex-1 justify-center items-center bg-gray-50">
+        <ActivityIndicator size="large" color="#3B82F6" />
+        <Text className="text-gray-500 mt-4">Loading task details...</Text>
       </View>
     );
   }
 
   if (!task) {
     return (
-      <View className="flex-1 justify-center items-center">
-        <Text className="text-red-500">{error || "Task not found."}</Text>
+      <View className="flex-1 justify-center items-center bg-gray-50">
+        <MaterialIcons name="error-outline" size={48} color="#EF4444" />
+        <Text className="text-red-500 text-lg font-medium mt-4">{error || "Task not found."}</Text>
       </View>
     );
   }
 
+  const statusInfo = getStatusColor(status);
+
   return (
-    <ScrollView className="flex-1 bg-white p-4">
-      <Text className="text-2xl font-bold text-gray-800 mb-2">{task.title}</Text>
-      <Text className="text-base text-gray-500 mb-4">By {user.name}</Text>
+    <View className="flex-1 bg-gray-50">
+      <StatusBar barStyle="dark-content" backgroundColor="#F9FAFB" />
 
-      <View className="items-center mb-6">
-        {renderProgress()}
-        <Text className="absolute top-[45px] text-lg font-semibold text-green-600">
-          {taskProgress}%
-        </Text>
-      </View>
-
-      <TouchableOpacity
-        onPress={toggleModal}
-        className="bg-blue-500 rounded-full px-4 py-2 self-center mb-4"
-      >
-        <Text className="text-white text-sm font-medium">Update Progress</Text>
-      </TouchableOpacity>
-
-      {/* Progress Update Modal */}
-      <Modal visible={modalVisible} transparent animationType="fade">
-        <View className="flex-1 justify-center items-center bg-black/40">
-          <View className="bg-white p-6 rounded-xl w-4/5 max-w-sm space-y-6">
-            <Text className="text-lg font-semibold text-gray-700 text-center">
-              Update Task Progress
-            </Text>
-
-<View className="items-center">
-  <Text className="text-3xl font-bold text-blue-600 mb-2">
-    {tempProgress}%
-  </Text>
-  <Slider
-    style={{ width: sliderWidth, height: 40 }}
-    minimumValue={0}
-    maximumValue={100}
-    step={1}
-    minimumTrackTintColor="#10B981"
-    maximumTrackTintColor="#E5E7EB"
-    thumbTintColor="#10B981"
-    value={tempProgress}
-    onValueChange={(value) => setTempProgress(value)}
-  />
-  <View className="flex-row justify-between w-full mt-1">
-    <Text className="text-xs text-gray-500">0%</Text>
-    <Text className="text-xs text-gray-500">100%</Text>
-  </View>
-</View>
-
-
-
-            
-            {/* Status Selection */}
-            <View>
-              <Text className="text-sm font-medium text-gray-700 mb-3">Task Status</Text>
-              <View className="space-y-2">
-                {['Not Started', 'In Progress', 'Completed'].map((statusOption) => (
-                  <TouchableOpacity
-                    key={statusOption}
-                    onPress={() => setTempStatus(statusOption)}
-                    className={`p-3 rounded-lg border-2 ${tempStatus === statusOption
-                        ? 'bg-blue-50 border-blue-500'
-                        : 'bg-gray-50 border-gray-200'
-                      }`}
-                  >
-                    <Text className={`text-center font-medium ${tempStatus === statusOption
-                        ? 'text-blue-700'
-                        : 'text-gray-700'
-                      }`}>
-                      {statusOption}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+        {/* Header Section */}
+        <View className="bg-white rounded-b-3xl px-6 pt-6 pb-8 shadow-sm">
+          <View className="flex-row items-center justify-between mb-4">
+            <View className="flex-1">
+              <Text className="text-2xl font-bold text-gray-900 mb-2">{task.title}</Text>
+              <View className="flex-row items-center">
+                <FontAwesome5 name="user-circle" size={16} color="#6B7280" />
+                <Text className="text-sm text-gray-600 ml-2">Created by {user.name}</Text>
               </View>
             </View>
+          </View>
 
-            {/* Action Buttons */}
-            <View className="flex-row justify-between mt-6">
+          {/* Status Badge */}
+          <View className={`${statusInfo.bg} px-4 py-2 rounded-full self-start flex-row items-center mb-6`}>
+            <Ionicons name={statusInfo.icon} size={16} color={statusInfo.text.replace('text-', '')} />
+            <Text className={`${statusInfo.text} text-sm font-medium ml-2`}>{status}</Text>
+          </View>
+
+          {/* Progress Circle */}
+          <View className="items-center mb-6">
+            {renderProgress()}
+          </View>
+
+          {/* Update Progress Button */}
+          <TouchableOpacity
+            onPress={toggleModal}
+            className="bg-blue-500 rounded-2xl px-6 py-4 flex-row items-center justify-center shadow-sm"
+          >
+            <MaterialIcons name="update" size={20} color="white" />
+            <Text className="text-white text-base font-semibold ml-2">Update Progress</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Comments Section */}
+        <View className="px-6 py-6">
+          {/* Add Comment */}
+          <View className="bg-white rounded-2xl p-4 shadow-sm mb-6">
+            <View className="flex-row items-center space-x-3">
+              <View className="flex-1">
+                <TextInput
+                  className="bg-gray-50 rounded-xl px-4 py-3 text-base"
+                  placeholder="Add a comment..."
+                  placeholderTextColor="#9CA3AF"
+                  value={commentContent}
+                  onChangeText={setCommentContent}
+                  multiline
+                />
+              </View>
               <TouchableOpacity
-                onPress={() => setModalVisible(false)}
-                className="bg-gray-200 px-6 py-3 rounded-lg flex-1 mr-2"
+                onPress={handleAddComment}
+                className="bg-blue-500 p-3 rounded-xl shadow-sm"
               >
-                <Text className="text-center text-gray-700 font-medium">Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={handleSaveChanges}
-                className="bg-blue-500 px-6 py-3 rounded-lg flex-1 ml-2"
-              >
-                <Text className="text-center text-white font-medium">Save Changes</Text>
+                <Ionicons name="send" size={18} color="white" />
               </TouchableOpacity>
             </View>
           </View>
-        </View>
-      </Modal>
 
-      <View className="flex-row items-center space-x-2 mb-12">
-        <TextInput
-          className="flex-1 border border-gray-300 rounded-lg px-3 py-2"
-          placeholder="Add a comment..."
-          value={commentContent}
-          onChangeText={setCommentContent}
-        />
-        <TouchableOpacity
-          onPress={handleAddComment}
-          className="bg-green-500 p-3 rounded-full"
-        >
-          <FontAwesome name="send" size={16} color="white" />
-        </TouchableOpacity>
-      </View>
+          {/* Comments List */}
+          <View className="space-y-4">
+            <View className="flex-row items-center mb-4">
+              <MaterialIcons name="comment" size={20} color="#6B7280" />
+              <Text className="text-lg font-semibold text-gray-900 ml-2">
+                Comments ({comments.length})
+              </Text>
+            </View>
 
-      <Text className="text-lg font-semibold text-gray-800 mt-6 mb-2">Comments</Text>
-
-      {comments.map((item) => (
-        <View key={item._id} className="bg-gray-100 rounded-md p-3 mb-2">
-          <Text className="text-sm font-medium text-gray-700">{item.user?.name || 'Unknown User'}</Text>
-          <Text className="text-xs text-gray-500">{item.user?.email || 'unknown'}</Text>
-
-          {editCommentId === item._id ? (
-            <>
-              <TextInput
-                value={editCommentContent}
-                onChangeText={setEditCommentContent}
-                className="border border-gray-300 rounded-md px-2 py-1 mt-2 mb-1"
-              />
-              <View className="flex-row space-x-2">
-                <TouchableOpacity onPress={() => handleEditComment(item._id)}>
-                  <Text className="text-blue-600">Save</Text>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={handleCancelEditing}>
-                  <Text className="text-red-500">Cancel</Text>
-                </TouchableOpacity>
+            {comments.length === 0 ? (
+              <View className="bg-white rounded-2xl p-8 items-center shadow-sm">
+                <MaterialIcons name="chat-bubble-outline" size={48} color="#D1D5DB" />
+                <Text className="text-gray-500 text-center mt-4">No comments yet</Text>
+                <Text className="text-gray-400 text-sm text-center mt-1">Be the first to add a comment!</Text>
               </View>
-            </>
-          ) : (
-            <>
-              <Text className="text-gray-700 mt-1">{item.content}</Text>
-              {item.user._id === user._id && (
-                <View className="flex-row space-x-4 mt-2 justify-end">
-                  <TouchableOpacity onPress={() => handleStartEditing(item)}>
-                    <FontAwesome5 name="edit" size={17} color="#2563eb" />
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => handleDeleteComment(item._id)}>
-                    <FontAwesome name="trash" size={15} color="#ef4444" />
-                  </TouchableOpacity>
+            ) : (
+              comments.map((item) => (
+                <View key={item._id} className="bg-white rounded-2xl p-4 shadow-sm">
+                  {/* Comment Header */}
+                  <View className="flex-row items-center justify-between mb-3">
+                    <View className="flex-row items-center flex-1">
+                      <View className="bg-blue-100 rounded-full p-2">
+                        <FontAwesome5 name="user" size={12} color="#3B82F6" />
+                      </View>
+                      <View className="ml-3 flex-1">
+                        <Text className="text-sm font-semibold text-gray-900">
+                          {item.user?.name || 'Unknown User'}
+                        </Text>
+                        <Text className="text-xs text-gray-500">{item.user?.email || 'unknown'}</Text>
+                      </View>
+                    </View>
+
+                    {/* Action Buttons */}
+                    {item.user._id === user._id && (
+                      <View className="flex-row space-x-3">
+                        <TouchableOpacity
+                          onPress={() => handleStartEditing(item)}
+                          className="p-2"
+                        >
+                          <MaterialIcons name="edit" size={18} color="#3B82F6" />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          onPress={() => handleDeleteComment(item._id)}
+                          className="p-2"
+                        >
+                          <MaterialIcons name="delete-outline" size={18} color="#EF4444" />
+                        </TouchableOpacity>
+                      </View>
+                    )}
+                  </View>
+
+                  {/* Comment Content */}
+                  {editCommentId === item._id ? (
+                    <View className="space-y-3">
+                      <TextInput
+                        value={editCommentContent}
+                        onChangeText={setEditCommentContent}
+                        className="bg-gray-50 rounded-xl px-4 py-3 text-base"
+                        multiline
+                      />
+                      <View className="flex-row space-x-2">
+                        <TouchableOpacity
+                          onPress={() => handleEditComment(item._id)}
+                          className="bg-blue-500 px-4 py-2 rounded-lg flex-row items-center"
+                        >
+                          <Ionicons name="checkmark" size={16} color="white" />
+                          <Text className="text-white font-medium ml-1">Save</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          onPress={handleCancelEditing}
+                          className="bg-gray-200 px-4 py-2 rounded-lg flex-row items-center"
+                        >
+                          <Ionicons name="close" size={16} color="#6B7280" />
+                          <Text className="text-gray-700 font-medium ml-1">Cancel</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  ) : (
+                    <Text className="text-gray-700 text-base leading-relaxed">{item.content}</Text>
+                  )}
                 </View>
-              )}
-            </>
-          )}
+              ))
+            )}
+          </View>
         </View>
-      ))}
-    </ScrollView>
+      </ScrollView>
+
+      {/* Progress Update Modal */}
+      <ProgressModal
+        visible={modalVisible}
+        tempProgress={tempProgress}
+        setTempProgress={setTempProgress}
+        tempStatus={tempStatus}
+        setTempStatus={setTempStatus}
+        onClose={() => setModalVisible(false)}
+        onSave={handleSaveChanges}
+        getStatusColor={getStatusColor}
+      />
+    </View>
   );
 };
 
