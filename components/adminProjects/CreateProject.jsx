@@ -1,12 +1,12 @@
-import { useState } from 'react';
 import axios from 'axios';
+import { useState } from 'react';
 
-import { View, Text, TouchableOpacity, TextInput, ScrollView, Image, FlatList, Modal } from 'react-native';
-import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
+import { FontAwesome, FontAwesome5, Ionicons } from '@expo/vector-icons';
+import { Image, Modal, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import config from '@/config/config';
 import themeImages from '@/constants/themes';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
 const CreateProject = ({ setShowModal, showModal }) => {
@@ -44,17 +44,29 @@ const CreateProject = ({ setShowModal, showModal }) => {
     };
 
     return (
-        <Modal transparent={true} visible={showModal} animationType="none">
-            <View className="flex-1 bg-black/50 justify-center items-center">
-                <View className="bg-white rounded-xl px-5 w-[90%] max-w-[400px]">
-                    <TouchableOpacity onPress={() => setShowModal(!showModal)} className="self-end">
-                        <Text className="text-[28px] text-gray-500">&times;</Text>
-                    </TouchableOpacity>
+        <Modal transparent={true} visible={showModal} animationType="fade">
+            <View className="flex-1 bg-black/50 justify-end items-center">
+                <View className="bg-white rounded-t-2xl px-6 w-full">
 
-                    <Text className="text-[18px] font-semibold text-center mb-2">
-                        Create A New Project
-                    </Text>
-                    <View className="h-[2px] bg-gray-300 my-2.5" />
+ {/* Header */}
+                    <View className="flex-row justify-between items-center py-4">
+                        <View className="flex-row items-center">
+                            <View className="w-9 h-9 bg-blue-100 rounded-full items-center justify-center mr-3">
+                                <FontAwesome5 name="edit" size={14} color="#3B82F6" />
+                            </View>
+                            <Text className="text-lg font-bold text-gray-800">
+                                Create A New Project
+                            </Text>
+                        </View>
+                        <TouchableOpacity
+                            onPress={() => setShowModal(false)}
+                            className="w-8 h-8 bg-gray-100 rounded-full items-center justify-center"
+                        >
+                            <Ionicons name="close" size={20} color="#6B7280" />
+                        </TouchableOpacity>
+                    </View>
+
+                    <View className="h-[2px] bg-gray-300 mb-8" />
 
                     {error && <Text className="text-red-500 mb-2.5">{error}</Text>}
                     {success && <Text className="text-green-600 mb-2.5">{success}</Text>}
@@ -154,7 +166,7 @@ const CreateProject = ({ setShowModal, showModal }) => {
                                     <TouchableOpacity
                                         key={index}
                                         onPress={() => {
-                                            setTheme(index);
+                                            setTheme(index+1);
                                             setShowThemeModal(false);
                                         }}
                                         className="overflow-hidden w-full h-[120px] mb-[8px] rounded-[10px]"

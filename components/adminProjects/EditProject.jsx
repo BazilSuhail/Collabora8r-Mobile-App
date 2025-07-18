@@ -214,7 +214,7 @@ const EditProject = ({ setShowModal, project, showModal }) => {
                                             <TouchableOpacity
                                                 key={index}
                                                 onPress={() => {
-                                                    setTheme(index);
+                                                    setTheme(index+1);
                                                     setShowThemeModal(false);
                                                 }}
                                                 className={`w-full h-32 my-2 rounded-xl overflow-hidden  ${theme === index ? 'border-2 border-blue-500' : 'border border-gray-200'

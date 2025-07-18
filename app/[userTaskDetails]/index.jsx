@@ -1,33 +1,26 @@
 import config from '@/config/config';
-import { FontAwesome, FontAwesome5, MaterialIcons, Ionicons } from '@expo/vector-icons';
+import { FontAwesome5, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { usePathname } from 'expo-router';
 import { useEffect, useState } from 'react';
-import Slider from '@react-native-community/slider';
 import {
   ActivityIndicator,
-  Modal,
   ScrollView,
+  StatusBar,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
-  StatusBar
+  View
 } from 'react-native';
-import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  runOnJS,
-  interpolate,
-  clamp
+import {
+  useSharedValue
 } from 'react-native-reanimated';
 import Svg, { Circle } from 'react-native-svg';
-import { useAuthContext } from '../../hooks/AuthProvider';
 import ProgressModal from '../../components/ProgressModal';
+import { useAuthContext } from '../../hooks/AuthProvider';
 
-const JoinedTaskDetailsScreen = () => {
+const TaskDetails = () => {
   const pathname = usePathname().split("/").pop();
   const [taskId] = pathname.split("-");
   const { user } = useAuthContext();
@@ -73,8 +66,7 @@ const JoinedTaskDetailsScreen = () => {
         // Initialize slider position based on current progress
         translateX.value = (taskRes.data.progress / 100) * (sliderWidth - thumbSize);
 
-      } catch (err) {
-        console.error(err);
+      } catch (err) { 
         setError("Failed to load task data.");
       } finally {
         setLoading(false);
@@ -83,45 +75,6 @@ const JoinedTaskDetailsScreen = () => {
 
     fetchData();
   }, []);
-
-  const updateProgress = (progress) => {
-    setTempProgress(Math.round(progress));
-  };
-
-  const panGesture = Gesture.Pan()
-    .onStart(() => {
-      // Store initial position when gesture starts
-    })
-    .onUpdate((event) => {
-      const startPosition = (tempProgress / 100) * (sliderWidth - thumbSize);
-      const newX = clamp(startPosition + event.translationX, 0, sliderWidth - thumbSize);
-      translateX.value = newX;
-
-      const progress = (newX / (sliderWidth - thumbSize)) * 100;
-      runOnJS(updateProgress)(progress);
-    })
-    .onEnd(() => {
-      // Keep the final position
-      const finalProgress = (translateX.value / (sliderWidth - thumbSize)) * 100;
-      runOnJS(updateProgress)(finalProgress);
-    });
-
-  const thumbStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ translateX: translateX.value }],
-    };
-  });
-
-  const progressBarStyle = useAnimatedStyle(() => {
-    const width = interpolate(
-      translateX.value,
-      [0, sliderWidth - thumbSize],
-      [0, sliderWidth - thumbSize]
-    );
-    return {
-      width,
-    };
-  });
 
   const handleAddComment = async () => {
     if (!commentContent.trim()) return;
@@ -295,7 +248,7 @@ const JoinedTaskDetailsScreen = () => {
     );
   }
 
-  if (!task) {
+  if (error) {
     return (
       <View className="flex-1 justify-center items-center bg-gray-50">
         <MaterialIcons name="error-outline" size={48} color="#EF4444" />
@@ -470,4 +423,4 @@ const JoinedTaskDetailsScreen = () => {
   );
 };
 
-export default JoinedTaskDetailsScreen;
+export default TaskDetails;
