@@ -1,26 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import EditProject from '@/components/adminProjects/EditProject';
+import config from '@/config/config';
 import {
-  View,
+  Feather,
+  FontAwesome5
+} from "@expo/vector-icons";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import { usePathname } from 'expo-router';
+import { useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Image,
+  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
-  Image,
-  FlatList,
-  ScrollView,
+  View
 } from "react-native";
-import {
-  FontAwesome5,
-  MaterialIcons,
-  Ionicons,
-} from "@expo/vector-icons";
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import config from '@/config/config';
-import { usePathname } from 'expo-router';
-import EditProject from '@/components/adminProjects/EditProject';
 
 const ProjectDetail = () => {
   //const { projectId } = useParams();
+  
   const projectId = usePathname().split("/").pop();
 
   const [showModal, setShowModal] = useState(false);
@@ -30,13 +30,11 @@ const ProjectDetail = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-
-  // Fetch project details
+ 
   useEffect(() => {
     const fetchProjectDetails = async () => {
       try {
         const token = await AsyncStorage.getItem('token');
-
         const projectResponse = await axios.get(
           `${config.VITE_REACT_APP_API_BASE_URL}/admin-projects/${projectId}`,
           {
@@ -45,11 +43,13 @@ const ProjectDetail = () => {
             },
           }
         );
-        console.log(projectResponse.data)
         setProject(projectResponse.data);
+        console.log(projectResponse.data)
+
       } catch (err) {
         console.error(err);
-        setError('Failed to fetch project details.');
+        //setProject(mockProject);
+        setError('Using mock data - API connection failed');
       }
     };
 
@@ -64,7 +64,6 @@ const ProjectDetail = () => {
 
     try {
       const token = await AsyncStorage.getItem('token');
-
       const response = await axios.post(
         `${config.VITE_REACT_APP_API_BASE_URL}/admin-projects/get-searched-user`,
         { email, projectId },
@@ -74,10 +73,9 @@ const ProjectDetail = () => {
           },
         }
       );
-      console.log(response.data)
-      setUser(response.data); // Assuming the API returns { name, email, avatar }
+      setUser(response.data);
     } catch (err) {
-      console.error(err);
+      //console.error(err);
       setError(err.response?.data?.error || 'Failed to find the user.');
     } finally {
       setIsLoading(false);
@@ -90,7 +88,6 @@ const ProjectDetail = () => {
 
     try {
       const token = await AsyncStorage.getItem('token');
-
       const response = await axios.post(
         `${config.VITE_REACT_APP_API_BASE_URL}/admin-projects/send-project-invitation`,
         { userId: user.userId, projectId },
@@ -100,186 +97,269 @@ const ProjectDetail = () => {
           },
         }
       );
-
       setSuccess(response.data.message);
     } catch (err) {
-      console.error(err);
+      //console.error(err);
       setError('Failed to add user to project.');
     }
   };
 
+  const getPriorityColor = (priority) => {
+    switch (priority?.toLowerCase()) {
+      case 'high':
+        return 'bg-red-500';
+      case 'medium':
+        return 'bg-yellow-500';
+      case 'low':
+        return 'bg-green-500';
+      default:
+        return 'bg-gray-500';
+    }
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
   if (!project) {
-    return <View>
-      <Text>
-        lakdm
-      </Text>
-    </View>;;
+    return (
+      <View className="flex-1 justify-center items-center bg-gray-50">
+        <View className="bg-white rounded-2xl p-8 mx-5 ">
+          <View className="w-16 h-16 bg-blue-100 rounded-full justify-center items-center mb-4">
+            <ActivityIndicator size="large" color="#3B82F6" />
+          </View>
+          <Text className="text-lg font-semibold text-gray-800 text-center">Loading project...</Text>
+        </View>
+      </View>
+    );
   }
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: "#F9FAFB", padding: 16 }}>
-      {/*showModal && <EditProject project={project} setShowModal={setShowModal} />*/}
-
+    <ScrollView className="flex-1 bg-gray-50 px-4 pt-5">
       {showModal && <EditProject project={project} editModal={showModal} setShowModal={setShowModal} />}
-      {/* Project Details */}
-      <View
-        style={{
-          backgroundColor: "#FFF",
-          padding: 16,
-          borderRadius: 18,
-          marginBottom: 16,
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <View
-            style={{
-              backgroundColor: "#BFDBFE",
-              width: 50,
-              height: 50,
-              borderRadius: 25,
-              justifyContent: "center",
-              alignItems: "center",
-              marginRight: 12,
-            }}
-          >
-            <FontAwesome5 name="clipboard-list" size={28} color="#1D4ED8" />
+      
+      {/* Project Header */}
+      <View className="bg-white rounded-2xl p-6 mb-5">
+        <View className="flex-row justify-between items-start">
+          <View className="flex-row items-center flex-1">
+            <View className="w-16 h-16 bg-blue-600 rounded-2xl justify-center items-center mr-4">
+              <FontAwesome5 name="project-diagram" size={28} color="#FFFFFF" />
+            </View>
+            <View className="flex-1">
+              <Text className="text-2xl font-bold text-gray-900 mb-1">{project.name}</Text>
+              <View className="flex-row items-center">
+                <View className="w-2 h-2 bg-green-500 rounded-full mr-2" />
+                <Text className="text-sm text-gray-500 font-medium">Active Project</Text>
+              </View>
+            </View>
           </View>
-          <Text style={{ fontSize: 24, fontWeight: "600" }}>{project.name}</Text>
-        </View>
-        
-        <TouchableOpacity
-          onPress={() => setShowModal(true)}
-          style={{
-            backgroundColor: "#1E3A8A",
-            paddingVertical: 8,
-            paddingHorizontal: 16,
-            borderRadius: 15,
-            flexDirection: "row",
-            alignItems: "center",
-          }}
-        >
-          <FontAwesome5 name="edit" size={18} color="#FFF" style={{ marginRight: 8 }} />
-          <Text style={{ color: "#FFF", fontWeight: "600" }}>Edit Project Details</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Task Guidelines */}
-      <View
-        style={{
-          backgroundColor: "#FFF",
-          padding: 16,
-          borderRadius: 18,
-          marginBottom: 16,
-        }}
-      >
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <FontAwesome5 name="file-alt" size={18} color="#1D4ED8" style={{ marginRight: 5 }} />
-          <Text style={{ fontSize: 14, fontWeight: "600", color: "#1D4ED8" }}>Task Guidelines</Text>
-        </View>
-        <Text style={{ marginTop: 8, fontSize: 14, color: "#6B7280" }}>{project.description}</Text>
-      </View>
-
-      {/* Search User by Email */}
-      <View
-        style={{
-          backgroundColor: "#FFF",
-          padding: 16,
-          borderRadius: 18,
-          marginBottom: 16,
-          minHeight: 200,
-        }}
-      >
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <FontAwesome5
-            name="envelope-open-text"
-            size={20}
-            color="#1D4ED8"
-            style={{ marginRight: 8 }}
-          />
-          <Text style={{ fontSize: 15, fontWeight: "600", color: "#1D4ED8" }}>Search User by Email</Text>
-        </View>
-
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            marginTop: 16,
-            borderWidth: 2,
-            borderColor: "#D1D5DB",
-            borderRadius: 25,
-            paddingHorizontal: 8,
-          }}
-        >
-          <FontAwesome5 name="search" size={20} color="#6B7280" />
-          <TextInput
-            style={{ flex: 1, marginLeft: 8, paddingVertical: 6 }}
-            placeholder="Enter user email"
-            value={email}
-            onChangeText={setEmail}
-          />
           <TouchableOpacity
-            onPress={handleSearch}
-            style={{
-              backgroundColor: "#1E40AF",
-              paddingVertical: 8,
-              paddingHorizontal: 16,
-              borderRadius: 25,
-            }}
+            onPress={() => setShowModal(true)}
+            className="bg-blue-600 px-4 py-3 rounded-xl flex-row items-center ml-4"
           >
-            <Text style={{ color: "#FFF", fontWeight: "600" }}>Search</Text>
+            <Feather name="edit-3" size={18} color="#FFFFFF" />
+            <Text className="text-white font-semibold ml-2">Edit</Text>
           </TouchableOpacity>
         </View>
+      </View>
 
-        {error ? <Text style={{ color: "#DC2626", marginTop: 8 }}>{error}</Text> : null}
-        {success ? <Text style={{ color: "#16A34A", marginTop: 8 }}>{success}</Text> : null}
-        {isLoading ? <Text>Loading...</Text> : null}
+      {/* Project Description */}
+      <View className="bg-white rounded-2xl p-5 mb-4 ">
+        <View className="flex-row items-center mb-4">
+          <View className="w-10 h-10 bg-blue-100 rounded-full justify-center items-center mr-3">
+            <FontAwesome5 name="file-alt" size={16} color="#3B82F6" />
+          </View>
+          <Text className="text-lg font-semibold text-gray-900">Project Description</Text>
+        </View>
+        <Text className="text-sm text-gray-500 leading-5">{project.description}</Text>
+      </View>
+
+      {/* Search User Section */}
+      <View className="bg-white rounded-2xl p-5 mb-4 ">
+        <View className="flex-row items-center mb-4">
+          <View className="w-10 h-10 bg-purple-100 rounded-full justify-center items-center mr-3">
+            <FontAwesome5 name="user-plus" size={16} color="#8B5CF6" />
+          </View>
+          <Text className="text-lg font-semibold text-gray-900">Add Team Member</Text>
+        </View>
+
+        <View className="mb-4">
+          <View className="flex-row items-center border-2 border-gray-200 rounded-xl px-3 py-2">
+            <FontAwesome5 name="search" size={18} color="#6B7280" />
+            <TextInput
+              className="flex-1 ml-3 text-base text-gray-900"
+              placeholder="Enter user email address"
+              placeholderTextColor="#9CA3AF"
+              value={email}
+              onChangeText={setEmail}
+            />
+            <TouchableOpacity
+              onPress={handleSearch}
+              className="bg-purple-600 px-5 py-2 rounded-lg ml-2"
+            >
+              <Text className="text-white font-semibold">Search</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {error && (
+          <View className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+            <Text className="text-red-600 font-medium">{error}</Text>
+          </View>
+        )}
+        
+        {success && (
+          <View className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+            <Text className="text-green-600 font-medium">{success}</Text>
+          </View>
+        )}
+        
+        {isLoading && (
+          <View className="flex-row items-center justify-center py-4">
+            <ActivityIndicator size="small" color="#8B5CF6" />
+            <Text className="text-purple-600 ml-2">Searching...</Text>
+          </View>
+        )}
 
         {user && (
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-              backgroundColor: "#F3F4F6",
-              padding: 16,
-              borderRadius: 8,
-              marginTop: 16,
-            }}
-          >
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <View className="bg-gray-50 rounded-xl p-4 border border-gray-200 flex-row justify-between items-center">
+            <View className="flex-row items-center flex-1">
               <Image
                 source={{ uri: `/Assets/${user.avatar}.jpg` }}
-                style={{ width: 48, height: 48, borderRadius: 24, marginRight: 12 }}
+                className="w-12 h-12 rounded-full mr-3"
               />
-              <View>
-                <Text style={{ fontWeight: "600", color: "#111827" }}>{user.name}</Text>
-                <Text style={{ color: "#6B7280" }}>{user.email}</Text>
+              <View className="flex-1">
+                <Text className="text-base font-semibold text-gray-900">{user.name}</Text>
+                <Text className="text-sm text-gray-500">{user.email}</Text>
               </View>
             </View>
             <TouchableOpacity
               onPress={handleAddUser}
-              style={{
-                backgroundColor: "#4338CA",
-                paddingVertical: 8,
-                paddingHorizontal: 16,
-                borderRadius: 8,
-                flexDirection: "row",
-                alignItems: "center",
-              }}
+              className="bg-purple-600 px-4 py-2 rounded-lg flex-row items-center"
             >
-              <FontAwesome5 name="user-plus" size={16} color="#FFF" style={{ marginRight: 8 }} />
-              <Text style={{ color: "#FFF", fontWeight: "600" }}>Add User</Text>
+              <FontAwesome5 name="plus" size={14} color="#FFFFFF" />
+              <Text className="text-white font-semibold ml-2">Add</Text>
             </TouchableOpacity>
           </View>
         )}
       </View>
 
-      {/* Additional sections like Team Members and Tasks can follow the same structure */}
-    </ScrollView>
+      {/* Project Manager Section */}
+      <View className="bg-white rounded-2xl p-5 mb-4 ">
+        <View className="flex-row items-center mb-4">
+          <View className="w-10 h-10 bg-yellow-100 rounded-full justify-center items-center mr-3">
+            <FontAwesome5 name="crown" size={16} color="#F59E0B" />
+          </View>
+          <Text className="text-lg font-semibold text-gray-900">Project Manager</Text>
+        </View>
+        
+        <View className="bg-yellow-50 rounded-xl p-4 border border-yellow-200">
+          <View className="flex-row items-center">
+            <View className="w-12 h-12 bg-yellow-500 rounded-full justify-center items-center mr-3">
+              <FontAwesome5 name="user-tie" size={18} color="#FFFFFF" />
+            </View>
+            <View className="flex-1">
+              <Text className="text-base font-semibold text-gray-900">{project.projectManager.email} sd</Text>
+              <View className="flex-row items-center mt-1">
+                <View className="w-2 h-2 bg-green-500 rounded-full mr-2" />
+                <Text className="text-sm text-gray-500 font-medium">{project.projectManager.status}</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+      </View>
 
+      {/* Team Members Section */}
+      <View className="bg-white rounded-2xl p-5 mb-4 ">
+        <View className="flex-row justify-between items-center mb-4">
+          <View className="flex-row items-center">
+            <View className="w-10 h-10 bg-green-100 rounded-full justify-center items-center mr-3">
+              <FontAwesome5 name="users" size={16} color="#10B981" />
+            </View>
+            <Text className="text-lg font-semibold text-gray-900">Team Members</Text>
+          </View>
+          <View className="bg-green-100 px-3 py-1 rounded-full">
+            <Text className="text-emerald-700 font-medium text-xs">{project.team.length} Members</Text>
+          </View>
+        </View>
+
+        {project.team.length > 0 ? (
+          <View className="space-y-3">
+            {project.team.map((member, index) => (
+              <View key={index} className="bg-gray-50 rounded-xl p-4 border border-gray-200 flex-row justify-between items-center">
+                <View className="flex-row items-center flex-1">
+                  <Image
+                    source={{ uri: `/Assets/${member.avatar}.jpg` }}
+                    className="w-12 h-12 rounded-full mr-3"
+                  />
+                  <View className="flex-1">
+                    <Text className="text-base font-semibold text-gray-900">{member.name}</Text>
+                    <Text className="text-sm text-gray-500">{member.email}</Text>
+                  </View>
+                </View>
+                <View className="w-3 h-3 bg-green-500 rounded-full" />
+              </View>
+            ))}
+          </View>
+        ) : (
+          <View className="bg-gray-50 rounded-xl p-8 items-center">
+            <FontAwesome5 name="user-friends" size={32} color="#9CA3AF" />
+            <Text className="text-gray-500 mt-3 text-center">No team members yet</Text>
+          </View>
+        )}
+      </View>
+
+      {/* Tasks Section */}
+      <View className="bg-white rounded-2xl p-5 mb-5 ">
+        <View className="flex-row justify-between items-center mb-4">
+          <View className="flex-row items-center">
+            <View className="w-10 h-10 bg-blue-100 rounded-full justify-center items-center mr-3">
+              <FontAwesome5 name="tasks" size={16} color="#3B82F6" />
+            </View>
+            <Text className="text-lg font-semibold text-gray-900">Project Tasks</Text>
+          </View>
+          <View className="bg-blue-100 px-3 py-1 rounded-full">
+            <Text className="text-blue-800 font-medium text-xs">{project.taskCount} Tasks</Text>
+          </View>
+        </View>
+
+        {project.tasks.length > 0 ? (
+          <View className="space-y-3">
+            {project.tasks.map((task, index) => (
+              <View key={index} className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                <View className="flex-row justify-between items-start">
+                  <View className="flex-1">
+                    <Text className="text-base font-semibold text-gray-900 mb-2">{task.title}</Text>
+                    <View className="flex-row items-center">
+                      <View className={`px-2 py-1 rounded-full ${getPriorityColor(task.priority)}/20 mr-3`}>
+                        <Text className={`text-xs font-medium ${getPriorityColor(task.priority)}`}>{task.priority}</Text>
+                      </View>
+                      <View className="flex-row items-center">
+                        <FontAwesome5 name="calendar-alt" size={12} color="#6B7280" />
+                        <Text className="text-xs text-gray-500 ml-1">Due: {formatDate(task.dueDate)}</Text>
+                      </View>
+                    </View>
+                  </View>
+                  <View className="w-8 h-8 bg-blue-100 rounded-full justify-center items-center">
+                    <FontAwesome5 name="clock" size={12} color="#3B82F6" />
+                  </View>
+                </View>
+              </View>
+            ))}
+          </View>
+        ) : (
+          <View className="bg-gray-50 rounded-xl p-8 items-center">
+            <FontAwesome5 name="clipboard-list" size={32} color="#9CA3AF" />
+            <Text className="text-gray-500 mt-3 text-center">No tasks created yet</Text>
+          </View>
+        )}
+      </View>
+    </ScrollView>
   );
 };
 
