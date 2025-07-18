@@ -17,10 +17,9 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
+import avatarImages from '@/constants/avatar';
 
 const ProjectDetail = () => {
-  //const { projectId } = useParams();
-  
   const projectId = usePathname().split("/").pop();
 
   const [showModal, setShowModal] = useState(false);
@@ -30,7 +29,7 @@ const ProjectDetail = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
- 
+
   useEffect(() => {
     const fetchProjectDetails = async () => {
       try {
@@ -43,12 +42,9 @@ const ProjectDetail = () => {
             },
           }
         );
-        setProject(projectResponse.data);
-        console.log(projectResponse.data)
-
+        setProject(projectResponse.data)
       } catch (err) {
         console.error(err);
-        //setProject(mockProject);
         setError('Using mock data - API connection failed');
       }
     };
@@ -142,33 +138,36 @@ const ProjectDetail = () => {
   return (
     <ScrollView className="flex-1 bg-gray-50 px-4 pt-5">
       {showModal && <EditProject project={project} editModal={showModal} setShowModal={setShowModal} />}
-      
-      {/* Project Header */}
-      <View className="bg-white rounded-2xl p-6 mb-5">
+
+      <View className="bg-white rounded-2xl px-4 py-6 mb-5">
         <View className="flex-row justify-between items-start">
           <View className="flex-row items-center flex-1">
-            <View className="w-16 h-16 bg-blue-600 rounded-2xl justify-center items-center mr-4">
-              <FontAwesome5 name="project-diagram" size={28} color="#FFFFFF" />
+            <View className="w-16 h-[60px] bg-blue-600 rounded-2xl justify-center items-center mr-4">
+              <FontAwesome5 name="project-diagram" size={22} color="#FFFFFF" />
             </View>
+
             <View className="flex-1">
-              <Text className="text-2xl font-bold text-gray-900 mb-1">{project.name}</Text>
-              <View className="flex-row items-center">
-                <View className="w-2 h-2 bg-green-500 rounded-full mr-2" />
-                <Text className="text-sm text-gray-500 font-medium">Active Project</Text>
+              <Text className="text-[17px] font-bold text-gray-900 mb-1">{project.name}</Text>
+
+              <View className="flex-row justify-between items-center">
+                <View className="flex-row items-center">
+                  <View className="w-2 h-2 bg-green-500 rounded-full mr-2" />
+                  <Text className="text-[11px] text-gray-500 font-medium">Active Project</Text>
+                </View>
+                <TouchableOpacity
+                  onPress={() => setShowModal(true)}
+                  className="bg-blue-100 px-4 py-1 rounded-xl flex-row items-center ml-4"
+                >
+                  <Feather name="edit-3" size={14} color="#2563EB" />
+                  <Text className="text-blue-600 text-[12px] font-semibold ml-1.5">Edit</Text>
+                </TouchableOpacity>
+
               </View>
             </View>
           </View>
-          <TouchableOpacity
-            onPress={() => setShowModal(true)}
-            className="bg-blue-600 px-4 py-3 rounded-xl flex-row items-center ml-4"
-          >
-            <Feather name="edit-3" size={18} color="#FFFFFF" />
-            <Text className="text-white font-semibold ml-2">Edit</Text>
-          </TouchableOpacity>
         </View>
       </View>
-
-      {/* Project Description */}
+  
       <View className="bg-white rounded-2xl p-5 mb-4 ">
         <View className="flex-row items-center mb-4">
           <View className="w-10 h-10 bg-blue-100 rounded-full justify-center items-center mr-3">
@@ -179,7 +178,7 @@ const ProjectDetail = () => {
         <Text className="text-sm text-gray-500 leading-5">{project.description}</Text>
       </View>
 
-      {/* Search User Section */}
+
       <View className="bg-white rounded-2xl p-5 mb-4 ">
         <View className="flex-row items-center mb-4">
           <View className="w-10 h-10 bg-purple-100 rounded-full justify-center items-center mr-3">
@@ -212,13 +211,13 @@ const ProjectDetail = () => {
             <Text className="text-red-600 font-medium">{error}</Text>
           </View>
         )}
-        
+
         {success && (
           <View className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
             <Text className="text-green-600 font-medium">{success}</Text>
           </View>
         )}
-        
+
         {isLoading && (
           <View className="flex-row items-center justify-center py-4">
             <ActivityIndicator size="small" color="#8B5CF6" />
@@ -230,7 +229,7 @@ const ProjectDetail = () => {
           <View className="bg-gray-50 rounded-xl p-4 border border-gray-200 flex-row justify-between items-center">
             <View className="flex-row items-center flex-1">
               <Image
-                source={{ uri: `/Assets/${user.avatar}.jpg` }}
+                    source={avatarImages[user.avatar]} 
                 className="w-12 h-12 rounded-full mr-3"
               />
               <View className="flex-1">
@@ -248,8 +247,7 @@ const ProjectDetail = () => {
           </View>
         )}
       </View>
-
-      {/* Project Manager Section */}
+ 
       <View className="bg-white rounded-2xl p-5 mb-4 ">
         <View className="flex-row items-center mb-4">
           <View className="w-10 h-10 bg-yellow-100 rounded-full justify-center items-center mr-3">
@@ -257,14 +255,14 @@ const ProjectDetail = () => {
           </View>
           <Text className="text-lg font-semibold text-gray-900">Project Manager</Text>
         </View>
-        
+
         <View className="bg-yellow-50 rounded-xl p-4 border border-yellow-200">
           <View className="flex-row items-center">
             <View className="w-12 h-12 bg-yellow-500 rounded-full justify-center items-center mr-3">
               <FontAwesome5 name="user-tie" size={18} color="#FFFFFF" />
             </View>
             <View className="flex-1">
-              <Text className="text-base font-semibold text-gray-900">{project.projectManager.email} sd</Text>
+              <Text className="text-base font-semibold text-gray-900">{project.projectManager.email}</Text>
               <View className="flex-row items-center mt-1">
                 <View className="w-2 h-2 bg-green-500 rounded-full mr-2" />
                 <Text className="text-sm text-gray-500 font-medium">{project.projectManager.status}</Text>
@@ -273,8 +271,7 @@ const ProjectDetail = () => {
           </View>
         </View>
       </View>
-
-      {/* Team Members Section */}
+ 
       <View className="bg-white rounded-2xl p-5 mb-4 ">
         <View className="flex-row justify-between items-center mb-4">
           <View className="flex-row items-center">
@@ -294,7 +291,7 @@ const ProjectDetail = () => {
               <View key={index} className="bg-gray-50 rounded-xl p-4 border border-gray-200 flex-row justify-between items-center">
                 <View className="flex-row items-center flex-1">
                   <Image
-                    source={{ uri: `/Assets/${member.avatar}.jpg` }}
+                    source={avatarImages[member.avatar]}
                     className="w-12 h-12 rounded-full mr-3"
                   />
                   <View className="flex-1">
@@ -313,8 +310,7 @@ const ProjectDetail = () => {
           </View>
         )}
       </View>
-
-      {/* Tasks Section */}
+ 
       <View className="bg-white rounded-2xl p-5 mb-5 ">
         <View className="flex-row justify-between items-center mb-4">
           <View className="flex-row items-center">

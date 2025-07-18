@@ -1,16 +1,17 @@
-import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useEffect, useState } from 'react';
 
-import { View, Text, TouchableOpacity, TextInput, ScrollView, Image, Modal } from 'react-native';
-import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
+import { FontAwesome, FontAwesome5, Ionicons } from '@expo/vector-icons';
+import { Image, Modal, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import config from '@/config/config';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import themeImages from '@/constants/themes';
 
 const EditProject = ({ setShowModal, project, showModal }) => {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
+    const [descriptionHeight, setDescriptionHeight] = useState(10);
     const [projectManagerEmail, setProjectManagerEmail] = useState('');
     const [theme, setTheme] = useState(null);
     const [error, setError] = useState('');
@@ -48,262 +49,191 @@ const EditProject = ({ setShowModal, project, showModal }) => {
     };
 
     return (
-        <Modal transparent={true} visible={showModal} animationType="none">
-            <View
-                style={{
-                    flex: 1,
-                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                }}
-            >
-                <View
-                    style={{
-                        backgroundColor: 'white',
-                        borderRadius: 10,
-                        padding: 20,
-                        width: '90%',
-                        maxWidth: 400,
-                    }}
-                >
-                    <TouchableOpacity
-                        onPress={() => setShowModal(false)}
-                        style={{ alignSelf: 'flex-end', marginBottom: 10 }}
-                    >
-                        <Text style={{ fontSize: 22, color: 'gray' }}>&times;</Text>
-                    </TouchableOpacity>
-
-                    <Text
-                        style={{
-                            fontSize: 18,
-                            fontWeight: '600',
-                            textAlign: 'center',
-                            marginBottom: 10,
-                        }}
-                    >
-                        Update Project
-                    </Text>
-                    <View
-                        style={{
-                            height: 2,
-                            backgroundColor: '#D1D5DB',
-                            marginVertical: 10,
-                        }}
-                    />
-
-                    {error ? (
-                        <Text style={{ color: 'red', marginBottom: 10 }}>{error}</Text>
-                    ) : null}
-                    {success ? (
-                        <Text style={{ color: 'green', marginBottom: 10 }}>{success}</Text>
-                    ) : null}
-
-                    <View>
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <FontAwesome5 name="subscript" size={16} color="#4B5563" />
-                            <Text
-                                style={{
-                                    marginLeft: 5,
-                                    fontSize: 14,
-                                    fontWeight: '600',
-                                    color: '#4B5563',
-                                }}
-                            >
-                                Project Name
+        <Modal transparent={true} visible={showModal} animationType="fade">
+            <View className="flex-1 bg-black/60 justify-center items-center px-4">
+                <View className="bg-white rounded-2xl shadow-2xl max-h-[480px] max-w-md">
+                    {/* Header */}
+                    <View className="flex-row justify-between items-center p-6 pb-4">
+                        <View className="flex-row items-center">
+                            <View className="w-10 h-10 bg-blue-100 rounded-full items-center justify-center mr-3">
+                                <FontAwesome5 name="edit" size={18} color="#3B82F6" />
+                            </View>
+                            <Text className="text-xl font-bold text-gray-800">
+                                Update Project
                             </Text>
                         </View>
-                        <TextInput
-                            value={name}
-                            onChangeText={setName}
-                            style={{
-                                borderWidth: 1,
-                                borderColor: '#D1D5DB',
-                                borderRadius: 5,
-                                marginTop: 5,
-                                padding: 8,
-                                fontSize: 14,
-                            }}
-                            placeholder="Enter project name"
-                        />
+                        <TouchableOpacity
+                            onPress={() => setShowModal(false)}
+                            className="w-8 h-8 bg-gray-100 rounded-full items-center justify-center"
+                        >
+                            <Ionicons name="close" size={20} color="#6B7280" />
+                        </TouchableOpacity>
                     </View>
 
-                    <View
-                        style={{
-                            flexDirection: 'row',
-                            justifyContent: 'space-between',
-                            marginTop: 15,
-                        }}
-                    >
-                        <View style={{ width: '48%' }}>
-                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                <FontAwesome5 name="palette" size={16} color="#4B5563" />
-                                <Text
-                                    style={{
-                                        marginLeft: 5,
-                                        fontSize: 14,
-                                        fontWeight: '600',
-                                        color: '#4B5563',
-                                    }}
-                                >
-                                    Select Theme
-                                </Text>
-                            </View>
-                            <TouchableOpacity
-                                onPress={() => setShowThemeModal(true)}
-                                style={{
-                                    borderWidth: 1,
-                                    borderColor: '#D1D5DB',
-                                    borderRadius: 5,
-                                    marginTop: 5,
-                                    padding: 8,
-                                    alignItems: 'center',
-                                }}
-                            >
-                                <Text style={{ fontSize: 14 }}>
-                                    {theme !== null ? `Theme ${theme + 1}` : 'Select Theme'}
-                                </Text>
-                            </TouchableOpacity>
-                        </View>
+                    {/* Divider */}
+                    <View className="h-px bg-gray-200 mx-6" />
 
-                        <View style={{ width: '48%' }}>
-                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                <FontAwesome name="envelope" size={16} color="#4B5563" />
-                                <Text
-                                    style={{
-                                        marginLeft: 5,
-                                        fontSize: 14,
-                                        fontWeight: '600',
-                                        color: '#4B5563',
-                                    }}
-                                >
-                                    Manager Email
+                    <ScrollView className="px-6 py-6" showsVerticalScrollIndicator={false}>
+                        {/* Error/Success Messages */}
+                        {error ? (
+                            <View className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+                                <Text className="text-red-700 text-sm">{error}</Text>
+                            </View>
+                        ) : null}
+                        {success ? (
+                            <View className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+                                <Text className="text-green-700 text-sm">{success}</Text>
+                            </View>
+                        ) : null}
+
+                        {/* Project Name */}
+                        <View className="mb-6">
+                            <View className="flex-row items-center mb-2">
+                                <FontAwesome5 name="project-diagram" size={16} color="#6B7280" />
+                                <Text className="ml-2 text-sm font-semibold text-gray-700">
+                                    Project Name
                                 </Text>
                             </View>
                             <TextInput
-                                value={projectManagerEmail}
-                                onChangeText={setProjectManagerEmail}
-                                style={{
-                                    borderWidth: 1,
-                                    borderColor: '#D1D5DB',
-                                    borderRadius: 5,
-                                    marginTop: 5,
-                                    padding: 8,
-                                    fontSize: 14,
-                                }}
-                                placeholder="Enter manager's email"
-                                keyboardType="email-address"
+                                value={name}
+                                onChangeText={setName}
+                                className="border border-gray-300 rounded-lg px-4 py-3 text-gray-800 bg-gray-50 focus:bg-white focus:border-blue-500"
+                                placeholder="Enter project name"
+                                placeholderTextColor="#9CA3AF"
                             />
                         </View>
-                    </View>
 
-                    <View style={{ marginTop: 15 }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <FontAwesome5 name="file-alt" size={16} color="#4B5563" />
-                            <Text
-                                style={{
-                                    marginLeft: 5,
-                                    fontSize: 14,
-                                    fontWeight: '600',
-                                    color: '#4B5563',
-                                }}
-                            >
-                                Project Description
-                            </Text>
+                        {/* Theme and Manager Email Row */}
+                        <View className="flex-row justify-between mb-6">
+                            {/* Theme Selection */}
+                            <View className="w-[48%]">
+                                <View className="flex-row items-center mb-2">
+                                    <FontAwesome5 name="palette" size={16} color="#6B7280" />
+                                    <Text className="ml-2 text-sm font-semibold text-gray-700">
+                                        Theme
+                                    </Text>
+                                </View>
+                                <TouchableOpacity
+                                    onPress={() => setShowThemeModal(true)}
+                                    className="border border-gray-300 rounded-lg px-4 py-3 bg-gray-50 flex-row items-center justify-between"
+                                >
+                                    <Text className="text-gray-800 text-sm">
+                                        {theme !== null ? `Theme ${parseInt(theme) + 1}` : 'Select Theme'}
+                                    </Text>
+                                    <Ionicons name="chevron-down" size={16} color="#6B7280" />
+                                </TouchableOpacity>
+                            </View>
+
+                            {/* Manager Email */}
+                            <View className="w-[48%]">
+                                <View className="flex-row items-center mb-2">
+                                    <FontAwesome name="envelope" size={16} color="#6B7280" />
+                                    <Text className="ml-2 text-sm font-semibold text-gray-700">
+                                        Manager
+                                    </Text>
+                                </View>
+                                <TextInput
+                                    value={projectManagerEmail}
+                                    onChangeText={setProjectManagerEmail}
+                                    className="border border-gray-300 rounded-lg px-4 py-3 text-gray-800 bg-gray-50 focus:bg-white focus:border-blue-500"
+                                    placeholder="Email"
+                                    placeholderTextColor="#9CA3AF"
+                                    keyboardType="email-address"
+                                />
+                            </View>
                         </View>
-                        <TextInput
-                            value={description}
-                            onChangeText={setDescription}
-                            style={{
-                                borderWidth: 1,
-                                borderColor: '#D1D5DB',
-                                borderRadius: 5,
-                                marginTop: 5,
-                                padding: 8,
-                                fontSize: 14,
-                                textAlignVertical: 'top',
-                                height: 80,
-                            }}
-                            multiline
-                            numberOfLines={4}
-                            placeholder="Enter project description"
-                        />
-                    </View>
 
-                    <TouchableOpacity
-                        onPress={handleEditProject}
-                        style={{
-                            backgroundColor: '#275ca2',
-                            marginTop: 15,
-                            padding: 10,
-                            borderRadius: 5,
-                            flexDirection: 'row',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                        }}
-                    >
-                        <FontAwesome5 name="check-circle" size={18} color="#FFFFFF" />
-                        <Text
-                            style={{
-                                color: 'white',
-                                fontSize: 14,
-                                marginLeft: 10,
-                            }}
+                        {/* Description */}
+                        <View className="mb-6">
+                            <View className="flex-row items-center mb-2">
+                                <FontAwesome5 name="file-alt" size={16} color="#6B7280" />
+                                <Text className="ml-2 text-sm font-semibold text-gray-700">
+                                    Description
+                                </Text>
+                            </View>
+                            <TextInput
+                                value={description}
+                                onChangeText={setDescription}
+                                onContentSizeChange={(e) => {
+                                    const newHeight = e.nativeEvent.contentSize.height;
+                                    // Clamp the height to avoid insane values
+                                    if (newHeight > 40 && newHeight < 300) {
+                                        setDescriptionHeight(newHeight);
+                                    }
+                                }}
+                                className="border border-gray-300 rounded-lg px-4 py-3 text-gray-800 bg-gray-50 focus:bg-white focus:border-blue-500"
+                                multiline
+                                placeholder="Enter project description"
+                                placeholderTextColor="#9CA3AF"
+                                textAlignVertical="top"
+                                style={{ height: descriptionHeight }}
+                            />
+
+                        </View>
+
+                        {/* Update Button */}
+                        <TouchableOpacity
+                            onPress={handleEditProject}
+                            className="bg-blue-600 rounded-lg py-4 px-6 mb-8 flex-row items-center justify-center  active:bg-blue-700"
                         >
-                            Updae Project Details
-                        </Text>
-                    </TouchableOpacity>
+                            <FontAwesome5 name="check-circle" size={18} color="white" />
+                            <Text className="text-white font-semibold ml-2 text-base">
+                                Update Project
+                            </Text>
+                        </TouchableOpacity>
+                    </ScrollView>
                 </View>
 
+                {/* Theme Selection Modal */}
                 {showThemeModal && (
-                    <Modal transparent={true} visible={showThemeModal} animationType="none">
-                        <View
-                            style={{
-                                flex: 1,
-                                backgroundColor: 'rgba(0, 0, 0, 0.75)',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                            }}
-                        >
-                            <TouchableOpacity
-                                onPress={() => setShowThemeModal(false)}
-                                style={{
-                                    marginBottom: 20,
-                                    backgroundColor: 'red',
-                                    padding: 10,
-                                    borderRadius: 5,
-                                }}
-                            >
-                                <Text style={{ color: 'white' }}>Close</Text>
-                            </TouchableOpacity>
-                            <ScrollView
-                                contentContainerStyle={{
-                                    flexDirection: 'row',
-                                    flexWrap: 'wrap',
-                                    justifyContent: 'center',
-                                }}
-                            >
-                                {Array.from({ length: 6 }).map((_, index) => (
+                    <Modal transparent={true} visible={showThemeModal} animationType="fade">
+                        <View className="flex-1 justify-center items-center px-4">
+                            <View className="bg-white rounded-2xl h-[700px] shadow-2xl w-full max-w-md">
+                                {/* Modal Header */}
+                                <View className="flex-row justify-between items-center p-6 pb-4">
+                                    <Text className="text-lg font-bold text-gray-800">
+                                        Choose Theme
+                                    </Text>
                                     <TouchableOpacity
-                                        key={index}
-                                        onPress={() => {
-                                            setTheme(index);
-                                            setShowThemeModal(false);
-                                        }}
-                                        style={{
-                                            width: 100,
-                                            height: 100,
-                                            margin: 10,
-                                            borderRadius: 5,
-                                            overflow: 'hidden',
-                                        }}
+                                        onPress={() => setShowThemeModal(false)}
+                                        className="w-8 h-8 bg-gray-100 rounded-full items-center justify-center"
                                     >
-                                        <Image
-                                            source={{ uri: `/Themes/${index + 1}.jpg` }}
-                                            style={{ width: '100%', height: '100%' }}
-                                        />
+                                        <Ionicons name="close" size={20} color="#6B7280" />
                                     </TouchableOpacity>
-                                ))}
-                            </ScrollView>
+                                </View>
+
+                                <View className="h-px bg-gray-200 mx-6" />
+
+                                {/* Theme Grid */}
+                                <ScrollView
+                                    className="h-[700px] px-3"
+                                    showsVerticalScrollIndicator={false}
+                                >
+                                    <View className="flex-row flex-wrap justify-center">
+                                        {Array.from({ length: 6 }).map((_, index) => (
+                                            <TouchableOpacity
+                                                key={index}
+                                                onPress={() => {
+                                                    setTheme(index);
+                                                    setShowThemeModal(false);
+                                                }}
+                                                className={`w-full h-32 my-2 rounded-xl overflow-hidden  ${theme === index ? 'border-2 border-blue-500' : 'border border-gray-200'
+                                                    }`}
+                                            >
+                                                <Image
+                                                    source={themeImages[index + 1]}
+                                                    className="w-full h-full"
+                                                />
+                                                {theme === index && (
+                                                    <View className="absolute top-1 right-1 w-5 h-5 bg-blue-500 rounded-full items-center justify-center">
+                                                        <FontAwesome5 name="check" size={10} color="white" />
+                                                    </View>
+                                                )}
+                                            </TouchableOpacity>
+                                        ))}
+                                    </View>
+                                </ScrollView>
+                            </View>
                         </View>
                     </Modal>
                 )}
