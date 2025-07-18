@@ -50,8 +50,8 @@ const EditProject = ({ setShowModal, project, showModal }) => {
 
     return (
         <Modal transparent={true} visible={showModal} animationType="fade">
-            <View className="flex-1 bg-black/60 justify-center items-center px-4">
-                <View className="bg-white rounded-2xl shadow-2xl max-h-[480px] max-w-md">
+            <View className="flex-1 bg-black/30 justify-end items-cente">
+                <View className="bg-white rounded-2xl shadow-2xl max-h-[480px]">
                     {/* Header */}
                     <View className="flex-row justify-between items-center p-6 pb-4">
                         <View className="flex-row items-center">

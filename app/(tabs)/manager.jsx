@@ -1,13 +1,13 @@
-import { useState, useEffect } from 'react';
+import { FontAwesome5, Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
-import { View, Text, Image, TouchableOpacity, ScrollView } from 'react-native';
-import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
+import { useEffect, useState } from 'react';
+import { Image, ScrollView, Text, View } from 'react-native';
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import config from '@/config/config';
-import { Link, useRouter } from 'expo-router';
-import themeImages from '@/constants/themes';
 import avatarImages from '@/constants/avatar';
+import themeImages from '@/constants/themes';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Link, useRouter } from 'expo-router';
 
 
 const colors = [
@@ -45,15 +45,14 @@ const Manager = () => {
 
   // Render conditional components
   return (
-    <ScrollView className="flex-1 bg-white p-5">
+    <ScrollView className="flex-1 bg-white px-4 py-5">
       {/* Header */}
-      <View className="flex-row items-center mb-2.5">
-        <FontAwesome5 name="users" size={24} color="gray" />
-        <Text className="text-2xl font-bold text-gray-500 ml-2.5">Joined Projects</Text>
+      <View className="mx-1 pb-4 mb-4 flex-row items-center justify-between border-b-[2px] border-gray-200">
+        <Text className="text-sm text-gray-600 mt-1">Manage your team projects</Text>
+        <View className="bg-blue-50 px-3 py-1 rounded-full">
+          <Text className="text-blue-600 font-semibold text-sm">{projects.length} Projects</Text>
+        </View>
       </View>
-      <Text className="text-sm font-medium text-gray-500 mb-4">
-        View all of the projects associated with your account
-      </Text>
 
       {/* Error Message */}
       {error && !projects.length ? (
@@ -63,137 +62,91 @@ const Manager = () => {
       ) : (
         <View className="flex-wrap flex-row justify-between">
           {projects.map((project) => (
-            <View
+            <Link
               key={project._id}
-              className="w-full max-w-[380px] h-[170px] bg-white border-2 border-gray-200 rounded-xl shadow-sm mb-4 overflow-hidden"
+              href={`/adminProjects/tasks/${project._id}`}
+              className="w-full bg-white border-2 border-gray-200 rounded-xl overflow-hidden mb-4"
             >
+              <View className="relative w-full h-[150px]  rounded-t-xl">
 
-              <Link href={`/adminProjects/tasks/${project._id}`}>
-                <View className="relative mb-[45px] w-full h-[100px] overflow-hidden">
-                  <View className="absolute inset-0 w-full flex-row space-x-[8px] items-center pb-[8px]">
-                    <Image source={themeImages[project.theme]}
-                      className="h-[120px] w-full object-cover"
-                    />
-                  </View>
-                  <View className="absolute h-[100px] flex-row items-center justify-between inset-0 w-full px-[18px] bg-black/40 z-10">
-                    <View>
-                      <Text className="text-[15px] font-semibold text-white">
-                        {project.name}{project.name.length > 2 ? project.name.substring(0, 2) : project.name}
+                <View className="absolute inset-0 w-full">
+                  <Image source={themeImages[project.theme]} className="h-full w-full object-cover" />
+                </View>
+
+                <View className="absolute h-[150px] pt-5 inset-0 w-full px-[18px] bg-black/50 z-10">
+                  <View className="flex-row items-start justify-between">
+                    <View className="flex-1">
+                      <Text className="text-white text-lg font-bold mb-1 mr-3" numberOfLines={1}>
+                        {project.name}
                       </Text>
-                      <Text className="text-[11px] font-semibold text-gray-400">
+                      <View className="flex-row mt-1 items-center">
+                        <View className="w-2 h-2 bg-green-400 rounded-full mr-2" />
+                        <Text className="text-green-300 text-[10px] font-medium">Active Project</Text>
+                      </View>
+                    </View>
+
+                    {/* Project Creator */}
+                    <View className="items-center ml-3">
+                      <View className="relative">
+                        <Image
+                          source={avatarImages[project.createdBy.avatar]}
+                          className="h-10 w-10 rounded-full border-2 border-white"
+                        />
+                        <View className="absolute -bottom-1 -right-1 w-4 h-4 bg-blue-500 rounded-full border-2 border-white items-center justify-center">
+                          <Ionicons name="star" size={8} color="white" />
+                        </View>
+                      </View>
+                      <Text className="text-white text-xs font-medium mt-1 text-center">
                         {project.createdBy.name}
                       </Text>
                     </View>
-                    <View className="items-center">
-                      <Image
-                        source={avatarImages[project.createdBy.avatar]}
-                        className="h-[60px] w-[60px] rounded-full border-4 border-white"
-                      />
-                    </View>
+                  </View>
+
+                  <View className="flex-row mt-5 items-center ml-[-1] mb-1">
+                    <FontAwesome5 name="users" size={12} color="#1e90ff" />
+                    <Text className="ml-[6px] text-[12px] font-semibold text-blue-300">Team:</Text>
+                    <Text className="ml-2 text-[12px] font-[700] text-[#9bccfe]">
+                      {project.teamCount}{" "}
+                      <Text className="text-[11px]">
+                        {project.teamCount === 1 ? "member" : "members"}
+                      </Text>
+                    </Text>
+                  </View>
+                  <View className="flex-row items-center mb-1">
+                    <FontAwesome5 name="tasks" size={12} color="#1e90ff" />
+                    <Text className="ml-2 text-[12px] font-semibold text-blue-300">Tasks:</Text>
+                    <Text className="ml-2 text-[12px] font-[700] text-[#9bccfe]">
+                      {project.taskCount}{" "}
+                      <Text className="text-[11px]">
+                        {project.taskCount === 1 ? "task" : "tasks"}
+                      </Text>
+                    </Text>
                   </View>
                 </View>
-              </Link>
 
-              <View className="pl-[20px] mt-[15px]">
-                <View className="flex-row items-center ml-[-1] mb-1">
-                  <FontAwesome5 name="users" size={12} color="#1e90ff" />
-                  <Text className="ml-[6px] text-[12px] font-semibold text-gray-500">Team:</Text>
-                  <Text className="ml-2 text-[12px] font-[700] text-[#1e90ff]">
-                    {project.teamCount}{" "}
-                    <Text className="text-[11px]">
-                      {project.teamCount === 1 ? "member" : "members"}
-                    </Text>
-                  </Text>
-                </View>
-
-                <View className="flex-row items-center mb-1">
-                  <FontAwesome5 name="tasks" size={12} color="#1e90ff" />
-                  <Text className="ml-2 text-[12px] font-semibold text-gray-500">Tasks:</Text>
-                  <Text className="ml-2 text-[12px] font-[700] text-[#1e90ff]">
-                    {project.taskCount}{" "}
-                    <Text className="text-[11px]">
-                      {project.taskCount === 1 ? "task" : "tasks"}
-                    </Text>
-                  </Text>
-                </View>
-
-                {/*<View className="flex-row items-center">
-                  <FontAwesome5 name="user-edit" size={12} color="#1e90ff" />
-                  <Text className="ml-2 text-[12px] font-semibold text-gray-500">
-                    {project.projectManager.status === "Pending" ? "Requested " : ""}
-                    Manager:
-                  </Text>
-                  {project.projectManager.status === "Pending" ? (
-                    <Text className="ml-2  py-[3px] px-3 bg-[#e0f7ff] rounded-lg text-[10px] font-bold text-[#007acc]">
-                      No manager assigned
-                    </Text>
-                  ) : (
-                    <Text className="ml-2 text-xs font-bold text-[#ffa500] underline">
-                      {project.projectManager.email}
-                    </Text>
-                  )}
-                </View>*/}
               </View>
+              {/* Project Details Card */}
+              <View className="p-4">
+                <View className="flex-row items-center justify-between">
+                  <View className="flex-row items-center">
+                    <View className="w-8 h-8 bg-blue-100 rounded-full items-center justify-center">
+                      <Ionicons name="folder-open" size={14} color="#3b82f6" />
+                    </View>
+                    <View className="ml-3">
+                      <Text className="text-gray-900 font-semibold text-sm">Project Details</Text>
+                      <Text className="text-gray-500 text-xs">View tasks and progress</Text>
+                    </View>
+                  </View>
 
-              {/* Project Image
-                            <View className="h-[75px] bg-[#f7d774] relative">
-                                <Image
-                                    source={themeImages[project.theme]}
-                                    className="h-[100px] w-full scale-x-[-1] object-cover"
-                                />
-                                <TouchableOpacity
-                                    onPress={() => navigate.push(`/adminProjects/tasks/${project._id}`)}
-                                    className="absolute inset-0 bg-black/30 justify-center items-end pr-12"
-                                >
-                                    <Text className="text-base font-semibold text-white">{project.name}</Text>
-                                </TouchableOpacity>
-                            </View>
- 
-                            <TouchableOpacity
-                                onPress={() => console.log(`Navigate to /tasks/${project._id}`)}
-                                className="flex-row"
-                            >
-                                <View className="ml-10 -mt-11">
-                                    <Image
-                                        source={avatarImages[project.createdBy.avatar]}
-                                        className="h-[85px] w-[85px] rounded-full border-4 border-white"
-                                    />
-                                </View>
-
-                                <View className="ml-auto mr-12 -mt-3"> 
-                                    <View className="flex-row items-center mb-1">
-                                        <FontAwesome5 name="user-shield" size={16} color="#1e90ff" />
-                                        <Text className="ml-2 text-xs font-semibold text-gray-500">Admin:</Text>
-                                        <Text className="ml-2 text-base font-semibold text-[#1e90ff]">
-                                            {project.createdBy.name}
-                                        </Text>
-                                    </View>
- 
-                                    <View className="flex-row items-center mb-1">
-                                        <FontAwesome5 name="users" size={16} color="#1e90ff" />
-                                        <Text className="ml-2 text-sm font-semibold text-gray-500">Team:</Text>
-                                        <Text className="ml-2 text-base font-semibold text-[#1e90ff]">
-                                            {project.teamCount}{" "}
-                                            <Text className="text-xs">
-                                                {project.teamCount === 1 ? "member" : "members"}
-                                            </Text>
-                                        </Text>
-                                    </View>
- 
-                                    <View className="flex-row items-center">
-                                        <FontAwesome5 name="tasks" size={16} color="#1e90ff" />
-                                        <Text className="ml-2 text-sm font-semibold text-gray-500">Tasks:</Text>
-                                        <Text className="ml-2 text-base font-semibold text-[#1e90ff]">
-                                            {project.taskCount}{" "}
-                                            <Text className="text-xs">
-                                                {project.taskCount === 1 ? "task" : "tasks"}
-                                            </Text>
-                                        </Text>
-                                    </View>
-                                </View>
-                            </TouchableOpacity>
-                             */}
-            </View>
+                  <View className="flex-row items-center space-x-3">
+                    <View className="bg-blue-50 px-2 py-1 rounded-full">
+                      <Text className="text-blue-600 text-xs font-medium">In Progress</Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={16} color="#9ca3af" />
+                  </View>
+                </View>
+              </View>
+            </Link>
           ))}
         </View>
       )}

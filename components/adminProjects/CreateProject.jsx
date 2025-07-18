@@ -45,10 +45,10 @@ const CreateProject = ({ setShowModal, showModal }) => {
 
     return (
         <Modal transparent={true} visible={showModal} animationType="fade">
-            <View className="flex-1 bg-black/50 justify-end items-center">
-                <View className="bg-white rounded-t-2xl px-6 w-full">
+            <View className="flex-1 bg-black/30 justify-end">
+                <View className="bg-white rounded-2xl shadow-2xl max-h-[480px] px-5 pt-5">
 
- {/* Header */}
+                    {/* Header */}
                     <View className="flex-row justify-between items-center py-4">
                         <View className="flex-row items-center">
                             <View className="w-9 h-9 bg-blue-100 rounded-full items-center justify-center mr-3">
@@ -166,7 +166,7 @@ const CreateProject = ({ setShowModal, showModal }) => {
                                     <TouchableOpacity
                                         key={index}
                                         onPress={() => {
-                                            setTheme(index+1);
+                                            setTheme(index + 1);
                                             setShowThemeModal(false);
                                         }}
                                         className="overflow-hidden w-full h-[120px] mb-[8px] rounded-[10px]"

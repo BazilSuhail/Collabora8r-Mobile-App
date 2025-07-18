@@ -25,31 +25,31 @@ const Admin = () => {
     const [editModal, setshowEditModal] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
 
-const fetchProjects = async (isRefreshing = false) => {
-    try {
-        if (isRefreshing) {
-            setRefreshing(true);
+    const fetchProjects = async (isRefreshing = false) => {
+        try {
+            if (isRefreshing) {
+                setRefreshing(true);
+            }
+            const token = await AsyncStorage.getItem('token');
+            const response = await axios.get(`${config.VITE_REACT_APP_API_BASE_URL}/admin-projects/`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            const updatedProjects = response.data.map((project) => ({
+                ...project,
+                color: getRandomColor(),
+            }));
+            setProjects(updatedProjects);
+            setError('');
+        } catch (err) {
+            setError('Failed to fetch projects.');
+        } finally {
+            if (isRefreshing) {
+                setRefreshing(false);
+            }
         }
-        const token = await AsyncStorage.getItem('token');
-        const response = await axios.get(`${config.VITE_REACT_APP_API_BASE_URL}/admin-projects/`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-        const updatedProjects = response.data.map((project) => ({
-            ...project,
-            color: getRandomColor(),
-        }));
-        setProjects(updatedProjects);
-        setError('');
-    } catch (err) {
-        setError('Failed to fetch projects.');
-    } finally {
-        if (isRefreshing) {
-            setRefreshing(false);
-        }
-    }
-};
+    };
 
 
     // useEffect(() => {
@@ -75,8 +75,8 @@ const fetchProjects = async (isRefreshing = false) => {
     // }, []);
 
     useEffect(() => {
-    fetchProjects();
-}, []);
+        fetchProjects();
+    }, []);
 
 
     const handleTaskManagement = (projectId) => {
@@ -105,15 +105,10 @@ const fetchProjects = async (isRefreshing = false) => {
             )}
 
             {/* Header */}
-            <View className="px-4 py-4 shadow-sm">
-                <View className="flex-row items-center justify-between">
-                    <View>
-                        <Text className="text-2xl font-bold text-gray-900">Projects</Text>
-                        <Text className="text-sm text-gray-500 mt-1">Manage your team projects</Text>
-                    </View>
-                    <View className="bg-blue-50 px-3 py-1 rounded-full">
-                        <Text className="text-blue-600 font-semibold text-sm">{projects.length} Projects</Text>
-                    </View>
+            <View className="mx-6 py-4 flex-row items-center justify-between border-b-[2px] border-gray-200">
+                <Text className="text-sm text-gray-600 mt-1">Manage your team projects</Text>
+                <View className="bg-blue-50 px-3 py-1 rounded-full">
+                    <Text className="text-blue-600 font-semibold text-sm">{projects.length} Projects</Text>
                 </View>
             </View>
 
@@ -139,95 +134,72 @@ const fetchProjects = async (isRefreshing = false) => {
                     data={projects}
                     showsVerticalScrollIndicator={false}
                     keyExtractor={(item) => item._id}
-                      refreshing={refreshing}
-                    onRefresh={() => fetchProjects(true)} 
+                    refreshing={refreshing}
+                    onRefresh={() => fetchProjects(true)}
                     contentContainerStyle={{ paddingHorizontal: 15, paddingTop: 16, paddingBottom: 100 }}
                     renderItem={({ item: project }) => (
                         <View className="bg-white rounded-2xl overflow-hidden mb-4 shadow-sm border-[2px] border-gray-100">
 
-                            <View className="relative h-48 w-full">
+                            <View className="relative h-44 w-full rounded-t-2xl overflow-hidden">
                                 {/* Background Image */}
-                                <View className="absolute inset-0 w-full h-48">
-                                    <Image
-                                        source={themeImages[project.theme]}
-                                        resizeMode="cover"
-                                        className="w-full h-full"
-                                    />
-                                </View>
+                                <Image
+                                    source={themeImages[project.theme]}
+                                    resizeMode="cover"
+                                    className="absolute inset-0 w-full h-full"
+                                />
 
-
-                                <View className="absolute inset-0 w-full h-full bg-black/40"></View>
+                                {/* Dark overlay */}
+                                <View className="absolute inset-0 bg-black/50" />
 
                                 {/* Content Overlay */}
-                                <View className="absolute inset-0 p-5 flex justify-between">
-                                    <View className="">
-                                        <View className="flex-row items-center justify-between">
-                                            <View className="flex-row items-center flex-1">
-                                                <View className="w-10 h-10 rounded-full items-center justify-center">
-                                                    <Ionicons name="folder" size={21} color="#6B7280" />
-                                                </View>
-                                                <View className="ml-1 flex-1">
-                                                    <Text className="text-gray-500 font-bold text-[14px]" numberOfLines={1}>
-                                                        {project.name}
-                                                    </Text>
-                                                </View>
+                                <View className="absolute inset-0 p-4 flex">
+                                    {/* Top Row - Project Title + Status */}
+                                    <View className="flex-row items-center justify-between">
+                                        <View className="flex-row items-center flex-1">
+                                            <View className="w-9 h-9 bg-white/20 rounded-[50px] items-center justify-center">
+                                                <Ionicons name="folder" size={16} color="white" />
                                             </View>
-                                            <View className="bg-green-100 px-3 ml-1 py-1 rounded-full">
-                                                <Text className="text-green-700 text-xs font-bold">Active</Text>
-                                            </View>
-                                        </View>
-                                    </View>
-
-
-                                </View>
-                            </View>
-
-
-                            {/* Project Header  =============== */}
-                            <View className="px-5 py-4 bg-gray-200 gradient-to-r from-slate-800 to-slate-900 rounded-t-2xl">
-                                <View className="flex-row items-center justify-between">
-                                    <View className="flex-row items-center flex-1">
-                                        <View className="w-10 h-10 rounded-full items-center justify-center">
-                                            <Ionicons name="folder" size={21} color="#6B7280" />
-                                        </View>
-                                        <View className="ml-1 flex-1">
-                                            <Text className="text-gray-500 font-bold text-[14px]" numberOfLines={1}>
+                                            <Text
+                                                className="ml-2 text-white font-semibold text-base"
+                                                numberOfLines={1}
+                                            >
                                                 {project.name}
                                             </Text>
                                         </View>
+
+                                        <View className="bg-green-200 px-3 py-[2px] rounded-full">
+                                            <Text className="text-green-800 text-xs font-semibold">Active</Text>
+                                        </View>
                                     </View>
-                                    <View className="bg-green-100 px-3 ml-1 py-1 rounded-full">
-                                        <Text className="text-green-700 text-xs font-bold">Active</Text>
+
+                                    {/* Bottom - Manager Info Box */}
+                                    <View className="bg-white/10 px-4 py-3 rounded-[12px] mt-8">
+                                        <View className="flex-row items-center mb-1">
+                                            <Ionicons name="person-circle" size={16} color="#f9fafb" />
+                                            <Text className="ml-2 text-sm font-semibold text-white/90">Project Manager</Text>
+                                        </View>
+
+                                        {project.projectManager.status === "Pending" ? (
+                                            <View className="flex-row items-center mt-1">
+                                                <View className="w-2 h-2 bg-orange-400 rounded-full mr-2" />
+                                                <Text className="text-orange-300 font-medium text-sm">No manager assigned</Text>
+                                            </View>
+                                        ) : (
+                                            <View className="flex-row items-center mt-1">
+                                                <View className="w-2 h-2 bg-green-400 rounded-full mr-2" />
+                                                <Text className="text-white font-medium text-sm">
+                                                    {project.projectManager.email}
+                                                </Text>
+                                            </View>
+                                        )}
                                     </View>
                                 </View>
                             </View>
 
-                            {/* Manager Status */}
-                            <View className="bg-gray-50 p-3 mx-3 rounded-xl mb-4">
-                                <View className="flex-row items-center">
-                                    <Ionicons name="person-circle" size={16} color="#6b7280" />
-                                    <Text className="ml-2 text-sm font-semibold text-gray-600">Project Manager</Text>
-                                </View>
-                                <View className="mt-2">
-                                    {project.projectManager.status === "Pending" ? (
-                                        <View className="flex-row items-center">
-                                            <View className="w-2 h-2 bg-orange-400 rounded-full mr-2"></View>
-                                            <Text className="text-orange-600 font-medium text-sm">No manager assigned</Text>
-                                        </View>
-                                    ) : (
-                                        <View className="flex-row items-center">
-                                            <View className="w-2 h-2 bg-green-400 rounded-full mr-2"></View>
-                                            <Text className="text-gray-800 font-medium text-sm">
-                                                {project.projectManager.email}
-                                            </Text>
-                                        </View>
-                                    )}
-                                </View>
-                            </View>
 
                             {/* Project Stats */}
-                            <View className="px-5 py-4">
-                                <View className="flex-row flex-wrap justify-between mb-4">
+                            <View className="px-5 pt-5">
+                                <View className="flex-row flex-wrap justify-between ">
                                     {/* Team Info */}
                                     <View className="bg-blue-50 p-3 w-[48%] flex-row items-center rounded-xl mb-4">
                                         <View className="flex-row items-center">
@@ -290,7 +262,7 @@ const fetchProjects = async (isRefreshing = false) => {
                             </View>
 
                             {/* Manager Assignment */}
-                            <View className="px-5 pb-4">
+                            <View className="px-5 py-4">
                                 {project.projectManager.status === 'Pending' ? (
                                     <TouchableOpacity
                                         onPress={() => handleManagerAssignmentClick(project)}
