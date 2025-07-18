@@ -4,14 +4,15 @@ import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
 const ProjectTasks = ({ creator, tasks }) => {
-  const router = useRouter();
+  console.log(tasks)
+  const navigate = useRouter();
 
   const handleTaskClick = (taskId) => {
-    console.log("task id is " + creator)
+    //console.log("task id is " + creator)
     const makeRoute = taskId + "-" + creator;
     const taskDetails = makeRoute.toString();
-    console.log(taskDetails);
-    router.push(`/${taskDetails}`);
+    //console.log(taskDetails);
+    navigate.push(`/${taskDetails}`);
   };
 
   const statusStyles = {

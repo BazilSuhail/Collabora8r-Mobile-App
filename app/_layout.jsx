@@ -11,7 +11,7 @@ export default function RootLayout() {
     <AuthProvider>
       <GestureHandlerRootView style={{ flex: 1 }}>
         {/* <StatusBar backgroundColor="#ffffff" barStyle="dark-content" /> */}
-<StatusBar backgroundColor="#F9FAFB" barStyle="dark-content" />
+        <StatusBar backgroundColor="#F9FAFB" barStyle="dark-content" />
 
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

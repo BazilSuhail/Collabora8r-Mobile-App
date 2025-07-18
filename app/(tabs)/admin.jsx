@@ -120,7 +120,7 @@ const Admin = () => {
                                         <View className="ml-2 flex-1">
                                             <Text className="text-gray-400 font-bold text-[14px]" numberOfLines={1}>
                                                 {project.name}
-                                            </Text> 
+                                            </Text>
                                         </View>
                                     </View>
                                     <View className="bg-green-100 px-3 ml-1 py-1 rounded-full">
@@ -131,35 +131,33 @@ const Admin = () => {
 
                             {/* Project Stats */}
                             <View className="px-5 py-4">
-                                <View className="flex-row justify-between mb-4">
-                                    <View className="flex-1 mr-2">
-                                        <View className="bg-blue-50 p-3 rounded-xl">
-                                            <View className="flex-row items-center">
-                                                <Ionicons name="people" size={16} color="#3b82f6" />
-                                                <Text className="ml-2 text-sm font-semibold text-blue-600">Team</Text>
-                                            </View>
-                                            <Text className="text-lg font-bold text-blue-800 mt-1">
-                                                {project.team.length}
-                                            </Text>
-                                            <Text className="text-xs text-blue-600">
-                                                {project.team.length === 1 ? "member" : "members"}
-                                            </Text>
+                                <View className="flex-row flex-wrap justify-between mb-4">
+                                    {/* Team Info */}
+                                    <View className="bg-blue-50 p-3 w-[48%] flex-row items-center rounded-xl mb-4">
+                                        <View className="flex-row items-center">
+                                            <Ionicons name="people" size={16} color="#3b82f6" />
+                                            <Text className="ml-1 text-sm font-semibold text-blue-600">Team: </Text>
                                         </View>
+                                        <Text className="text-lg font-bold text-blue-800 ml-2">
+                                            {project.team.length}
+                                        </Text>
+                                        <Text className="text-xs ml-1 text-blue-600">
+                                            {project.team.length === 1 ? "member" : "members"}
+                                        </Text>
                                     </View>
 
-                                    <View className="flex-1 ml-2">
-                                        <View className="bg-purple-50 p-3 rounded-xl">
-                                            <View className="flex-row items-center">
-                                                <Ionicons name="checkmark-circle" size={16} color="#8b5cf6" />
-                                                <Text className="ml-2 text-sm font-semibold text-purple-600">Tasks</Text>
-                                            </View>
-                                            <Text className="text-lg font-bold text-purple-800 mt-1">
-                                                {project.tasks.length}
-                                            </Text>
-                                            <Text className="text-xs text-purple-600">
-                                                {project.tasks.length === 1 ? "task" : "tasks"}
-                                            </Text>
+                                    {/* Tasks Info */}
+                                    <View className="bg-purple-50 p-3 w-[48%] flex-row items-center rounded-xl mb-4">
+                                        <View className="flex-row items-center">
+                                            <Ionicons name="checkmark-circle" size={16} color="#8b5cf6" />
+                                            <Text className="ml-2 text-sm font-semibold text-purple-600">Tasks: </Text>
                                         </View>
+                                        <Text className="text-lg font-bold text-purple-800 ml-2">
+                                            {project.tasks.length}
+                                        </Text>
+                                        <Text className="text-xs text-purple-600 ml-1">
+                                            {project.tasks.length === 1 ? "task" : "tasks"}
+                                        </Text>
                                     </View>
                                 </View>
 
@@ -188,30 +186,30 @@ const Admin = () => {
 
                                 {/* Action Buttons */}
                                 <View className="flex-row w-full">
-  <TouchableOpacity
-    onPress={() => handleProjectClick(project._id)}
-    className="flex-1 bg-slate-50 p-3 rounded-xl border border-slate-200 mr-2"
-  >
-    <View className="flex-row items-center">
-      <Ionicons name="settings-outline" size={16} color="#475569" />
-      <Text className="ml-3 text-slate-700 text-[13px] font-semibold">Manage Project</Text>
-      <View className="flex-1" />
-      <Ionicons name="chevron-forward" size={14} color="#94a3b8" />
-    </View>
-  </TouchableOpacity>
+                                    <TouchableOpacity
+                                        onPress={() => handleProjectClick(project._id)}
+                                        className="flex-1 bg-slate-50 p-3 rounded-xl border border-slate-200 mr-2"
+                                    >
+                                        <View className="flex-row items-center">
+                                            <Ionicons name="settings-outline" size={16} color="#475569" />
+                                            <Text className="ml-3 text-slate-700 text-[13px] font-semibold">Manage Project</Text>
+                                            <View className="flex-1" />
+                                            <Ionicons name="chevron-forward" size={14} color="#94a3b8" />
+                                        </View>
+                                    </TouchableOpacity>
 
-  <TouchableOpacity
-    onPress={() => handleTaskManagement(project._id)}
-    className="flex-1 bg-slate-50 p-3 rounded-xl border border-slate-200 ml-2"
-  >
-    <View className="flex-row items-center">
-      <Ionicons name="list-outline" size={16} color="#475569" />
-      <Text className="ml-3 text-slate-700 text-[13px] font-semibold">Manage Tasks</Text>
-      <View className="flex-1" />
-      <Ionicons name="chevron-forward" size={14} color="#94a3b8" />
-    </View>
-  </TouchableOpacity>
-</View>
+                                    <TouchableOpacity
+                                        onPress={() => handleTaskManagement(project._id)}
+                                        className="flex-1 bg-slate-50 p-3 rounded-xl border border-slate-200 ml-2"
+                                    >
+                                        <View className="flex-row items-center">
+                                            <Ionicons name="list-outline" size={16} color="#475569" />
+                                            <Text className="ml-3 text-slate-700 text-[13px] font-semibold">Manage Tasks</Text>
+                                            <View className="flex-1" />
+                                            <Ionicons name="chevron-forward" size={14} color="#94a3b8" />
+                                        </View>
+                                    </TouchableOpacity>
+                                </View>
 
 
                             </View>
