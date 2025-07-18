@@ -1,5 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
-import { View, Text, Image, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  ScrollView,
+  ActivityIndicator,
+  RefreshControl,
+} from 'react-native';
 import { Feather, FontAwesome5, MaterialIcons } from '@expo/vector-icons';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -17,29 +25,36 @@ const Home = () => {
   const [statusFilter, setStatusFilter] = useState('All');
   const [dateFilter, setDateFilter] = useState('All');
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null); 
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState(null);
+
+  const fetchUserData = async (initial = false) => {
+    try {
+      if (initial) setLoading(true);
+      setRefreshing(true);
+
+      const token = await AsyncStorage.getItem('token');
+      if (!token) return router.push('/authentication/login');
+
+      const tasksResponse = await axios.get(
+        `${config.VITE_REACT_APP_API_BASE_URL}/overview/assigned-tasks`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const fetchedTasks = tasksResponse.data.tasks;
+      setTasks(fetchedTasks);
+      setFilteredTasks(fetchedTasks);
+      setError(null);
+    } catch (err) {
+      setError(err.message || 'Error fetching tasks');
+    } finally {
+      if (initial) setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const token = await AsyncStorage.getItem('token');
-        if (!token) return router.push('/authentication/login');
-
-        const tasksResponse = await axios.get(
-          `${config.VITE_REACT_APP_API_BASE_URL}/overview/assigned-tasks`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-
-        const fetchedTasks = tasksResponse.data.tasks;
-        setTasks(fetchedTasks);
-        setFilteredTasks(fetchedTasks);
-      } catch (err) {
-        setError(err.message || 'Error fetching tasks');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchUserData();
+    fetchUserData(true);
   }, []);
 
   const filterTasks = useCallback(() => {
@@ -88,9 +103,14 @@ const Home = () => {
   }
 
   return (
-    <ScrollView className="bg-gray-50 flex-1">
+    <ScrollView
+      className="bg-gray-50 flex-1"
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={() => fetchUserData(false)} />
+      }
+    >
       <View className="px-4 pt-4">
-        {/* Header Section */}
+        {/* Header */}
         <View className="relative h-32 rounded-2xl overflow-hidden mb-6">
           <Image source={themeImages["1"]} className="absolute h-full w-full" />
           <View className="absolute inset-0 bg-black/40 justify-center px-6">
@@ -99,7 +119,7 @@ const Home = () => {
           </View>
         </View>
 
-        {/* Date Filter Section */}
+        {/* Date Filter */}
         <View className="mb-6">
           <Text className="text-gray-800 text-lg font-semibold mb-3">Filter by Date</Text>
           <View className="flex-row space-x-3">
@@ -133,7 +153,7 @@ const Home = () => {
           </View>
         </View>
 
-        {/* Status Overview Cards */}
+        {/* Task Overview */}
         <View className="mb-6">
           <Text className="text-gray-800 text-lg font-semibold mb-3">Task Overview</Text>
           <View className="bg-white rounded-2xl p-5 border border-gray-100">
@@ -143,19 +163,27 @@ const Home = () => {
                   <View className={`w-12 h-12 rounded-xl items-center justify-center ${
                     index === 0 ? 'bg-blue-100' : index === 1 ? 'bg-yellow-100' : 'bg-green-100'
                   }`}>
-                   <FontAwesome5
-                      name={label === 'Not Started' ? 'calendar-alt' : label === 'In Progress' ? 'running' : 'check-circle'}
+                    <FontAwesome5
+                      name={
+                        label === 'Not Started' ? 'calendar-alt' :
+                        label === 'In Progress' ? 'running' : 'check-circle'
+                      }
                       size={20}
-                      color={index === 0 ? '#3b82f6' : index === 1 ? '#f59e0b' : '#10b981'}
+                      color={
+                        index === 0 ? '#3b82f6' :
+                        index === 1 ? '#f59e0b' : '#10b981'
+                      }
                     />	
                   </View>
                   <Text className="ml-4 text-gray-700 font-medium text-base">{label}</Text>
                 </View>
                 <View className={`px-3 py-1 rounded-full ${
-                  index === 0 ? 'bg-blue-100' : index === 1 ? 'bg-yellow-100' : 'bg-green-100'
+                  index === 0 ? 'bg-blue-100' :
+                  index === 1 ? 'bg-yellow-100' : 'bg-green-100'
                 }`}>
                   <Text className={`font-bold text-lg ${
-                    index === 0 ? 'text-blue-600' : index === 1 ? 'text-yellow-600' : 'text-green-600'
+                    index === 0 ? 'text-blue-600' :
+                    index === 1 ? 'text-yellow-600' : 'text-green-600'
                   }`}>
                     {count}
                   </Text>
@@ -165,7 +193,7 @@ const Home = () => {
           </View>
         </View>
 
-        {/* Status Filter Section */}
+        {/* Status Filter */}
         <View className="mb-6">
           <Text className="text-gray-800 text-lg font-semibold mb-3">Filter by Status</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row">
