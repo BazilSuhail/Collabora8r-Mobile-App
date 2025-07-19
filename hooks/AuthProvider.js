@@ -15,7 +15,7 @@ export const AuthProvider = ({ children }) => {
     phone: '',
     email: '',
     dob: '',
-    avatar: '1',
+    avatar: '2',
   });
 
   const [userLoginStatus, setUserLoginStatus] = useState(false);

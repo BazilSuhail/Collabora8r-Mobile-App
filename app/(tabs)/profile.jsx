@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { View, Text, TextInput, Image, TouchableOpacity, Modal, FlatList, Alert, ScrollView } from "react-native";
-import { FontAwesome5, Feather, MaterialIcons } from "@expo/vector-icons";
-import { LinearGradient } from 'expo-linear-gradient';
-
+import { Feather, MaterialIcons } from "@expo/vector-icons";
+import { LinearGradient } from 'expo-linear-gradient'; 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import config from '@/config/config';
 import avatarImages from '@/constants/avatar';
@@ -105,7 +104,8 @@ const Profile = () => {
                                     <View className="flex-row items-center">
                                         <View className="relative">
                                             <Image 
-                                                source={avatarImages[user.avatar]} 
+                                            
+              source={avatarImages[user.avatar]}
                                                 className="w-20 h-20 rounded-full border-4 border-white shadow-lg"
                                             />
                                             <View className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white" />

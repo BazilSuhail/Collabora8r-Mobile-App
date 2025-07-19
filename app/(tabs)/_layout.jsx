@@ -1,11 +1,14 @@
+import { useAuthContext } from '@/hooks/AuthProvider';
 import { Drawer } from 'expo-router/drawer';
 import { View, Text, Image, TouchableOpacity, ScrollView } from 'react-native';
 import { DrawerContentScrollView, DrawerItem } from '@react-navigation/drawer';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import avatarImages from '@/constants/avatar';
 
 function CustomDrawerContent(props) {
-  // Dummy project data
+  const { user } = useAuthContext();
+
   const projects = [
     { id: 1, name: 'Mobile App', color: '#FF6B6B' },
     { id: 2, name: 'Website Redesign', color: '#4ECDC4' },
@@ -20,128 +23,136 @@ function CustomDrawerContent(props) {
   ];
 
   const handleLogout = () => {
-    // Add your logout logic here
     console.log('Logout pressed');
-    // Example: router.replace('/login');
   };
 
   const handleProjectPress = (project) => {
     console.log('Project pressed:', project.name);
-    // Add navigation to project details
   };
 
   return (
     <DrawerContentScrollView {...props} contentContainerStyle={{ flex: 1 }}>
-      {/* Profile Section */}
-      <View className="flex-row items-center p-5 bg-gray-50 mt-3">
-        <Image
-          source={{
-            uri: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face&auto=format',
-          }}
-          className="w-15 h-15 rounded-full mr-4"
-        />
-        <View className="flex-1">
-          <Text className="text-lg font-bold text-gray-800 mb-1">John Doe</Text>
-          <Text className="text-sm text-gray-600">john.doe@example.com</Text>
+      <View style={{ flex: 1, paddingHorizontal: 8 }}>
+        {/* Profile Section */}
+        <View className="flex-row items-center justify-between mt-3 mb-5">
+          <TouchableOpacity onPress={() => router.push('/profile')} className="flex-row items-center">
+            <Image
+              source={avatarImages[user.avatar]}
+              className="w-[50px] h-[50px] rounded-full mr-4"
+            />
+            <View>
+              <Text className="text-lg font-bold text-gray-800 mb-1">{user.name}</Text>
+              <Text className="text-sm text-gray-600">{user.email}</Text>
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleLogout} className="p-2 rounded-full bg-red-100">
+            <Ionicons name="log-out-outline" size={24} color="#e74c3c" />
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity onPress={handleLogout} className="p-2 rounded-full bg-red-100">
-          <Ionicons name="log-out-outline" size={24} color="#e74c3c" />
-        </TouchableOpacity>
-      </View>
 
-      <View className="h-px bg-gray-300 my-3" />
+        <View className="h-px bg-gray-300 mb-1 mt-1" />
 
-      {/* Navigation Items */}
-      <View className="flex-1 pt-3">
-        <DrawerItem
-          label="Home"
-          onPress={() => router.push('/')}
-          icon={({ color, size }) => (
-            <Ionicons name="home-outline" size={size} color={color} />
-          )}
-          labelStyle={{ fontSize: 16, color: '#333', marginLeft: -16 }}
-        />
-        <DrawerItem
-          label="Admin"
-          onPress={() => router.push('/admin')}
-          icon={({ color, size }) => (
-            <Ionicons name="shield-outline" size={size} color={color} />
-          )}
-          labelStyle={{ fontSize: 16, color: '#333', marginLeft: -16 }}
-        />
-        <DrawerItem
-          label="Joined"
-          onPress={() => router.push('/joined')}
-          icon={({ color, size }) => (
-            <Ionicons name="people-outline" size={size} color={color} />
-          )}
-          labelStyle={{ fontSize: 16, color: '#333', marginLeft: -16 }}
-        />
-        <DrawerItem
-          label="Manager"
-          onPress={() => router.push('/manager')}
-          icon={({ color, size }) => (
-            <Ionicons name="briefcase-outline" size={size} color={color} />
-          )}
-          labelStyle={{ fontSize: 16, color: '#333', marginLeft: -16 }}
-        />
-        <DrawerItem
-          label="Workflow"
-          onPress={() => router.push('/workflow')}
-          icon={({ color, size }) => (
-            <Ionicons name="git-branch-outline" size={size} color={color} />
-          )}
-          labelStyle={{ fontSize: 16, color: '#333', marginLeft: -16 }}
-        />
-      </View>
+        {/* Drawer Navigation */}
+        <View className="ml-[-12px]" style={{ flexDirection: 'column', gap: -12 }}>
+          <DrawerItem
+            label="Home"
+            onPress={() => router.push('/')}
+            icon={({ color }) => <Ionicons name="home-outline" size={20} color={color} />}
+            labelStyle={{ fontSize: 14, color: '#333' }}
+          />
+          <DrawerItem
+            label="Admin"
+            onPress={() => router.push('/admin')}
+            icon={({ color }) => <Ionicons name="shield-outline" size={20} color={color} />}
+            labelStyle={{ fontSize: 14, color: '#333' }}
+          />
+          <DrawerItem
+            label="Joined"
+            onPress={() => router.push('/joined')}
+            icon={({ color }) => <Ionicons name="people-outline" size={20} color={color} />}
+            labelStyle={{ fontSize: 14, color: '#333' }}
+          />
+          <DrawerItem
+            label="Manager"
+            onPress={() => router.push('/manager')}
+            icon={({ color }) => <Ionicons name="briefcase-outline" size={20} color={color} />}
+            labelStyle={{ fontSize: 14, color: '#333' }}
+          />
+          <DrawerItem
+            label="Workflow"
+            onPress={() => router.push('/workflow')}
+            icon={({ color }) => <Ionicons name="git-branch-outline" size={20} color={color} />}
+            labelStyle={{ fontSize: 14, color: '#333' }}
+          />
+        </View>
 
-      {/* Projects Section */}
-      <View className="px-5 py-3">
-        <Text className="text-base font-semibold text-gray-800 mb-4 ml-1">Projects</Text>
-        <ScrollView 
-          showsVerticalScrollIndicator={false}
-          className="max-h-80"
-          nestedScrollEnabled={true}
-        >
-          {projects.map((project) => (
-            <TouchableOpacity
-              key={project.id}
-              className="flex-row items-center py-3 px-1"
-              onPress={() => handleProjectPress(project)}
-            >
-              <View 
-                className="w-10 h-10 rounded-full justify-center items-center mr-4"
-                style={{ backgroundColor: project.color }}
+        <View className="h-px bg-gray-300 my-3" />
+
+        {/* Projects Section */}
+        <View style={{ flex: 1 }}>
+          <Text className="text-base font-semibold text-gray-800 mb-4 ml-1">Projects</Text>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            nestedScrollEnabled={true}
+            contentContainerStyle={{ paddingBottom: 20 }}
+          >
+            {projects.map((project) => (
+              <TouchableOpacity
+                key={project.id}
+                className="flex-row items-center py-3 px-1"
+                onPress={() => handleProjectPress(project)}
               >
-                <Text className="text-base font-bold text-white">
-                  {project.name.charAt(0).toUpperCase()}
-                </Text>
-              </View>
-              <Text className="text-sm text-gray-800 flex-1">{project.name}</Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+                <View
+                  className="w-10 h-10 rounded-full justify-center items-center mr-4"
+                  style={{ backgroundColor: project.color }}
+                >
+                  <Text className="text-base font-bold text-white">
+                    {project.name.charAt(0).toUpperCase()}
+                  </Text>
+                </View>
+                <Text className="text-sm text-gray-800 flex-1">{project.name}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
       </View>
     </DrawerContentScrollView>
   );
 }
 
 export default function TabsLayout() {
+  const { user } = useAuthContext();
+
   return (
     <Drawer
       drawerContent={CustomDrawerContent}
       screenOptions={{
-        headerStyle: { backgroundColor: '#f5f5f5' },
+        headerStyle: { backgroundColor: '#f5f5f5', height: 60, },
         headerTintColor: '#333',
         drawerStyle: { backgroundColor: '#fff' },
+        headerTitle: () => (
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}> 
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#333' }}>Collabora<Text className="text-red-600">8</Text>r</Text>
+
+            {/* Right Side: Avatar + Dots */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              <Image
+                source={avatarImages[user.avatar]}
+                style={{ width: 28, height: 28, borderRadius: 14 }}
+              />
+              <Ionicons name="ellipsis-vertical" size={20} color="#333" />
+            </View>
+          </View>
+        ),
+
       }}
     >
-      <Drawer.Screen name="index" options={{ drawerLabel: 'Home', headerTitle: 'Home' }} />
-      <Drawer.Screen name="admin" options={{ drawerLabel: 'Admin', headerTitle: 'Admin' }} />
-      <Drawer.Screen name="joined" options={{ drawerLabel: 'Joined', headerTitle: 'Joined' }} />
-      <Drawer.Screen name="manager" options={{ drawerLabel: 'Manager', headerTitle: 'Manager' }} />
-      <Drawer.Screen name="profile" options={{ drawerLabel: 'Profile', headerTitle: 'Profile' }} />
-      <Drawer.Screen name="workflow" options={{ drawerLabel: 'Workflow', headerTitle: 'Workflow' }} />
+      <Drawer.Screen name="index" options={{ drawerLabel: 'Home' }} />
+      <Drawer.Screen name="admin" options={{ drawerLabel: 'Admin' }} />
+      <Drawer.Screen name="joined" options={{ drawerLabel: 'Joined' }} />
+      <Drawer.Screen name="manager" options={{ drawerLabel: 'Manager' }} />
+      <Drawer.Screen name="profile" options={{ drawerLabel: 'Profile' }} />
+      <Drawer.Screen name="workflow" options={{ drawerLabel: 'Workflow' }} />
     </Drawer>
   );
 }
