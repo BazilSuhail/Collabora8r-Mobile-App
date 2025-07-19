@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { View, Text, Image, ScrollView, TouchableOpacity, Modal } from 'react-native';
-import { FontAwesome, FontAwesome5, Ionicons } from '@expo/vector-icons';
 import avatarImages from '@/constants/avatar';
+import { FontAwesome, FontAwesome5, Ionicons } from '@expo/vector-icons';
+import { useState } from 'react';
+import { Image, Modal, ScrollView, StatusBar, Text, TouchableOpacity, View } from 'react-native';
 
 const TeamMembers = ({ teamDetails }) => {
   const [showAllMembers, setShowAllMembers] = useState(false);
@@ -11,6 +11,7 @@ const TeamMembers = ({ teamDetails }) => {
 
   return (
     <View className="flex-1 bg-gray-50 px-5 pt-5">
+      
       {/* Header */}
       <View className="flex-row items-center mb-6">
         <View className="w-10 h-10 bg-blue-100 rounded-full items-center justify-center mr-3">
@@ -78,7 +79,9 @@ const TeamMembers = ({ teamDetails }) => {
       )}
 
       {/* All Members Modal */}
-      <Modal transparent={true} visible={showAllMembers} animationType="slide">
+      <Modal transparent={true} visible={showAllMembers} animationType="fade">
+        
+                <StatusBar backgroundColor="rgba(0,0,0,0.5)" barStyle="light-content" animated />
         <View className="flex-1 bg-black/60 justify-end">
           <View className="bg-white rounded-t-3xl shadow-2xl max-h-[80%]">
             {/* Modal Header */}

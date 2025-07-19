@@ -8,11 +8,13 @@ import axios from 'axios'
 import { usePathname, useRouter } from 'expo-router'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Image, ScrollView, StatusBar, Text, TouchableOpacity, View } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 const JoinedProjectDetails = () => {
   const pathname = usePathname()
   const projectId = pathname.split("/").pop()
   const router = useRouter()
+  const insets = useSafeAreaInsets() // Get safe area insets
 
   const [loggedUser, setLoggedUser] = useState(null)
   const [project, setProject] = useState(null)
@@ -88,7 +90,7 @@ const JoinedProjectDetails = () => {
 
   const handleTaskClick = useCallback((taskId) => {
     if (!project?.createdBy) return
-    
+
     const taskRoute = `${taskId}-${project.createdBy}`
     router.push(`/${taskRoute}`)
   }, [project?.createdBy, router])
@@ -122,7 +124,7 @@ const JoinedProjectDetails = () => {
     <TouchableOpacity
       onPress={() => handleTaskClick(task._id)}
       className="bg-white rounded-2xl p-5 mb-4 border border-gray-100 active:opacity-80"
-      style={{ 
+      style={{
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.05,
@@ -166,7 +168,7 @@ const JoinedProjectDetails = () => {
               </Text>
             </View>
           </View>
-          
+
           <View className="flex-row items-center flex-1">
             <View className="w-8 h-8 bg-blue-50 rounded-lg items-center justify-center mr-3">
               <Ionicons name="person" size={16} color="#3B82F6" />
@@ -201,7 +203,7 @@ const JoinedProjectDetails = () => {
       <View className="w-16 h-16 bg-gray-100 rounded-full items-center justify-center mb-4">
         <FontAwesome5 name="clipboard-list" size={24} color="#9CA3AF" />
       </View>
-      <Text className="text-gray-500 text-base font-medium text-center">{message}</Text>
+      <Text className="text-gray-500 text-base font-medium text-center">{message}kkk</Text>
     </View>
   ), [])
 
@@ -240,6 +242,7 @@ const JoinedProjectDetails = () => {
 
   const currentTasks = showMyTasks ? myTasks : otherTasks
   const totalTasks = myTasks.length + otherTasks.length
+ 
 
   if (loading) {
     return (
@@ -250,224 +253,216 @@ const JoinedProjectDetails = () => {
   }
 
   return (
-    <View className="flex-1 bg-gray-50">
-      <StatusBar barStyle="light-content" backgroundColor="#1F2937" />
-
+    <View className="flex-1 bg-gray-100 relative p-[15px]">
       {project ? (
-        <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-          {/* Error Messages */}
-          {(error.project || error.tasks || error.auth) && (
-            <View className="flex-row items-center bg-red-50 p-4 mx-4 mt-4 rounded-xl border border-red-200">
-              <MaterialIcons name="error-outline" size={20} color="#EF4444" />
-              <Text className="text-red-500 text-sm font-medium ml-2">
-                {error.project || error.tasks || error.auth}
-              </Text>
-            </View>
-          )}
-
-          {/* Project Header */}
-          <View className="bg-white rounded-b-3xl overflow-hidden"
-            style={{ 
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.1,
-              shadowRadius: 12,
-              elevation: 5
-            }}
+        <>
+          <ScrollView  
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 85,paddingTop: insets.top }}
           >
-            <View className="relative h-48">
-              <Image 
-                source={themeImages[project.theme]} 
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  width: '100%',
-                  height: '100%',
-                  resizeMode: 'cover',
-                }}
-              />
-              <View className="absolute inset-0 bg-black/40" />
-              <View className="absolute bottom-0 left-0 right-0 p-6">
-                <Text className="text-white text-2xl font-bold mb-2">{project.name}</Text>
-                <Text className="text-white/90 text-base leading-6">{project.description}</Text>
-              </View>
-            </View>
-
-            {/* Stats */}
-            <View className="p-6">
-              <View className="flex-row space-x-8">
-                <View className="flex-row items-center">
-                  <View className="w-10 h-10 bg-purple-100 rounded-full items-center justify-center mr-3">
-                    <Ionicons name="people" size={18} color="#8B5CF6" />
-                  </View>
-                  <View>
-                    <Text className="text-gray-900 font-semibold text-base">{teamDetails.length}</Text>
-                    <Text className="text-gray-500 text-sm">Members</Text>
-                  </View>
-                </View>
-                <View className="flex-row items-center">
-                  <View className="w-10 h-10 bg-green-100 rounded-full items-center justify-center mr-3">
-                    <Ionicons name="checkmark-circle" size={18} color="#10B981" />
-                  </View>
-                  <View>
-                    <Text className="text-gray-900 font-semibold text-base">{totalTasks}</Text>
-                    <Text className="text-gray-500 text-sm">Tasks</Text>
-                  </View>
-                </View>
-              </View>
-            </View>
-          </View>
-
-          {/* Toggle View Buttons */}
-          <View className="mx-4 mt-6 p-1 bg-white rounded-2xl border border-gray-100"
-            style={{ 
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 2 },
-              shadowOpacity: 0.05,
-              shadowRadius: 8,
-              elevation: 2
-            }}
-          >
-            <View className="flex-row">
-              <TouchableOpacity
-                onPress={() => setShowMyTasks(true)}
-                className={`flex-1 flex-row items-center justify-center py-4 px-4 rounded-xl ${
-                  showMyTasks ? 'bg-indigo-500' : 'bg-transparent'
-                }`}
-                style={showMyTasks ? { 
-                  shadowColor: '#6366F1',
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.25,
-                  shadowRadius: 8,
-                  elevation: 4
-                } : {}}
-              >
-                <Ionicons name="person" size={18} color={showMyTasks ? '#FFFFFF' : '#6B7280'} />
-                <Text className={`ml-2 text-sm font-semibold ${
-                  showMyTasks ? 'text-white' : 'text-gray-600'
-                }`}>
-                  My Tasks
+            {/* Error Messages */}
+            {(error.project || error.tasks || error.auth) && (
+              <View className="flex-row items-center bg-red-50 p-4 mx-4 mt-4 rounded-xl border border-red-200">
+                <MaterialIcons name="error-outline" size={20} color="#EF4444" />
+                <Text className="text-red-500 text-sm font-medium ml-2">
+                  {error.project || error.tasks || error.auth}
                 </Text>
-                {myTasks.length > 0 && (
-                  <View className={`ml-2 px-2 py-1 rounded-full min-w-[20px] items-center ${
-                    showMyTasks ? 'bg-white/20' : 'bg-indigo-100'
-                  }`}>
-                    <Text className={`text-xs font-semibold ${
-                      showMyTasks ? 'text-white' : 'text-indigo-600'
-                    }`}>
-                      {myTasks.length}
-                    </Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                onPress={() => setShowMyTasks(false)}
-                className={`flex-1 flex-row items-center justify-center py-4 px-4 rounded-xl ${
-                  !showMyTasks ? 'bg-indigo-500' : 'bg-transparent'
-                }`}
-                style={!showMyTasks ? { 
-                  shadowColor: '#6366F1',
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.25,
-                  shadowRadius: 8,
-                  elevation: 4
-                } : {}}
-              >
-                <Ionicons name="grid" size={18} color={!showMyTasks ? '#FFFFFF' : '#6B7280'} />
-                <Text className={`ml-2 text-sm font-semibold ${
-                  !showMyTasks ? 'text-white' : 'text-gray-600'
-                }`}>
-                  Other Tasks
-                </Text>
-                {otherTasks.length > 0 && (
-                  <View className={`ml-2 px-2 py-1 rounded-full min-w-[20px] items-center ${
-                    !showMyTasks ? 'bg-white/20' : 'bg-indigo-100'
-                  }`}>
-                    <Text className={`text-xs font-semibold ${
-                      !showMyTasks ? 'text-white' : 'text-indigo-600'
-                    }`}>
-                      {otherTasks.length}
-                    </Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* Content Section */}
-          <View className="px-4 pb-8">
-            {/* Team Members */}
-            <View className="mt-6">
-              <View className="flex-row items-center mb-4">
-                <View className="w-12 h-12 bg-indigo-100 rounded-xl items-center justify-center mr-4">
-                  <Ionicons name="people" size={20} color="#6366F1" />
-                </View>
-                <View>
-                  <Text className="text-gray-900 text-lg font-semibold">Team Members</Text>
-                  <Text className="text-gray-500 text-sm">{teamDetails.length} active members</Text>
-                </View>
               </View>
-              <View className="bg-white rounded-2xl border border-gray-100 p-5"
-                style={{ 
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.05,
-                  shadowRadius: 8,
-                  elevation: 2
-                }}
-              >
-                <TeamMembers 
-                  teamDetails={teamDetails} 
-                  isOpen={isModalOpen} 
-                  onClose={closeModal} 
+            )}
+
+            {/* Project Header */}
+            <View className="bg-white rounded-lg overflow-hidden"
+              style={{
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.1,
+                shadowRadius: 12,
+                elevation: 5
+              }}
+            >
+              <View className="relative h-48">
+                <Image
+                  source={themeImages[project.theme]}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    width: '100%',
+                    height: '100%',
+                    resizeMode: 'cover',
+                  }}
                 />
+                <View className="absolute inset-0 bg-black/40" />
+                <View className="absolute bottom-0 left-0 right-0 p-6">
+                  <Text className="text-white text-2xl font-bold mb-2">{project.name}</Text>
+                  <Text className="text-white/90 text-base leading-6">{project.description}</Text>
+                </View>
+              </View>
+
+              {/* Stats */}
+              <View className="p-6">
+                <View className="flex-row space-x-8">
+                  <View className="flex-row items-center">
+                    <View className="w-10 h-10 bg-purple-100 rounded-full items-center justify-center mr-3">
+                      <Ionicons name="people" size={18} color="#8B5CF6" />
+                    </View>
+                    <View>
+                      <Text className="text-gray-900 font-semibold text-base">{teamDetails.length}</Text>
+                      <Text className="text-gray-500 text-sm">Members</Text>
+                    </View>
+                  </View>
+                  <View className="flex-row items-center">
+                    <View className="w-10 h-10 bg-green-100 rounded-full items-center justify-center mr-3">
+                      <Ionicons name="checkmark-circle" size={18} color="#10B981" />
+                    </View>
+                    <View>
+                      <Text className="text-gray-900 font-semibold text-base">{totalTasks}</Text>
+                      <Text className="text-gray-500 text-sm">Tasks</Text>
+                    </View>
+                  </View>
+                </View>
               </View>
             </View>
 
-            {/* Tasks Section */}
-            <View className="mt-6">
-              <View className="flex-row items-center mb-4">
-                <View className="w-12 h-12 bg-indigo-100 rounded-xl items-center justify-center mr-4">
-                  <Ionicons name="list" size={20} color="#6366F1" />
+            {/* Content Section */}
+            <View className="px-4 pb-8">
+              {/* Team Members */}
+              <View className="mt-6">
+                <View className="flex-row items-center mb-4">
+                  <View className="w-12 h-12 bg-indigo-100 rounded-xl items-center justify-center mr-4">
+                    <Ionicons name="people" size={20} color="#6366F1" />
+                  </View>
+                  <View>
+                    <Text className="text-gray-900 text-lg font-semibold">Team Members</Text>
+                    <Text className="text-gray-500 text-sm">{teamDetails.length} active members</Text>
+                  </View>
                 </View>
-                <View>
-                  <Text className="text-gray-900 text-lg font-semibold">
-                    {showMyTasks ? 'My Tasks' : 'Other Tasks'}
-                  </Text>
-                  <Text className="text-gray-500 text-sm">
-                    {showMyTasks 
-                      ? `${myTasks.length} tasks assigned to you` 
-                      : `${otherTasks.length} tasks assigned to others`
+                <View className="bg-white rounded-2xl border border-gray-100 p-5"
+                  style={{
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.05,
+                    shadowRadius: 8,
+                    elevation: 2
+                  }}
+                >
+                  <TeamMembers
+                    teamDetails={teamDetails}
+                    isOpen={isModalOpen}
+                    onClose={closeModal}
+                  />
+                </View>
+              </View>
+
+              {/* Tasks Section */}
+              <View className="mt-6">
+                <View className="flex-row items-center mb-4">
+                  <View className="w-12 h-12 bg-indigo-100 rounded-xl items-center justify-center mr-4">
+                    <Ionicons name="list" size={20} color="#6366F1" />
+                  </View>
+                  <View>
+                    <Text className="text-gray-900 text-lg font-semibold">
+                      {showMyTasks ? 'My Tasks' : 'Other Tasks'}
+                    </Text>
+                    <Text className="text-gray-500 text-sm">
+                      {showMyTasks
+                        ? `${myTasks.length} tasks assigned to you`
+                        : `${otherTasks.length} tasks assigned to others`
+                      }
+                    </Text>
+                  </View>
+                </View>
+                <View className="bg-white rounded-2xl border border-gray-100 p-5"
+                  style={{
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.05,
+                    shadowRadius: 8,
+                    elevation: 2
+                  }}
+                >
+                  <TasksList
+                    tasks={currentTasks}
+                    isEmpty={currentTasks.length === 0}
+                    emptyMessage={
+                      showMyTasks
+                        ? 'No tasks assigned to you yet'
+                        : 'No tasks assigned to other team members'
                     }
-                  </Text>
+                  />
                 </View>
               </View>
-              <View className="bg-white rounded-2xl border border-gray-100 p-5"
-                style={{ 
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.05,
-                  shadowRadius: 8,
-                  elevation: 2
-                }}
-              >
-                <TasksList 
-                  tasks={currentTasks}
-                  isEmpty={currentTasks.length === 0}
-                  emptyMessage={
-                    showMyTasks 
-                      ? 'No tasks assigned to you yet' 
-                      : 'No tasks assigned to other team members'
-                  }
-                />
+            </View>
+          </ScrollView>
+
+          {/* Bottom Tab Bar with Safe Area */}
+          <View 
+            className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-100"
+            style={{ paddingBottom: insets.bottom }}
+          >
+            <View className="mx-4">
+              <View className="flex-row p-2">
+                <TouchableOpacity
+                  onPress={() => setShowMyTasks(true)}
+                  className={`flex-1 flex-row items-center justify-center py-4 px-4 rounded-xl ${showMyTasks ? 'bg-indigo-500' : 'bg-transparent'
+                    }`}
+                  style={showMyTasks ? {
+                    shadowColor: '#6366F1',
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.25,
+                    shadowRadius: 8,
+                    elevation: 4
+                  } : {}}
+                >
+                  <Ionicons name="person" size={18} color={showMyTasks ? '#FFFFFF' : '#6B7280'} />
+                  <Text className={`ml-2 text-sm font-semibold ${showMyTasks ? 'text-white' : 'text-gray-600'
+                    }`}>
+                    My Tasks
+                  </Text>
+                  {myTasks.length > 0 && (
+                    <View className={`ml-2 px-2 py-1 rounded-full min-w-[20px] items-center ${showMyTasks ? 'bg-white/20' : 'bg-indigo-100'
+                      }`}>
+                      <Text className={`text-xs font-semibold ${showMyTasks ? 'text-white' : 'text-indigo-600'
+                        }`}>
+                        {myTasks.length}
+                      </Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => setShowMyTasks(false)}
+                  className={`flex-1 flex-row items-center justify-center py-4 px-4 rounded-xl ${!showMyTasks ? 'bg-indigo-500' : 'bg-transparent'
+                    }`}
+                  style={!showMyTasks ? {
+                    shadowColor: '#6366F1',
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.25,
+                    shadowRadius: 8,
+                    elevation: 4
+                  } : {}}
+                >
+                  <Ionicons name="grid" size={18} color={!showMyTasks ? '#FFFFFF' : '#6B7280'} />
+                  <Text className={`ml-2 text-sm font-semibold ${!showMyTasks ? 'text-white' : 'text-gray-600'
+                    }`}>
+                    Other Tasks
+                  </Text>
+                  {otherTasks.length > 0 && (
+                    <View className={`ml-2 px-2 py-1 rounded-full min-w-[20px] items-center ${!showMyTasks ? 'bg-white/20' : 'bg-indigo-100'
+                      }`}>
+                      <Text className={`text-xs font-semibold ${!showMyTasks ? 'text-white' : 'text-indigo-600'
+                        }`}>
+                        {otherTasks.length}
+                      </Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
               </View>
             </View>
           </View>
-        </ScrollView>
+        </>
       ) : (
         <View className="flex-1 justify-center items-center px-10">
           <View className="w-20 h-20 bg-gray-100 rounded-full items-center justify-center mb-6">

@@ -18,9 +18,11 @@ import {
   View
 } from "react-native";
 import avatarImages from '@/constants/avatar';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const ProjectDetail = () => {
   const projectId = usePathname().split("/").pop();
+  const insets = useSafeAreaInsets() // Get safe area insets
 
   const [showModal, setShowModal] = useState(false);
   const [project, setProject] = useState(null);
@@ -136,7 +138,11 @@ const ProjectDetail = () => {
   }
 
   return (
-    <ScrollView className="flex-1 bg-gray-50 px-4 pt-5">
+    <ScrollView
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ paddingTop: insets.top }}
+      className="flex-1 bg-gray-100 px-4 pt-5"
+    >
       {showModal && <EditProject project={project} editModal={showModal} setShowModal={setShowModal} />}
 
       <View className="bg-white rounded-2xl px-4 py-6 mb-5">
@@ -149,7 +155,7 @@ const ProjectDetail = () => {
             <View className="flex-1">
               <Text className="text-[17px] font-bold text-gray-900 mb-1">{project.name}</Text>
 
-              <View className="flex-row justify-between items-center">
+              {/* <View className="flex-row justify-between items-center">
                 <View className="flex-row items-center">
                   <View className="w-2 h-2 bg-green-500 rounded-full mr-2" />
                   <Text className="text-[11px] text-gray-500 font-medium">Active Project</Text>
@@ -162,12 +168,12 @@ const ProjectDetail = () => {
                   <Text className="text-blue-600 text-[12px] font-semibold ml-1.5">Edit</Text>
                 </TouchableOpacity>
 
-              </View>
+              </View> */}
             </View>
           </View>
         </View>
       </View>
-  
+
       <View className="bg-white rounded-2xl p-5 mb-4 ">
         <View className="flex-row items-center mb-4">
           <View className="w-10 h-10 bg-blue-100 rounded-full justify-center items-center mr-3">
@@ -229,7 +235,7 @@ const ProjectDetail = () => {
           <View className="bg-gray-50 rounded-xl p-4 border border-gray-200 flex-row justify-between items-center">
             <View className="flex-row items-center flex-1">
               <Image
-                    source={avatarImages[user.avatar]} 
+                source={avatarImages[user.avatar]}
                 className="w-12 h-12 rounded-full mr-3"
               />
               <View className="flex-1">
@@ -247,7 +253,7 @@ const ProjectDetail = () => {
           </View>
         )}
       </View>
- 
+
       <View className="bg-white rounded-2xl p-5 mb-4 ">
         <View className="flex-row items-center mb-4">
           <View className="w-10 h-10 bg-yellow-100 rounded-full justify-center items-center mr-3">
@@ -271,7 +277,7 @@ const ProjectDetail = () => {
           </View>
         </View>
       </View>
- 
+
       <View className="bg-white rounded-2xl p-5 mb-4 ">
         <View className="flex-row justify-between items-center mb-4">
           <View className="flex-row items-center">
@@ -310,7 +316,7 @@ const ProjectDetail = () => {
           </View>
         )}
       </View>
- 
+
       <View className="bg-white rounded-2xl p-5 mb-5 ">
         <View className="flex-row justify-between items-center mb-4">
           <View className="flex-row items-center">

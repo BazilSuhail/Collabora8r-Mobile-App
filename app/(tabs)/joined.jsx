@@ -47,7 +47,7 @@ const JoinedProjects = () => {
   };
 
   return (
-    <View className="flex-1 bg-gray-50">
+    <View className="flex-1 bg-gray-100">
       {/* Header */}
       <View className=" border-b border-gray-100 px-3 py-4 shadow-sm">
         <View className="flex-row items-center justify-between">
