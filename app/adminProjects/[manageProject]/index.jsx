@@ -97,7 +97,6 @@ const ProjectDetail = () => {
       );
       setSuccess(response.data.message);
     } catch (err) {
-      //console.error(err);
       setError('Failed to add user to project.');
     }
   };

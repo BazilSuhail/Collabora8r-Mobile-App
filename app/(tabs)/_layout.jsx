@@ -115,7 +115,7 @@ export default function TabsLayout() {
     <Drawer
       drawerContent={CustomDrawerContent}
       screenOptions={{
-        headerStyle: { backgroundColor: '#f5f5f5', height: 100, },
+        headerStyle: { backgroundColor: '#f5f5f5'},
         headerTintColor: '#333',
         drawerStyle: { backgroundColor: '#fff' },
         headerTitle: () => (
