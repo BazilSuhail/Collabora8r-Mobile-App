@@ -315,8 +315,8 @@ const AssignTasks = () => {
         <ScrollView
             className={`flex-1 bg-gray-100`}
             contentContainerStyle={{
-                paddingTop: insets.top + 16,
-                paddingBottom: insets.bottom + 16,
+                paddingTop: insets.top+16,
+                paddingBottom: insets.bottom+8,
                 paddingHorizontal: 16
             }}
             showsVerticalScrollIndicator={false}

@@ -5,13 +5,13 @@ import { Image, Modal, ScrollView, StatusBar, Text, TouchableOpacity, View } fro
 
 const TeamMembers = ({ teamDetails }) => {
   const [showAllMembers, setShowAllMembers] = useState(false);
-  
+
   const displayedMembers = teamDetails.slice(0, 5);
   const remainingCount = teamDetails.length - 5;
 
   return (
     <View className="flex-1 bg-gray-50 px-5 pt-5">
-      
+
       {/* Header */}
       <View className="flex-row items-center mb-6">
         <View className="w-10 h-10 bg-blue-100 rounded-full items-center justify-center mr-3">
@@ -36,7 +36,7 @@ const TeamMembers = ({ teamDetails }) => {
                   />
                 </View>
               ))}
-              
+
               {remainingCount > 0 && (
                 <View className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 items-center justify-center -ml-3 border-3 border-white shadow-sm">
                   <Text className="text-white font-bold text-sm">+{remainingCount}</Text>
@@ -59,7 +59,7 @@ const TeamMembers = ({ teamDetails }) => {
                 Tap to view all team members
               </Text>
             </View>
-            
+
             <View className="flex-row items-center">
               <FontAwesome5 name="eye" size={14} color="#6B7280" />
               <Text className="text-sm text-gray-500 ml-2">View All</Text>
@@ -80,8 +80,8 @@ const TeamMembers = ({ teamDetails }) => {
 
       {/* All Members Modal */}
       <Modal transparent={true} visible={showAllMembers} animationType="fade">
-        
-                <StatusBar backgroundColor="rgba(0,0,0,0.5)" barStyle="light-content" animated />
+
+        <StatusBar backgroundColor="rgba(0,0,0,0.5)" barStyle="light-content" animated />
         <View className="flex-1 bg-black/60 justify-end">
           <View className="bg-white rounded-t-3xl shadow-2xl max-h-[80%]">
             {/* Modal Header */}
@@ -106,16 +106,15 @@ const TeamMembers = ({ teamDetails }) => {
             </View>
 
             {/* Members List */}
-            <ScrollView 
+            <ScrollView
               className="flex-1 px-6 py-4"
               showsVerticalScrollIndicator={false}
             >
               {teamDetails.map((member, index) => (
-                <View 
-                  key={member._id} 
-                  className={`flex-row items-center p-4 bg-gray-50 rounded-xl mb-3 ${
-                    index === 0 ? 'bg-blue-50 border border-blue-200' : ''
-                  }`}
+                <View
+                  key={member._id}
+                  className={`flex-row items-center p-4 bg-gray-50 rounded-xl mb-3 ${index === 0 ? 'bg-blue-50 border border-blue-200' : ''
+                    }`}
                 >
                   <View className="relative">
                     <Image
@@ -124,7 +123,7 @@ const TeamMembers = ({ teamDetails }) => {
                     />
                     <View className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white" />
                   </View>
-                  
+
                   <View className="flex-1 ml-4">
                     <Text className="text-lg font-semibold text-gray-800 mb-1">
                       {member.name}
