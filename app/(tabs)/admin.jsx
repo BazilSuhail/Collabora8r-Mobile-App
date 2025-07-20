@@ -9,6 +9,7 @@ import CreateProject from '@/components/adminProjects/CreateProject';
 import EditProject from '@/components/adminProjects/EditProject';
 import avatarImages from '@/constants/avatar';
 import themeImages from '@/constants/themes';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const colors = [
     'bg-red-400', 'bg-blue-400', 'bg-green-700', 'bg-yellow-600', 'bg-indigo-400', 'bg-orange-400', 'bg-cyan-400', 'bg-violet-400'
@@ -51,29 +52,6 @@ const Admin = () => {
         }
     };
 
-
-    // useEffect(() => {
-    //     const fetchProjects = async () => {
-    //         try {
-    //             const token = await AsyncStorage.getItem('token');
-    //             const response = await axios.get(`${config.VITE_REACT_APP_API_BASE_URL}/admin-projects/`, {
-    //                 headers: {
-    //                     Authorization: `Bearer ${token}`,
-    //                 },
-    //             });
-    //             const updatedProjects = response.data.map((project) => ({
-    //                 ...project,
-    //                 color: getRandomColor(),
-    //             }));
-    //             setProjects(updatedProjects); 
-    //         } catch (err) {
-    //             setError('Failed to fetch projects.');
-    //         }
-    //     };
-
-    //     fetchProjects();
-    // }, []);
-
     useEffect(() => {
         fetchProjects();
     }, []);
@@ -94,15 +72,20 @@ const Admin = () => {
 
     return (
         <View className="flex-1 bg-gray-50">
-            {showModal && <CreateProject showModal={showModal} setShowModal={setShowModal} />}
-            {editModal && (
+            {showModal &&
+                <CreateProject
+                    showModal={showModal}
+                    setShowModal={setShowModal}
+                />
+            }
+            {editModal &&
                 <EditProject
                     project={projectDetails}
                     heading="Assign a Manager"
                     editModal={editModal}
                     setShowModal={setshowEditModal}
                 />
-            )}
+            }
 
             {/* Header */}
             <View className="mx-6 py-4 flex-row items-center justify-between border-b-[2px] border-gray-200">
@@ -115,10 +98,9 @@ const Admin = () => {
             {/* Floating Action Button */}
             <TouchableOpacity
                 onPress={() => setShowModal(true)}
-                className="absolute bg-blue-600 w-14 h-14 border border-blue-500 rounded-full right-5 z-50 bottom-6 items-center justify-center shadow-lg"
-                style={{ elevation: 8 }}
+                className="absolute bg-blue-200 w-14 h-14 border border-blue-300 rounded-[12px] right-5 z-50 bottom-2 items-center justify-center"
             >
-                <Ionicons name="add" size={24} color="white" />
+                <Ionicons name="add" size={26} color={"#2563EB"} />
             </TouchableOpacity>
 
             {/* Error State */}
@@ -148,8 +130,10 @@ const Admin = () => {
                                     className="absolute inset-0 w-full h-full"
                                 />
 
-                                {/* Dark overlay */}
-                                <View className="absolute inset-0 bg-black/50" />
+                                <LinearGradient
+                                    colors={['rgba(0,0,0,0.7)', 'rgba(0,0,0,0.3)']}
+                                    className="absolute w-full h-full"
+                                />
 
                                 {/* Content Overlay */}
                                 <View className="absolute inset-0 p-4 flex">
@@ -239,7 +223,7 @@ const Admin = () => {
                                     >
                                         <View className="flex-row items-center">
                                             <Ionicons name="settings-outline" size={16} color="#475569" />
-                                            <Text className="ml-3 text-slate-700 text-[13px] font-semibold">Manage Project</Text>
+                                            <Text className="ml-3 text-slate-700 text-[12px] font-semibold">Manage Project</Text>
                                             <View className="flex-1" />
                                             <Ionicons name="chevron-forward" size={14} color="#94a3b8" />
                                         </View>
@@ -251,7 +235,7 @@ const Admin = () => {
                                     >
                                         <View className="flex-row items-center">
                                             <Ionicons name="list-outline" size={16} color="#475569" />
-                                            <Text className="ml-3 text-slate-700 text-[13px] font-semibold">Manage Tasks</Text>
+                                            <Text className="ml-3 text-slate-700 text-[12px] font-semibold">Manage Tasks</Text>
                                             <View className="flex-1" />
                                             <Ionicons name="chevron-forward" size={14} color="#94a3b8" />
                                         </View>
@@ -270,14 +254,14 @@ const Admin = () => {
                                     >
                                         <View className="flex-row items-center justify-center">
                                             <Ionicons name="person-add" size={18} color="white" />
-                                            <Text className="text-white ml-2 font-bold">Assign Manager</Text>
+                                            <Text className="text-white ml-2  font-bold">Assign Manager</Text>
                                         </View>
                                     </TouchableOpacity>
                                 ) : (
                                     <View className="bg-green-50 p-4 rounded-xl border border-green-200">
                                         <View className="flex-row items-center justify-center">
                                             <Ionicons name="checkmark-circle" size={18} color="#16a34a" />
-                                            <Text className="text-green-700 ml-2 font-bold">Manager Assigned</Text>
+                                            <Text className="text-green-700 ml-2 text-[13px] font-bold">Manager Assigned</Text>
                                         </View>
                                     </View>
                                 )}

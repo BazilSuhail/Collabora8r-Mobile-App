@@ -8,6 +8,7 @@ import avatarImages from '@/constants/avatar';
 import themeImages from '@/constants/themes';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Link, useRouter } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 
 
 const colors = [
@@ -16,7 +17,6 @@ const colors = [
 const getRandomColor = () => colors[Math.floor(Math.random() * colors.length)];
 
 const Manager = () => {
-  const navigate = useRouter();
   const [projects, setProjects] = useState([]);
   const [error, setError] = useState('');
 
@@ -65,15 +65,20 @@ const Manager = () => {
             <Link
               key={project._id}
               href={`/adminProjects/tasks/${project._id}`}
-              className="w-full bg-white border-2 border-gray-200 rounded-xl overflow-hidden mb-4"
+              className="w-full bg-white border-2 border-gray-200 rounded-2xl overflow-hidden mb-4"
             >
-              <View className="relative w-full h-[150px]  rounded-t-xl">
+              <View className="relative w-full h-[150px] rounded-t-2xl">
 
                 <View className="absolute inset-0 w-full">
                   <Image source={themeImages[project.theme]} className="h-full w-full object-cover" />
                 </View>
 
-                <View className="absolute h-[150px] pt-5 inset-0 w-full px-[18px] bg-black/50 z-10">
+                <LinearGradient
+                  colors={['rgba(0,0,0,0.7)', 'rgba(0,0,0,0.3)']}
+                  className="absolute w-full h-full"
+                />
+
+                <View className="absolute h-[150px] pt-5 inset-0 w-full px-[18px] z-10">
                   <View className="flex-row items-start justify-between">
                     <View className="flex-1">
                       <Text className="text-white text-lg font-bold mb-1 mr-3" numberOfLines={1}>

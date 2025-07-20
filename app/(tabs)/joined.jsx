@@ -8,6 +8,7 @@ import avatarImages from '@/constants/avatar';
 import themeImages from '@/constants/themes';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Link } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const colors = [
   'bg-red-400', 'bg-blue-400', 'bg-green-700', 'bg-yellow-600', 'bg-indigo-400', 'bg-orange-400', 'bg-cyan-400', 'bg-violet-400'
@@ -17,7 +18,6 @@ const getRandomColor = () => colors[Math.floor(Math.random() * colors.length)];
 const JoinedProjects = () => {
   const [projects, setProjects] = useState([]);
   const [error, setError] = useState('');
-  const [selectedProjectId, setSelectedProjectId] = useState(null);
 
   useEffect(() => {
     const fetchJoinedProjects = async () => {
@@ -42,9 +42,6 @@ const JoinedProjects = () => {
     fetchJoinedProjects();
   }, []);
 
-  const handleProjectClick = (projectId) => {
-    setSelectedProjectId(projectId);
-  };
 
   return (
     <View className="flex-1 bg-gray-100">
@@ -95,9 +92,12 @@ const JoinedProjects = () => {
                         source={themeImages[project.theme]}
                         className="h-full w-full object-cover"
                       />
-                    </View>
+                    </View> 
 
-                    <View className="absolute inset-0 w-full h-full bg-black/40"></View>
+                    <LinearGradient
+                      colors={['rgba(0,0,0,0.7)', 'rgba(0,0,0,0.3)']}
+                      className="absolute w-full h-full"
+                    />
 
                     {/* Content Overlay */}
                     <View className="absolute inset-0 p-5">
@@ -167,7 +167,7 @@ const JoinedProjects = () => {
                       </View>
                     </View>
                   </View>
-                </Link> 
+                </Link>
               </View>
             ))}
 

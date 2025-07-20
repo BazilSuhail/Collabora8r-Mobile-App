@@ -1,104 +1,616 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   Alert,
   ScrollView,
-  Dimensions,
   Modal,
   FlatList,
+  StatusBar,
+  Dimensions,
 } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
+import { 
+  FontAwesome5, 
+  MaterialCommunityIcons, 
+  Feather,
+  AntDesign 
+} from '@expo/vector-icons';
+import {
+  PanGestureHandler,
+  State,
+} from 'react-native-gesture-handler';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  useAnimatedGestureHandler,
+  runOnJS,
+  withSpring,
+  withTiming,
+  interpolate,
+  Extrapolate,
+} from 'react-native-reanimated';
 import config from '@/config/config';
 import decodeJWT from '@/config/decodeJWT';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const STATUS_TYPES = ['Not Started', 'In Progress', 'Completed'];
 
-const TaskCard = ({ task, onPress }) => (
-  <TouchableOpacity
-    onPress={() => onPress(task)}
-    style={{
-      padding: 10,
-      backgroundColor: '#f9f9f9',
-      borderWidth: 1,
-      borderColor: '#ddd',
-      borderRadius: 10,
-      marginBottom: 10,
-    }}
-  >
-    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 5 }}>
-      <FontAwesome5 name="tasks" size={18} color="#4a4a4a" />
-      <Text style={{ marginLeft: 8, fontSize: 16, fontWeight: '600' }}>
-        {task.title.slice(0, 17) || 'Untitled Task'}
-        {task.title.length > 15 && '...'}
-      </Text>
+const STATUS_CONFIG = {
+  'Not Started': {
+    color: '#3B82F6',
+    bgColor: '#EFF6FF',
+    borderColor: '#DBEAFE',
+    icon: 'play-circle-outline',
+    lightColor: '#F0F9FF'
+  },
+  'In Progress': {
+    color: '#F59E0B',
+    bgColor: '#FFFBEB',
+    borderColor: '#FEF3C7',
+    icon: 'clock-outline',
+    lightColor: '#FFFEF7'
+  },
+  'Completed': {
+    color: '#10B981',
+    bgColor: '#ECFDF5',
+    borderColor: '#D1FAE5',
+    icon: 'check-circle-outline',
+    lightColor: '#F0FDF4'
+  }
+};
+
+const DraggableTaskCard = React.memo(({ 
+  task, 
+  onPress, 
+  onDragStart, 
+  onDragEnd, 
+  onDrop,
+  dropZones,
+  isDragging: globalDragging,
+  draggedTaskId 
+}) => {
+  const statusConfig = STATUS_CONFIG[task.status] || STATUS_CONFIG['Not Started'];
+  
+  const translateX = useSharedValue(0);
+  const translateY = useSharedValue(0);
+  const scale = useSharedValue(1);
+  const opacity = useSharedValue(1);
+  
+  const isDragging = draggedTaskId === task._id;
+
+  const formatDate = useCallback((dateValue) => {
+    if (!dateValue) return 'No due date';
+    const date = new Date(dateValue.$date || dateValue);
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  }, []);
+
+  const truncateTitle = useCallback((title, maxLength = 25) => {
+    if (!title) return 'Untitled Task';
+    return title.length > maxLength ? `${title.slice(0, maxLength)}...` : title;
+  }, []);
+
+  const findDropZone = useCallback((x, y) => {
+    'worklet';
+    for (const status of STATUS_TYPES) {
+      const zone = dropZones[status];
+      if (zone && x >= zone.x && x <= (zone.x + zone.width) && 
+          y >= zone.y && y <= (zone.y + zone.height)) {
+        return status;
+      }
+    }
+    return null;
+  }, [dropZones]);
+
+  const gestureHandler = useAnimatedGestureHandler({
+    onStart: () => {
+      runOnJS(onDragStart)(task);
+      scale.value = withSpring(1.05, { damping: 15 });
+      opacity.value = withTiming(0.9, { duration: 200 });
+    },
+    onActive: (event) => {
+      translateX.value = event.translationX;
+      translateY.value = event.translationY;
+      
+      // Find current drop zone
+      const absoluteX = Math.round(event.absoluteX);
+      const absoluteY = Math.round(event.absoluteY);
+      const currentDropZone = findDropZone(absoluteX, absoluteY);
+    },
+    onEnd: (event) => {
+      const absoluteX = Math.round(event.absoluteX);
+      const absoluteY = Math.round(event.absoluteY);
+      const targetStatus = findDropZone(absoluteX, absoluteY);
+      
+      // Reset animations
+      translateX.value = withSpring(0, { damping: 15 });
+      translateY.value = withSpring(0, { damping: 15 });
+      scale.value = withSpring(1, { damping: 15 });
+      opacity.value = withTiming(1, { duration: 200 });
+      
+      runOnJS(onDragEnd)();
+      
+      if (targetStatus && targetStatus !== task.status) {
+        runOnJS(onDrop)(task, targetStatus);
+      }
+    },
+  });
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { translateX: translateX.value },
+        { translateY: translateY.value },
+        { scale: scale.value },
+      ],
+      opacity: opacity.value,
+      zIndex: isDragging ? 999 : 1,
+      elevation: isDragging ? 999 : 2,
+    };
+  });
+
+  const containerStyle = useAnimatedStyle(() => {
+    return {
+      shadowOpacity: interpolate(
+        scale.value,
+        [1, 1.05],
+        [0.05, 0.25],
+        'clamp'
+      ),
+      shadowRadius: interpolate(
+        scale.value,
+        [1, 1.05],
+        [3, 12],
+        'clamp'
+      ),
+    };
+  });
+
+  return (
+    <Animated.View style={animatedStyle}>
+      <PanGestureHandler onGestureEvent={gestureHandler}>
+        <Animated.View style={containerStyle}>
+          <TouchableOpacity
+            onPress={() => !globalDragging && onPress(task)}
+            className="bg-white rounded-xl p-4 mb-3 shadow-sm border border-gray-100 z-[999]"
+            style={{ 
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 1 },
+            }}
+            activeOpacity={globalDragging ? 1 : 0.7}
+          >
+          {/* Task Header */}
+          <View className="flex-row items-center justify-between mb-3">
+            <View className="flex-row items-center flex-1">
+              <View 
+                className="w-8 h-8 rounded-full items-center justify-center mr-3"
+                style={{ backgroundColor: statusConfig.bgColor }}
+              >
+                <MaterialCommunityIcons 
+                  name="format-list-checks" 
+                  size={16} 
+                  color={statusConfig.color} 
+                />
+              </View>
+              <Text className="text-gray-800 font-semibold text-base flex-1">
+                {truncateTitle(task.title)}
+              </Text>
+            </View>
+            
+            <View className="flex-row items-center">
+              <MaterialCommunityIcons 
+                name="drag" 
+                size={16} 
+                color="#9CA3AF" 
+                style={{ marginRight: 8 }} 
+              />
+              <Feather name="chevron-right" size={16} color="#9CA3AF" />
+            </View>
+          </View>
+
+          {/* Due Date */}
+          <View className="flex-row items-center mb-3">
+            <Feather name="calendar" size={14} color="#6B7280" />
+            <Text className="text-gray-600 text-sm ml-2">
+              {formatDate(task.dueDate)}
+            </Text>
+          </View>
+
+          {/* Project Tag */}
+          <View className="flex-row justify-between items-center">
+            <View 
+              className="px-3 py-1.5 rounded-full"
+              style={{ backgroundColor: statusConfig.lightColor }}
+            >
+              <Text 
+                className="text-xs font-medium"
+                style={{ color: statusConfig.color }}
+              >
+                {task.projectName || 'No Project'}
+              </Text>
+            </View>
+            
+            {/* Status Indicator */}
+            <View className="flex-row items-center">
+              <MaterialCommunityIcons 
+                name={statusConfig.icon} 
+                size={16} 
+                color={statusConfig.color} 
+              />
+            </View>
+          </View>
+          </TouchableOpacity>
+        </Animated.View>
+      </PanGestureHandler>
+    </Animated.View>
+  );
+});
+
+const DropZoneSection = React.memo(({ 
+  status, 
+  tasks, 
+  onTaskPress, 
+  onLayout,
+  isDropTarget,
+  isDragging,
+  onDragStart,
+  onDragEnd,
+  onDrop,
+  dropZones,
+  draggedTaskId
+}) => {
+  const statusConfig = STATUS_CONFIG[status];
+  
+  const backgroundOpacity = useSharedValue(1);
+  const borderWidth = useSharedValue(1);
+
+  useEffect(() => {
+    if (isDropTarget && isDragging) {
+      backgroundOpacity.value = withTiming(0.95, { duration: 200 });
+      borderWidth.value = withTiming(3, { duration: 200 });
+    } else {
+      backgroundOpacity.value = withTiming(1, { duration: 200 });
+      borderWidth.value = withTiming(1, { duration: 200 });
+    }
+  }, [isDropTarget, isDragging]);
+
+  const animatedHeaderStyle = useAnimatedStyle(() => {
+    return {
+      backgroundColor: statusConfig.bgColor,
+      opacity: backgroundOpacity.value,
+      borderWidth: borderWidth.value,
+      borderColor: isDropTarget && isDragging ? statusConfig.color : statusConfig.borderColor,
+    };
+  });
+
+  const animatedContainerStyle = useAnimatedStyle(() => {
+    return {
+      backgroundColor: '#FAFAFA',
+      opacity: backgroundOpacity.value,
+      borderWidth: borderWidth.value,
+      borderColor: isDropTarget && isDragging ? statusConfig.color : statusConfig.borderColor,
+    };
+  });
+
+  const renderItem = useCallback(({ item }) => (
+    <DraggableTaskCard 
+      task={item} 
+      onPress={onTaskPress}
+      onDragStart={onDragStart}
+      onDragEnd={onDragEnd}
+      onDrop={onDrop}
+      dropZones={dropZones}
+      isDragging={isDragging}
+      draggedTaskId={draggedTaskId}
+    />
+  ), [onTaskPress, onDragStart, onDragEnd, onDrop, dropZones, isDragging, draggedTaskId]);
+
+  const keyExtractor = useCallback((item) => item._id, []);
+
+  return (
+    <View className="mb-6">
+      {/* Status Header */}
+      <Animated.View 
+        className="flex-row items-center justify-between p-4 rounded-t-xl border-l-4"
+        style={[
+          {
+            borderLeftColor: statusConfig.color,
+            borderBottomWidth: 0,
+          },
+          animatedHeaderStyle
+        ]}
+        onLayout={(event) => {
+          const { x, y, width, height } = event.nativeEvent.layout;
+          onLayout(status, { 
+            x: Math.round(x), 
+            y: Math.round(y), 
+            width: Math.round(width), 
+            height: Math.round(height + 200) 
+          });
+        }}
+      >
+        <View className="flex-row items-center">
+          <MaterialCommunityIcons 
+            name={statusConfig.icon} 
+            size={20} 
+            color={statusConfig.color} 
+          />
+          <Text 
+            className="text-lg font-semibold ml-3"
+            style={{ color: statusConfig.color }}
+          >
+            {status}
+          </Text>
+          {isDropTarget && isDragging && (
+            <View className="ml-2">
+              <MaterialCommunityIcons 
+                name="target" 
+                size={16} 
+                color={statusConfig.color} 
+              />
+            </View>
+          )}
+        </View>
+        
+        <View 
+          className="px-2.5 py-1 rounded-full"
+          style={{ backgroundColor: statusConfig.color }}
+        >
+          <Text className="text-white text-xs font-medium">
+            {tasks.length}
+          </Text>
+        </View>
+      </Animated.View>
+
+      {/* Tasks Container */}
+      <Animated.View 
+        className="p-4 rounded-b-xl border border-t-0"
+        style={[
+          {
+            minHeight: 120, // Minimum height for drop zone
+          },
+          animatedContainerStyle
+        ]}
+      >
+        {isDragging && isDropTarget && (
+          <Animated.View 
+            className="absolute inset-0 rounded-b-xl border-2 border-dashed"
+            style={{
+              borderColor: statusConfig.color,
+              backgroundColor: statusConfig.lightColor + '40',
+            }}
+          >
+            <View className="flex-1 items-center justify-center">
+              <MaterialCommunityIcons 
+                name="plus-circle-outline" 
+                size={32} 
+                color={statusConfig.color} 
+              />
+              <Text 
+                className="text-sm font-medium mt-2"
+                style={{ color: statusConfig.color }}
+              >
+                Drop task here
+              </Text>
+            </View>
+          </Animated.View>
+        )}
+
+        {tasks.length > 0 ? (
+          <FlatList
+            data={tasks}
+            renderItem={renderItem}
+            keyExtractor={keyExtractor}
+            scrollEnabled={false}
+            showsVerticalScrollIndicator={false}
+            extraData={isDragging}
+          />
+        ) : (
+          <View className="py-8 items-center">
+            <MaterialCommunityIcons 
+              name="inbox-outline" 
+              size={32} 
+              color="#9CA3AF" 
+            />
+            <Text className="text-gray-500 text-sm mt-2">
+              No tasks in {status.toLowerCase()}
+            </Text>
+          </View>
+        )}
+      </Animated.View>
     </View>
-    <Text style={{ fontSize: 14, color: '#d9534f', marginBottom: 5 }}>
-      <Text style={{ fontWeight: '600' }}>Due: </Text>
-      {task.dueDate ? new Date(task.dueDate.$date || task.dueDate).toLocaleDateString() : 'N/A'}
-    </Text>
-    <Text
-      style={{
-        fontSize: 12,
-        color: '#ffffff',
-        backgroundColor: '#007bff',
-        alignSelf: 'flex-start',
-        paddingVertical: 2,
-        paddingHorizontal: 10,
-        borderRadius: 15,
-      }}
-    >
-      {task.projectName}
-    </Text>
-  </TouchableOpacity>
-);
+  );
+});
+
+const StatusModal = React.memo(({ 
+  isVisible, 
+  selectedTask, 
+  onStatusChange, 
+  onClose 
+}) => {
+  const renderStatusOption = useCallback((statusOption) => {
+    const statusConfig = STATUS_CONFIG[statusOption];
+    const isCurrentStatus = selectedTask?.status === statusOption;
+    
+    return (
+      <TouchableOpacity
+        key={statusOption}
+        onPress={() => onStatusChange(statusOption)}
+        className={`flex-row items-center p-4 ${isCurrentStatus ? 'bg-gray-50' : ''}`}
+        style={{
+          borderBottomWidth: 1,
+          borderBottomColor: '#F3F4F6'
+        }}
+      >
+        <MaterialCommunityIcons 
+          name={statusConfig.icon} 
+          size={20} 
+          color={statusConfig.color} 
+        />
+        <Text className="text-gray-800 text-base ml-3 flex-1">
+          {statusOption}
+        </Text>
+        
+        {isCurrentStatus && (
+          <AntDesign name="check" size={16} color="#10B981" />
+        )}
+      </TouchableOpacity>
+    );
+  }, [selectedTask, onStatusChange]);
+
+  return (
+    <Modal
+      visible={isVisible}
+      animationType="fade"
+      transparent={true}
+      onRequestClose={onClose}
+    >      
+      <StatusBar backgroundColor="#00000066" barStyle="dark-content" />
+      <View className="flex-1 justify-end bg-black/40">
+        <View className="bg-white rounded-t-3xl">
+          {/* Modal Header */}
+          <View className="flex-row items-center justify-between p-6 border-b border-gray-100">
+            <Text className="text-xl font-semibold text-gray-800">
+              Update Task Status
+            </Text>
+            <TouchableOpacity 
+              onPress={onClose}
+              className="w-8 h-8 rounded-full bg-gray-100 items-center justify-center"
+            >
+              <Feather name="x" size={18} color="#6B7280" />
+            </TouchableOpacity>
+          </View>
+
+          {/* Task Info */}
+          {selectedTask && (
+            <View className="px-6 py-4 bg-gray-50 border-b border-gray-100">
+              <Text className="text-gray-800 font-medium text-base mb-1">
+                {selectedTask.title || 'Untitled Task'}
+              </Text>
+              <Text className="text-gray-600 text-sm">
+                {selectedTask.projectName || 'No Project'}
+              </Text>
+            </View>
+          )}
+
+          {/* Status Options */}
+          <View className="pb-8">
+            {STATUS_TYPES.map(renderStatusOption)}
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+});
 
 const Workflow = () => {
+  const insets = useSafeAreaInsets();
   const [tasks, setTasks] = useState({
     'Not Started': [],
     'In Progress': [],
-    Completed: [],
+    'Completed': [],
   });
   const [selectedTask, setSelectedTask] = useState(null);
   const [updatedTasks, setUpdatedTasks] = useState({});
   const [isModalVisible, setModalVisible] = useState(false);
+  const [loading, setLoading] = useState(true);
+  
+  // Drag and drop states
+  const [isDragging, setIsDragging] = useState(false);
+  const [draggedTask, setDraggedTask] = useState(null);
+  const [dropZones, setDropZones] = useState({});
+  const [currentDropTarget, setCurrentDropTarget] = useState(null);
 
-  useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        const token = await AsyncStorage.getItem('token');
-        if (!token) throw new Error('No token found, please sign in again.');
+  const fetchTasks = useCallback(async () => {
+    try {
+      setLoading(true);
+      const token = await AsyncStorage.getItem('token');
+      if (!token) throw new Error('No token found, please sign in again.');
 
-        const userId = decodeJWT(token);
+      const response = await axios.get(
+        `${config.VITE_REACT_APP_API_BASE_URL}/overview/assigned-tasks`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-        const response = await axios.get(
-          `${config.VITE_REACT_APP_API_BASE_URL}/overview/assigned-tasks`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+      const initialTasks = STATUS_TYPES.reduce((acc, status) => {
+        acc[status] = response.data.tasks.filter((task) => task.status === status);
+        return acc;
+      }, {});
 
-        const initialTasks = STATUS_TYPES.reduce((acc, status) => {
-          acc[status] = response.data.tasks.filter((task) => task.status === status);
-          return acc;
-        }, {});
-
-        setTasks(initialTasks);
-      } catch (err) {
-        Alert.alert('Error', err.message || 'Error fetching tasks');
-      }
-    };
-
-    fetchTasks();
+      setTasks(initialTasks);
+    } catch (err) {
+      Alert.alert('Error', err.message || 'Error fetching tasks');
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const openStatusModal = (task) => {
+  useEffect(() => {
+    fetchTasks();
+  }, [fetchTasks]);
+
+  const handleDropZoneLayout = useCallback((status, layout) => {
+    setDropZones(prev => ({
+      ...prev,
+      [status]: {
+        x: Math.round(layout.x),
+        y: Math.round(layout.y),
+        width: Math.round(layout.width),
+        height: Math.round(layout.height)
+      }
+    }));
+  }, []);
+
+  const handleDragStart = useCallback((task) => {
+    setIsDragging(true);
+    setDraggedTask(task);
+  }, []);
+
+  const handleDragEnd = useCallback(() => {
+    setIsDragging(false);
+    setDraggedTask(null);
+    setCurrentDropTarget(null);
+  }, []);
+
+  const handleTaskDrop = useCallback((task, targetStatus) => {
+    if (task.status === targetStatus) return;
+
+    // Update tasks state
+    setTasks(prev => {
+      const oldStatus = task.status;
+      const updatedTask = { ...task, status: targetStatus };
+
+      return {
+        ...prev,
+        [oldStatus]: prev[oldStatus].filter(t => t._id !== task._id),
+        [targetStatus]: [...(prev[targetStatus] || []), updatedTask],
+      };
+    });
+
+    // Track updates for batch save
+    setUpdatedTasks(prev => ({
+      ...prev,
+      [task._id]: targetStatus,
+    }));
+
+    // Haptic feedback (optional)
+    // Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+  }, []);
+
+  const openStatusModal = useCallback((task) => {
     setSelectedTask(task);
     setModalVisible(true);
-  };
+  }, []);
 
-  const changeTaskStatus = (newStatus) => {
+  const changeTaskStatus = useCallback((newStatus) => {
     if (!selectedTask) return;
 
     setTasks((prev) => {
@@ -119,9 +631,14 @@ const Workflow = () => {
 
     setModalVisible(false);
     setSelectedTask(null);
-  };
+  }, [selectedTask]);
 
-  const confirmUpdate = async () => {
+  const confirmUpdate = useCallback(async () => {
+    if (Object.keys(updatedTasks).length === 0) {
+      Alert.alert('Info', 'No tasks to update.');
+      return;
+    }
+
     const updates = Object.entries(updatedTasks).map(([taskId, newStatus]) => ({
       id: taskId,
       status: newStatus,
@@ -133,123 +650,147 @@ const Workflow = () => {
         { updates }
       );
       Alert.alert('Success', 'Tasks updated successfully.');
+      setUpdatedTasks({});
     } catch (error) {
       Alert.alert('Error', 'Error updating tasks');
-    } finally {
-      setUpdatedTasks({});
     }
-  };
+  }, [updatedTasks]);
 
-  const renderItem = ({ item }) => (
-    <TaskCard task={item} onPress={openStatusModal} />
+  const closeModal = useCallback(() => {
+    setModalVisible(false);
+    setSelectedTask(null);
+  }, []);
+
+  const hasUpdates = useMemo(() => 
+    Object.keys(updatedTasks).length > 0, 
+    [updatedTasks]
   );
 
-  return (
-    <ScrollView contentContainerStyle={{ paddingBottom: 100, paddingHorizontal: 10 }}>
-      <View style={{ marginBottom: 30 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <FontAwesome name="group" size={24} color="#6c757d" />
-          <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#6c757d', marginLeft: 10 }}>
-            Task Workflow Manager
-          </Text>
-        </View>
+  const totalTasks = useMemo(() => 
+    STATUS_TYPES.reduce((total, status) => total + (tasks[status]?.length || 0), 0),
+    [tasks]
+  );
+
+  if (loading) {
+    return (
+      <View className="flex-1 justify-center items-center bg-gray-50">
+        <MaterialCommunityIcons name="loading" size={32} color="#3B82F6" />
+        <Text className="text-gray-600 mt-2">Loading tasks...</Text>
       </View>
+    );
+  }
 
-      {STATUS_TYPES.map((status) => (
-        <View
-          key={status}
-          style={{
-            marginVertical: 10,
-            padding: 10,
-            backgroundColor: '#f8f8f8',
-            borderWidth: 1,
-            borderColor: '#ccc',
-            borderRadius: 10,
-          }}
-        >
-          <Text
-            style={{
-              fontSize: 16,
-              fontWeight: '600',
-              marginBottom: 10,
-              textAlign: 'center',
-              color:
-                status === 'Not Started'
-                  ? '#007bff'
-                  : status === 'Completed'
-                  ? '#28a745'
-                  : '#ffc107',
-            }}
-          >
-            {status}
-          </Text>
-
-          <FlatList
-            data={tasks[status] || []}
-            renderItem={renderItem}
-            keyExtractor={(item) => item._id}
-            scrollEnabled={false}
-          />
-        </View>
-      ))}
-
-      <TouchableOpacity
-        onPress={confirmUpdate}
-        style={{
-          marginTop: 20,
-          backgroundColor: '#007bff',
-          paddingVertical: 10,
-          borderRadius: 10,
-          alignItems: 'center',
-        }}
+  return (
+    <View className="flex-1 bg-gray-50" style={{ position: 'relative' }}>
+      <ScrollView 
+        className="flex-1 px-4"
+        contentContainerStyle={{ paddingBottom: insets.bottom + (hasUpdates ? 80 : 0) }}
+        showsVerticalScrollIndicator={false}
+        scrollEnabled={!isDragging}
+        nestedScrollEnabled={true}
       >
-        <Text style={{ color: '#ffffff', fontSize: 16, fontWeight: '600' }}>Update Tasks</Text>
-      </TouchableOpacity>
-
-      <Modal
-        visible={isModalVisible}
-        animationType="fade-in"
-        transparent={true}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View
-          style={{
-            flex: 1,
-            justifyContent: 'flex-end',
-            backgroundColor: 'rgba(0, 0, 0, 0.4)',
-          }}
-        >
-          <View
-            style={{
-              backgroundColor: 'white',
-              padding: 20,
-              borderTopLeftRadius: 20,
-              borderTopRightRadius: 20,
-            }}
-          >
-            <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 10 }}>
-              Change Status
-            </Text>
-            {STATUS_TYPES.map((statusOption) => (
-              <TouchableOpacity
-                key={statusOption}
-                onPress={() => changeTaskStatus(statusOption)}
-                style={{
-                  paddingVertical: 12,
-                  borderBottomWidth: 1,
-                  borderColor: '#eee',
-                }}
-              >
-                <Text style={{ fontSize: 16 }}>{statusOption}</Text>
-              </TouchableOpacity>
-            ))}
-            <TouchableOpacity onPress={() => setModalVisible(false)} style={{ marginTop: 15 }}>
-              <Text style={{ textAlign: 'center', color: 'red' }}>Cancel</Text>
+        {/* Header */}
+        <View className="py-6">
+          <View className="flex-row items-center justify-between mb-2">
+            <View className="flex-row items-center">
+              <View className="w-10 h-10 rounded-xl bg-blue-500 items-center justify-center mr-3">
+                <MaterialCommunityIcons name="view-dashboard" size={20} color="white" />
+              </View>
+              <View>
+                <Text className="text-2xl font-bold text-gray-800">
+                  Task Workflow
+                </Text>
+                <Text className="text-gray-600 text-sm">
+                  Drag tasks between columns or tap to edit
+                </Text>
+              </View>
+            </View>
+            
+            <TouchableOpacity onPress={fetchTasks} className="p-2" disabled={isDragging}>
+              <Feather name="refresh-cw" size={20} color="#6B7280" />
             </TouchableOpacity>
           </View>
+
+          {/* Stats */}
+          <View className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 mt-4">
+            <View className="flex-row justify-between">
+              <View className="items-center">
+                <Text className="text-2xl font-bold text-blue-600">
+                  {tasks['Not Started']?.length || 0}
+                </Text>
+                <Text className="text-gray-600 text-xs">Pending</Text>
+              </View>
+              <View className="items-center">
+                <Text className="text-2xl font-bold text-amber-600">
+                  {tasks['In Progress']?.length || 0}
+                </Text>
+                <Text className="text-gray-600 text-xs">Active</Text>
+              </View>
+              <View className="items-center">
+                <Text className="text-2xl font-bold text-green-600">
+                  {tasks['Completed']?.length || 0}
+                </Text>
+                <Text className="text-gray-600 text-xs">Done</Text>
+              </View>
+              <View className="items-center">
+                <Text className="text-2xl font-bold text-gray-800">
+                  {totalTasks}
+                </Text>
+                <Text className="text-gray-600 text-xs">Total</Text>
+              </View>
+            </View>
+          </View>
         </View>
-      </Modal>
-    </ScrollView>
+
+        {/* Task Sections */}
+        {STATUS_TYPES.map((status) => (
+          <DropZoneSection
+            key={status}
+            status={status}
+            tasks={tasks[status] || []}
+            onTaskPress={openStatusModal}
+            onLayout={handleDropZoneLayout}
+            isDropTarget={currentDropTarget === status}
+            isDragging={isDragging}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+            onDrop={handleTaskDrop}
+            dropZones={dropZones}
+            draggedTaskId={draggedTask?._id}
+          />
+        ))}
+      </ScrollView>
+
+      {/* Update Button */}
+      {hasUpdates && (
+        <View className="absolute bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200">
+          <TouchableOpacity
+            onPress={confirmUpdate}
+            className="bg-blue-600 rounded-xl py-4 flex-row items-center justify-center"
+            style={{
+              shadowColor: '#3B82F6',
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.3,
+              shadowRadius: 8,
+              elevation: 8,
+            }}
+          >
+            <AntDesign name="check" size={18} color="white" />
+            <Text className="text-white font-semibold text-base ml-2">
+              Save Changes ({Object.keys(updatedTasks).length})
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* Status Modal */}
+      <StatusModal
+        isVisible={isModalVisible}
+        selectedTask={selectedTask}
+        onStatusChange={changeTaskStatus}
+        onClose={closeModal}
+      />
+    </View>
   );
 };
 

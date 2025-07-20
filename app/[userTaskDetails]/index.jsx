@@ -19,15 +19,17 @@ import {
 import Svg, { Circle } from 'react-native-svg';
 import ProgressModal from '../../components/ProgressModal';
 import { useAuthContext } from '../../hooks/AuthProvider';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const TaskDetails = () => {
+  const insets = useSafeAreaInsets();
   const pathname = usePathname().split("/").pop();
   const [taskId] = pathname.split("-");
   const { user } = useAuthContext();
 
   const [task, setTask] = useState(null);
-  const [taskProgress, setTaskProgress] = useState(1);
   const [status, setStatus] = useState('Not Started');
+  const [priority, setPriority] = useState('Low');
   const [comments, setComments] = useState([]);
   const [commentContent, setCommentContent] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
@@ -57,8 +59,8 @@ const TaskDetails = () => {
         );
 
         setTask(taskRes.data);
-        setTaskProgress(taskRes.data.progress);
         setStatus(taskRes.data.status);
+        setPriority(taskRes.data.priority)
         setComments(commentRes.data.comments);
         setTempProgress(taskRes.data.progress);
         setTempStatus(taskRes.data.status);
@@ -66,7 +68,7 @@ const TaskDetails = () => {
         // Initialize slider position based on current progress
         translateX.value = (taskRes.data.progress / 100) * (sliderWidth - thumbSize);
 
-      } catch (err) { 
+      } catch (err) {
         setError("Failed to load task data.");
       } finally {
         setLoading(false);
@@ -169,7 +171,6 @@ const TaskDetails = () => {
         progress: tempProgress,
         status: tempStatus,
       }));
-      setTaskProgress(tempProgress);
       setStatus(tempStatus);
       setModalVisible(false);
     } catch (err) {
@@ -181,9 +182,9 @@ const TaskDetails = () => {
   const toggleModal = () => {
     if (!modalVisible) {
       // Reset temp values when opening modal
-      setTempProgress(taskProgress);
+      setTempProgress(task.progress);
       setTempStatus(status);
-      translateX.value = (taskProgress / 100) * (sliderWidth - thumbSize);
+      translateX.value = (task.progress / 100) * (sliderWidth - thumbSize);
     }
     setModalVisible(!modalVisible);
   };
@@ -196,17 +197,23 @@ const TaskDetails = () => {
         return { bg: 'bg-blue-100', text: 'text-blue-700', icon: 'play-circle-outline' };
       case 'Completed':
         return { bg: 'bg-green-100', text: 'text-green-700', icon: 'checkmark-circle-outline' };
+      case 'Low':
+        return { bg: 'bg-gray-100', text: 'text-gray-700', icon: 'time-outline' };
+      case 'Medium':
+        return { bg: 'bg-yellow-100', text: 'text-yellow-700', icon: 'play-circle-outline' };
+      case 'High':
+        return { bg: 'bg-red-100', text: 'text-red-700', icon: 'checkmark-circle-outline' };
       default:
         return { bg: 'bg-gray-100', text: 'text-gray-700', icon: 'clock-outline' };
     }
   };
 
   const renderProgress = () => {
-    const radius = 60;
-    const strokeWidth = 8;
+    const radius = 80;
+    const strokeWidth = 12;
     const normalizedRadius = radius - strokeWidth / 2;
     const circumference = normalizedRadius * 2 * Math.PI;
-    const strokeDashoffset = circumference - (taskProgress / 100) * circumference;
+    const strokeDashoffset = circumference - (task.progress / 100) * circumference;
 
     return (
       <View className="relative">
@@ -232,7 +239,7 @@ const TaskDetails = () => {
           />
         </Svg>
         <View className="absolute inset-0 justify-center items-center">
-          <Text className="text-2xl font-bold text-blue-600">{taskProgress}%</Text>
+          <Text className="text-2xl font-bold text-blue-600">{task.progress}%</Text>
           <Text className="text-xs text-gray-500 mt-1">Complete</Text>
         </View>
       </View>
@@ -258,47 +265,111 @@ const TaskDetails = () => {
   }
 
   const statusInfo = getStatusColor(status);
+  const priorityInfo = getStatusColor(priority);
 
   return (
-    <View className="flex-1 bg-gray-50">
-      <StatusBar barStyle="dark-content" backgroundColor="#F9FAFB" />
+    <View className="flex-1 bg-gray-100 px-4 pt-2">
 
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Header Section */}
-        <View className="bg-white rounded-b-3xl px-6 pt-6 pb-8 shadow-sm">
-          <View className="flex-row items-center justify-between mb-4">
-            <View className="flex-1">
-              <Text className="text-2xl font-bold text-gray-900 mb-2">{task.title}</Text>
-              <View className="flex-row items-center">
-                <FontAwesome5 name="user-circle" size={16} color="#6B7280" />
-                <Text className="text-sm text-gray-600 ml-2">Created by {user.name}</Text>
+      <ScrollView
+        contentContainerStyle={{ paddingTop: insets.top }}
+        showsVerticalScrollIndicator={false}
+      >
+
+        <View className="bg-white rounded-2xl px-4 py-6 mb-5">
+          <View className="flex-row justify-between items-start">
+            <View className="flex-row items-center flex-1">
+              <View className="w-16 h-[60px] bg-blue-600 rounded-2xl justify-center items-center mr-4">
+                <FontAwesome5 name="project-diagram" size={22} color="#FFFFFF" />
+              </View>
+
+              <View className="flex-1">
+                <Text className="text-[17px] font-bold text-gray-900 mb-1">{task.title}</Text>
               </View>
             </View>
           </View>
+        </View>
 
+        <View className="bg-white rounded-2xl p-5 mb-6">
+          <View className="flex-row items-center mb-4">
+            <View className="w-10 h-10 bg-blue-100 rounded-full justify-center items-center mr-3">
+              <FontAwesome5 name="file-alt" size={16} color="#3B82F6" />
+            </View>
+            <Text className="text-lg font-semibold text-gray-900">Project Description</Text>
+          </View>
+          <Text className="text-sm text-gray-500 leading-5">{task.description}</Text>
+
+          <View className="h-[2px] w-full bg-gray-100"></View>
+
+          <View className="flex-row items-center justify-between mt-5">
+            <View className="flex-row items-center ">
+              <View className="w-8 h-8 bg-red-50 rounded-lg items-center justify-center mr-3">
+                <FontAwesome5 name="user-circle" size={16} color="#EF4444" />
+              </View>
+              <View>
+                <Text className="text-gray-500 text-[9px] font-medium">Created by</Text>
+                <Text className="text-gray-900 text-sm font-semibold">
+                  {user.name}
+                </Text>
+              </View>
+            </View>
+
+            <View className="flex-row items-center mr-2">
+              <View className="w-8 h-8 bg-red-50 rounded-lg items-center justify-center mr-3">
+                <MaterialIcons name="schedule" size={16} color="#EF4444" />
+              </View>
+              <View>
+                <Text className="text-gray-500 text-[9px] font-medium">Due Date</Text>
+                <Text className="text-gray-900 text-sm font-semibold">
+                  {new Date(task.dueDate).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                  })}
+                </Text>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        {/* Header Section */}
+        <View className="bg-white rounded-xl px-6 py-6">
           {/* Status Badge */}
-          <View className={`${statusInfo.bg} px-4 py-2 rounded-full self-start flex-row items-center mb-6`}>
-            <Ionicons name={statusInfo.icon} size={16} color={statusInfo.text.replace('text-', '')} />
-            <Text className={`${statusInfo.text} text-sm font-medium ml-2`}>{status}</Text>
+          <View className="flex-row items-center">
+            <View className={`${statusInfo.bg} px-4 py-2 rounded-full self-start flex-row items-center`}>
+              <Ionicons name={statusInfo.icon} size={14} color={statusInfo.text.replace('text-', '')} />
+              <Text className={`${statusInfo.text} text-[11px] font-medium ml-2`}>{status}</Text>
+            </View>
+            <View className={`${priorityInfo.bg} ml-[6px] px-4 py-2 rounded-full self-start flex-row items-center`}>
+              <Ionicons name={priorityInfo.icon} size={14} color={priorityInfo.text.replace('text-', '')} />
+              <Text className={`${priorityInfo.text} text-[11px] font-medium ml-2`}>{priority}</Text>
+            </View>
+
+            <TouchableOpacity
+              onPress={toggleModal}
+              className="bg-blue-500 rounded-[6px] px-4 py-[5px] ml-auto flex-row items-center justify-center"
+            >
+              <MaterialIcons name="update" size={18} color="white" />
+              <Text className="text-white text-[12px] font-semibold ml-2">Update Task</Text>
+            </TouchableOpacity>
           </View>
 
           {/* Progress Circle */}
-          <View className="items-center mb-6">
+          <View className="items-center mt-8">
             {renderProgress()}
           </View>
 
           {/* Update Progress Button */}
-          <TouchableOpacity
+          {/* <TouchableOpacity
             onPress={toggleModal}
             className="bg-blue-500 rounded-2xl px-6 py-4 flex-row items-center justify-center shadow-sm"
           >
             <MaterialIcons name="update" size={20} color="white" />
             <Text className="text-white text-base font-semibold ml-2">Update Progress</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
 
         {/* Comments Section */}
-        <View className="px-6 py-6">
+        <View className="py-6">
           {/* Add Comment */}
           <View className="bg-white rounded-2xl p-4 shadow-sm mb-6">
             <View className="flex-row items-center space-x-3">
