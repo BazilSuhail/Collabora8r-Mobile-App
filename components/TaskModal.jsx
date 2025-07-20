@@ -1,589 +1,592 @@
-import React,{ useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { FontAwesome5, MaterialIcons, Ionicons } from '@expo/vector-icons';
 import {
-    Modal,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
-    ScrollView,
-    StatusBar, 
-    Animated,
-    Dimensions,
-    TouchableWithoutFeedback,
-    Alert,
-    KeyboardAvoidingView, 
+  Modal,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  ScrollView,
+  StatusBar,
+  Animated,
+  Dimensions,
+  TouchableWithoutFeedback,
+  Alert,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const { height: screenHeight } = Dimensions.get('window');
 
 const TaskModal = ({
-    isOpen,
-    onClose,
-    onSubmit,
-    newTask,
-    users,
-    handleChange,
-    editingTaskId,
-    loading = false,
-    error = '',
-    success = ''
+  isOpen,
+  onClose,
+  onSubmit,
+  newTask,
+  users,
+  handleChange,
+  editingTaskId,
+  loading = false,
+  error = '',
+  success = ''
 }) => {
-    console.log('newTask:', newTask);
-    console.log('assignedTo:', newTask?.assignedTo);
-    
-    const [showStatusPicker, setShowStatusPicker] = useState(false);
-    const [showPriorityPicker, setShowPriorityPicker] = useState(false);
-    const [showUserPicker, setShowUserPicker] = useState(false);
-    const [validationErrors, setValidationErrors] = useState({});
+  const [showStatusPicker, setShowStatusPicker] = useState(false);
+  const [showPriorityPicker, setShowPriorityPicker] = useState(false);
+  const [showUserPicker, setShowUserPicker] = useState(false);
+  const [validationErrors, setValidationErrors] = useState({});
 
-    // Use useRef for animation value to prevent recreations
-    const slideAnim = useRef(new Animated.Value(screenHeight)).current;
-    const backdropOpacity = useRef(new Animated.Value(0)).current;
+  // Use useRef for animation value to prevent recreations
+  const slideAnim = useRef(new Animated.Value(screenHeight)).current;
+  const backdropOpacity = useRef(new Animated.Value(0)).current;
 
-    // Memoized options to prevent recreations
-    const statusOptions = useMemo(() => [
-        { label: 'Not Started', value: 'Not Started', icon: 'radio-button-unchecked', color: '#6B7280' },
-        { label: 'In Progress', value: 'In Progress', icon: 'sync', color: '#2563EB' },
-        { label: 'Completed', value: 'Completed', icon: 'check-circle', color: '#059669' },
-    ], []);
+  // Memoized options to prevent recreations
+  const statusOptions = useMemo(() => [
+    { label: 'Not Started', value: 'Not Started', icon: 'radio-button-unchecked', color: '#6B7280' },
+    { label: 'In Progress', value: 'In Progress', icon: 'sync', color: '#2563EB' },
+    { label: 'Completed', value: 'Completed', icon: 'check-circle', color: '#059669' },
+  ], []);
 
-    const priorityOptions = useMemo(() => [
-        { label: 'Low', value: 'Low', icon: 'keyboard-arrow-down', color: '#059669' },
-        { label: 'Medium', value: 'Medium', icon: 'remove', color: '#D97706' },
-        { label: 'High', value: 'High', icon: 'keyboard-arrow-up', color: '#DC2626' },
-    ], []);
+  const priorityOptions = useMemo(() => [
+    { label: 'Low', value: 'Low', icon: 'keyboard-arrow-down', color: '#059669' },
+    { label: 'Medium', value: 'Medium', icon: 'remove', color: '#D97706' },
+    { label: 'High', value: 'High', icon: 'keyboard-arrow-up', color: '#DC2626' },
+  ], []);
 
-    // Memoized user options
-    const userOptions = useMemo(() =>
-        users?.map(user => ({
-            label: user.name || user.email,
-            value: user._id
-        })) || [],
-        [users]
-    );
+  // Memoized user options
+  const userOptions = useMemo(() =>
+    users?.map(user => ({
+      label: user.name || user.email,
+      value: user._id
+    })) || [],
+    [users]
+  );
 
-    // Validation function - memoized
-    const validateForm = useCallback(() => {
-        const errors = {};
+  // Validation function - memoized
+  const validateForm = useCallback(() => {
+    const errors = {};
 
-        if (!newTask?.title?.trim()) {
-            errors.title = 'Task title is required';
-        } else if (newTask.title.trim().length < 3) {
-            errors.title = 'Title must be at least 3 characters';
-        }
+    if (!newTask?.title?.trim()) {
+      errors.title = 'Task title is required';
+    } else if (newTask.title.trim().length < 3) {
+      errors.title = 'Title must be at least 3 characters';
+    }
 
-        if (!newTask?.description?.trim()) {
-            errors.description = 'Task description is required';
-        } else if (newTask.description.trim().length < 10) {
-            errors.description = 'Description must be at least 10 characters';
-        }
+    if (!newTask?.description?.trim()) {
+      errors.description = 'Task description is required';
+    } else if (newTask.description.trim().length < 10) {
+      errors.description = 'Description must be at least 10 characters';
+    }
 
-        if (newTask?.dueDate && !/^\d{4}-\d{2}-\d{2}$/.test(newTask.dueDate)) {
-            errors.dueDate = 'Please use YYYY-MM-DD format';
-        }
+    if (newTask?.dueDate && !/^\d{4}-\d{2}-\d{2}$/.test(newTask.dueDate)) {
+      errors.dueDate = 'Please use YYYY-MM-DD format';
+    }
 
-        if (newTask?.dueDate) {
-            const selectedDate = new Date(newTask.dueDate);
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
+    if (newTask?.dueDate) {
+      const selectedDate = new Date(newTask.dueDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
 
-            if (selectedDate < today) {
-                errors.dueDate = 'Due date cannot be in the past';
-            }
-        }
+      if (selectedDate < today) {
+        errors.dueDate = 'Due date cannot be in the past';
+      }
+    }
 
-        setValidationErrors(errors);
-        return Object.keys(errors).length === 0;
-    }, [newTask]);
+    // ✅ NEW: Force update of assignee when editing a task
+    if (editingTaskId && !newTask?.assignedTo) {
+      errors.assignedTo = 'Please update or confirm the assignee';
+    }
 
-    // Animate modal with proper timing
-    const animateModal = useCallback((show) => {
-        if (show) {
-            // Show backdrop and slide up
-            Animated.parallel([
-                Animated.timing(backdropOpacity, {
-                    toValue: 1,
-                    duration: 200,
-                    useNativeDriver: true,
-                }),
-                Animated.timing(slideAnim, {
-                    toValue: 0,
-                    duration: 300,
-                    useNativeDriver: true,
-                })
-            ]).start();
-        } else {
-            // Hide backdrop and slide down
-            Animated.parallel([
-                Animated.timing(backdropOpacity, {
-                    toValue: 0,
-                    duration: 200,
-                    useNativeDriver: true,
-                }),
-                Animated.timing(slideAnim, {
-                    toValue: screenHeight,
-                    duration: 250,
-                    useNativeDriver: true,
-                })
-            ]).start();
-        }
-    }, [slideAnim, backdropOpacity]);
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  }, [newTask]);
 
-    // Fixed useEffect for modal animation
-    useEffect(() => {
-        if (isOpen) {
-            // Reset animation values when opening
-            slideAnim.setValue(screenHeight);
-            backdropOpacity.setValue(0);
-            animateModal(true);
-        } else {
-            animateModal(false);
-        }
-    }, [isOpen, animateModal]);
+  // Animate modal with proper timing
+  const animateModal = useCallback((show) => {
+    if (show) {
+      // Show backdrop and slide up
+      Animated.parallel([
+        Animated.timing(backdropOpacity, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        })
+      ]).start();
+    } else {
+      // Hide backdrop and slide down
+      Animated.parallel([
+        Animated.timing(backdropOpacity, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(slideAnim, {
+          toValue: screenHeight,
+          duration: 250,
+          useNativeDriver: true,
+        })
+      ]).start();
+    }
+  }, [slideAnim, backdropOpacity]);
 
-    // Reset pickers when modal closes
-    useEffect(() => {
-        if (!isOpen) {
-            setShowStatusPicker(false);
-            setShowPriorityPicker(false);
-            setShowUserPicker(false);
-            setValidationErrors({});
-        }
-    }, [isOpen]);
+  // Fixed useEffect for modal animation
+  useEffect(() => {
+    if (isOpen) {
+      // Reset animation values when opening
+      slideAnim.setValue(screenHeight);
+      backdropOpacity.setValue(0);
+      animateModal(true);
+    } else {
+      animateModal(false);
+    }
+  }, [isOpen, animateModal]);
 
-    // Optimized handlers with better performance
-    const handleStatusSelect = useCallback((value) => {
-        handleChange('status', value);
-        setShowStatusPicker(false);
-        if (validationErrors.status) {
-            setValidationErrors(prev => {
-                const newErrors = { ...prev };
-                delete newErrors.status;
-                return newErrors;
-            });
-        }
-    }, [handleChange, validationErrors.status]);
+  // Reset pickers when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setShowStatusPicker(false);
+      setShowPriorityPicker(false);
+      setShowUserPicker(false);
+      setValidationErrors({});
+    }
+  }, [isOpen]);
 
-    const handlePrioritySelect = useCallback((value) => {
-        handleChange('priority', value);
-        setShowPriorityPicker(false);
-    }, [handleChange]);
+  // Optimized handlers with better performance
+  const handleStatusSelect = useCallback((value) => {
+    handleChange('status', value);
+    setShowStatusPicker(false);
+    if (validationErrors.status) {
+      setValidationErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors.status;
+        return newErrors;
+      });
+    }
+  }, [handleChange, validationErrors.status]);
 
-    const handleUserSelect = useCallback((value) => {
-        handleChange('assignedTo', value);
-        setShowUserPicker(false);
-    }, [handleChange]);
+  const handlePrioritySelect = useCallback((value) => {
+    handleChange('priority', value);
+    setShowPriorityPicker(false);
+  }, [handleChange]);
 
-    const handleInputChange = useCallback((field, value) => {
-        handleChange(field, value);
-        if (validationErrors[field]) {
-            setValidationErrors(prev => {
-                const newErrors = { ...prev };
-                delete newErrors[field];
-                return newErrors;
-            });
-        }
-    }, [handleChange, validationErrors]);
+  const handleUserSelect = useCallback((value) => {
+    handleChange('assignedTo', value);
+    setShowUserPicker(false);
+  }, [handleChange]);
 
-    const handleSubmit = useCallback(async () => {
-        if (!validateForm()) {
-            Alert.alert('Validation Error', 'Please fix the errors before submitting.');
-            return;
-        }
+  const handleInputChange = useCallback((field, value) => {
+    handleChange(field, value);
+    if (validationErrors[field]) {
+      setValidationErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
+  }, [handleChange, validationErrors]);
 
-        try {
-            await onSubmit();
-        } catch (error) {
-            console.error('Submit error:', error);
-        }
-    }, [validateForm, onSubmit]);
+  const handleSubmit = useCallback(async () => {
+    if (!validateForm()) {
+      Alert.alert('Validation Error', 'Please fix the errors before submitting.');
+      return;
+    }
 
-    const handleClose = useCallback(() => {
-        // Close all pickers first
-        setShowStatusPicker(false);
-        setShowPriorityPicker(false);
-        setShowUserPicker(false);
+    try {
+      await onSubmit();
+    } catch (error) {
+      console.error('Submit error:', error);
+    }
+  }, [validateForm, onSubmit]);
 
-        // Animate out then call onClose
-        animateModal(false);
-        setTimeout(() => {
-            setValidationErrors({});
-            onClose();
-        }, 300);
-    }, [onClose, animateModal]);
+  const handleClose = useCallback(() => {
+    // Close all pickers first
+    setShowStatusPicker(false);
+    setShowPriorityPicker(false);
+    setShowUserPicker(false);
 
-    // FIXED: Better implementation for getting selected user
-    const getSelectedUser = useCallback(() => {
-        if (!newTask?.assignedTo) return null;
-        
-        // If assignedTo is an object (populated), return it directly
-        if (typeof newTask.assignedTo === 'object' && (newTask.assignedTo._id || newTask.assignedTo.name)) {
-            return newTask.assignedTo;
-        }
-        
-        // If assignedTo is a string (ID), find the user from users array
-        if (typeof newTask.assignedTo === 'string') {
-            return users?.find(user => user._id === newTask.assignedTo);
-        }
-        
-        return null;
-    }, [users, newTask?.assignedTo]);
+    // Animate out then call onClose
+    animateModal(false);
+    setTimeout(() => {
+      setValidationErrors({});
+      onClose();
+    }, 300);
+  }, [onClose, animateModal]);
 
-    // FIXED: Better implementation for getting selected user name
-    const getSelectedUserName = useCallback(() => {
-        const selectedUser = getSelectedUser();
-        return selectedUser?.name || selectedUser?.email || '';
-    }, [getSelectedUser]);
+  // FIXED: Better implementation for getting selected user
+  const getSelectedUser = useCallback(() => {
+    if (!newTask?.assignedTo) return null;
 
-    const getStatusDisplay = useCallback(() => {
-        const status = statusOptions.find(s => s.value === newTask?.status);
-        return status || statusOptions[0];
-    }, [statusOptions, newTask?.status]);
+    // If assignedTo is an object (populated), return it directly
+    if (typeof newTask.assignedTo === 'object' && (newTask.assignedTo._id || newTask.assignedTo.name)) {
+      return newTask.assignedTo;
+    }
 
-    const getPriorityDisplay = useCallback(() => {
-        const priority = priorityOptions.find(p => p.value === newTask?.priority);
-        return priority || priorityOptions[1];
-    }, [priorityOptions, newTask?.priority]);
+    // If assignedTo is a string (ID), find the user from users array
+    if (typeof newTask.assignedTo === 'string') {
+      return users?.find(user => user._id === newTask.assignedTo);
+    }
 
-    // Memoized CustomPicker component with Tailwind CSS
-    const CustomPicker = React.memo(({ options, selectedValue, onSelect, placeholder, show, setShow, error }) => (
-        <View className="relative">
-            <TouchableOpacity
-                className={`border rounded-lg px-3 py-1.5 bg-white flex-row items-center justify-between ${error ? 'border-red-300' : 'border-gray-300'}`}
-                onPress={() => setShow(!show)}
+    return null;
+  }, [users, newTask?.assignedTo]);
+
+  // FIXED: Better implementation for getting selected user name
+  const getSelectedUserName = useCallback(() => {
+    const selectedUser = getSelectedUser();
+    return selectedUser?.name || selectedUser?.email || '';
+  }, [getSelectedUser]);
+
+  const getStatusDisplay = useCallback(() => {
+    const status = statusOptions.find(s => s.value === newTask?.status);
+    return status || statusOptions[0];
+  }, [statusOptions, newTask?.status]);
+
+  const getPriorityDisplay = useCallback(() => {
+    const priority = priorityOptions.find(p => p.value === newTask?.priority);
+    return priority || priorityOptions[1];
+  }, [priorityOptions, newTask?.priority]);
+
+  // Memoized CustomPicker component with Tailwind CSS
+  const CustomPicker = React.memo(({ options, selectedValue, onSelect, placeholder, show, setShow, error }) => (
+    <View className="relative">
+      <TouchableOpacity
+        className={`border rounded-lg px-3 py-1.5 bg-white flex-row items-center justify-between ${error ? 'border-red-300' : 'border-gray-300'}`}
+        onPress={() => setShow(!show)}
+        disabled={loading}
+        activeOpacity={0.7}
+      >
+        <Text className={`text-sm ${selectedValue ? 'text-gray-800' : 'text-gray-400'}`}>
+          {selectedValue || placeholder}
+        </Text>
+        <MaterialIcons
+          name={show ? "keyboard-arrow-up" : "keyboard-arrow-down"}
+          size={20}
+          color={error ? "#EF4444" : "#6B7280"}
+        />
+      </TouchableOpacity>
+
+      {error && (
+        <Text className="text-red-500 text-xs mt-1">{error}</Text>
+      )}
+
+      {show && (
+        <View className="absolute top-10 left-0 right-0 bg-white border border-gray-300 rounded-lg shadow-lg z-50 max-h-48">
+          <ScrollView>
+            {options.map((option, index) => (
+              <TouchableOpacity
+                key={option.value}
+                className={`px-3 py-3 flex-row items-center ${index < options.length - 1 ? 'border-b border-gray-100' : ''}`}
+                onPress={() => onSelect(option.value)}
+                activeOpacity={0.7}
+              >
+                {option.icon && (
+                  <MaterialIcons
+                    name={option.icon}
+                    size={18}
+                    color={option.color}
+                    style={{ marginRight: 8 }}
+                  />
+                )}
+                <Text className="text-sm text-gray-800">{option.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      )}
+    </View>
+  ));
+
+  // Memoized message components with Tailwind CSS
+  const ErrorMessage = React.memo(({ message }) => (
+    message ? (
+      <View className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4 flex-row items-center">
+        <MaterialIcons name="error-outline" size={20} color="#EF4444" />
+        <Text className="text-red-700 text-sm ml-2 flex-1">{message}</Text>
+      </View>
+    ) : null
+  ));
+
+  const SuccessMessage = React.memo(({ message }) => (
+    message ? (
+      <View className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4 flex-row items-center">
+        <MaterialIcons name="check-circle-outline" size={20} color="#059669" />
+        <Text className="text-green-700 text-sm ml-2 flex-1">{message}</Text>
+      </View>
+    ) : null
+  ));
+
+  if (!isOpen) return null;
+
+  return (
+    <Modal
+      visible={isOpen}
+      transparent={true}
+      animationType="none"
+      statusBarTranslucent={true}
+    >
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+      >
+
+        {/* Animated Backdrop */}
+        <Animated.View
+          className="flex-1 bg-black/60"
+          style={{ opacity: backdropOpacity }}
+        >
+          <TouchableWithoutFeedback onPress={handleClose}>
+            <View className="flex-1" />
+          </TouchableWithoutFeedback>
+        </Animated.View>
+
+        {/* Animated Bottom Sheet */}
+        <Animated.View
+          className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl"
+          style={{
+            transform: [{ translateY: slideAnim }],
+            maxHeight: screenHeight * 0.85,
+          }}
+        >
+          {/* Handle Bar */}
+          <View className="items-center py-3">
+            <View className="w-12 h-1 bg-gray-300 rounded-full" />
+          </View>
+
+          {/* Header */}
+          <View className="px-6 py-4 border-b border-gray-100">
+            <View className="flex-row items-center justify-between">
+              <View className="flex-row items-center">
+                <View className="bg-blue-100 p-2 rounded-xl mr-3">
+                  <MaterialIcons
+                    name={editingTaskId ? "edit" : "add-task"}
+                    size={20}
+                    color="#3B82F6"
+                  />
+                </View>
+                <Text className="text-xl font-bold text-gray-800">
+                  {editingTaskId ? 'Edit Task' : 'Create New Task'}
+                </Text>
+              </View>
+              <TouchableOpacity
+                className="p-2 bg-gray-100 rounded-xl"
+                onPress={handleClose}
                 disabled={loading}
                 activeOpacity={0.7}
-            >
-                <Text className={`text-sm ${selectedValue ? 'text-gray-800' : 'text-gray-400'}`}>
-                    {selectedValue || placeholder}
+              >
+                <MaterialIcons name="close" size={20} color="#6B7280" />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Form Content */}
+          <ScrollView
+            className="px-6 py-4"
+            style={{ maxHeight: screenHeight * 0.75 }}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            {/* Error/Success Messages */}
+            <ErrorMessage message={error} />
+            <SuccessMessage message={success} />
+
+            {/* Task Title */}
+            <View className="mb-4">
+              <View className="flex-row items-center mb-2">
+                <MaterialIcons name="title" size={18} color="#4B5563" />
+                <Text className="text-sm font-semibold text-gray-700 ml-2">
+                  Task Title *
                 </Text>
-                <MaterialIcons
-                    name={show ? "keyboard-arrow-up" : "keyboard-arrow-down"}
-                    size={20}
-                    color={error ? "#EF4444" : "#6B7280"}
-                />
-            </TouchableOpacity>
+              </View>
+              <TextInput
+                className={`border rounded-lg px-3 py-3 text-sm bg-white ${validationErrors.title ? 'border-red-300' : 'border-gray-300'}`}
+                value={newTask?.title || ''}
+                onChangeText={(text) => handleInputChange('title', text)}
+                placeholder="Enter a descriptive task title"
+                placeholderTextColor="#9CA3AF"
+                editable={!loading}
+              />
+              {validationErrors.title && (
+                <Text className="text-red-500 text-xs mt-1">
+                  {validationErrors.title}
+                </Text>
+              )}
+            </View>
 
-            {error && (
-                <Text className="text-red-500 text-xs mt-1">{error}</Text>
-            )}
-
-            {show && (
-                <View className="absolute top-10 left-0 right-0 bg-white border border-gray-300 rounded-lg shadow-lg z-50 max-h-48">
-                    <ScrollView>
-                        {options.map((option, index) => (
-                            <TouchableOpacity
-                                key={option.value}
-                                className={`px-3 py-3 flex-row items-center ${index < options.length - 1 ? 'border-b border-gray-100' : ''}`}
-                                onPress={() => onSelect(option.value)}
-                                activeOpacity={0.7}
-                            >
-                                {option.icon && (
-                                    <MaterialIcons
-                                        name={option.icon}
-                                        size={18}
-                                        color={option.color}
-                                        style={{ marginRight: 8 }}
-                                    />
-                                )}
-                                <Text className="text-sm text-gray-800">{option.label}</Text>
-                            </TouchableOpacity>
-                        ))}
-                    </ScrollView>
+            {/* Status and Priority Row */}
+            <View className="flex-row mb-4">
+              <View className="flex-1 mr-3">
+                <View className="flex-row items-center mb-2">
+                  <MaterialIcons name="info-outline" size={18} color="#4B5563" />
+                  <Text className="text-sm font-semibold text-gray-700 ml-2">
+                    Status
+                  </Text>
                 </View>
-            )}
-        </View>
-    ));
+                <CustomPicker
+                  options={statusOptions}
+                  selectedValue={getStatusDisplay().label}
+                  onSelect={handleStatusSelect}
+                  placeholder="Select status"
+                  show={showStatusPicker}
+                  setShow={setShowStatusPicker}
+                  error={validationErrors.status}
+                />
+              </View>
 
-    // Memoized message components with Tailwind CSS
-    const ErrorMessage = React.memo(({ message }) => (
-        message ? (
-            <View className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4 flex-row items-center">
-                <MaterialIcons name="error-outline" size={20} color="#EF4444" />
-                <Text className="text-red-700 text-sm ml-2 flex-1">{message}</Text>
+              <View className="flex-1">
+                <View className="flex-row items-center mb-2">
+                  <MaterialIcons name="flag" size={18} color="#4B5563" />
+                  <Text className="text-sm font-semibold text-gray-700 ml-2">
+                    Priority
+                  </Text>
+                </View>
+                <CustomPicker
+                  options={priorityOptions}
+                  selectedValue={getPriorityDisplay().label}
+                  onSelect={handlePrioritySelect}
+                  placeholder="Select priority"
+                  show={showPriorityPicker}
+                  setShow={setShowPriorityPicker}
+                />
+              </View>
             </View>
-        ) : null
-    ));
 
-    const SuccessMessage = React.memo(({ message }) => (
-        message ? (
-            <View className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4 flex-row items-center">
-                <MaterialIcons name="check-circle-outline" size={20} color="#059669" />
-                <Text className="text-green-700 text-sm ml-2 flex-1">{message}</Text>
+            {/* Due Date and Assignee Row */}
+            <View className="flex-row mb-4">
+              <View className="flex-1 mr-3">
+                <View className="flex-row items-center mb-2">
+                  <MaterialIcons name="schedule" size={18} color="#4B5563" />
+                  <Text className="text-sm font-semibold text-gray-700 ml-2">
+                    Due Date
+                  </Text>
+                </View>
+                <TextInput
+                  className={`border rounded-lg px-3 py-2 text-xs bg-white ${validationErrors.dueDate ? 'border-red-300' : 'border-gray-300'}`}
+                  value={newTask?.dueDate || ''}
+                  placeholder="YYYY-MM-DD"
+                  placeholderTextColor="#9CA3AF"
+                  onChangeText={(text) => handleInputChange('dueDate', text)}
+                  editable={!loading}
+                />
+                {validationErrors.dueDate && (
+                  <Text className="text-red-500 text-xs mt-1">
+                    {validationErrors.dueDate}
+                  </Text>
+                )}
+              </View>
+
+              <View className="flex-1">
+                <View className="flex-row items-center mb-2">
+                  <MaterialIcons name="person" size={18} color="#4B5563" />
+                  <Text className="text-sm font-semibold text-gray-700 ml-2">
+                    Assign To
+                  </Text>
+                </View>
+                <CustomPicker
+                  options={userOptions}
+                  selectedValue={getSelectedUserName()}
+                  onSelect={handleUserSelect}
+                  placeholder="Select team member"
+                  show={showUserPicker}
+                  setShow={setShowUserPicker}
+                />
+              </View>
             </View>
-        ) : null
-    ));
 
-    if (!isOpen) return null;
+            {/* Description */}
+            <View className="mb-6">
+              <View className="flex-row items-center mb-2">
+                <MaterialIcons name="description" size={18} color="#4B5563" />
+                <Text className="text-sm font-semibold text-gray-700 ml-2">
+                  Description *
+                </Text>
+              </View>
+              <TextInput
+                className={`border rounded-lg px-2 py-2 text-sm bg-white ${validationErrors.description ? 'border-red-300' : 'border-gray-300'}`}
+                style={{
+                  minHeight: 180,
+                  textAlignVertical: 'top'
+                }}
+                value={newTask?.description || ''}
+                placeholder="Provide detailed task guidelines and requirements..."
+                placeholderTextColor="#9CA3AF"
+                multiline
+                numberOfLines={4}
+                onChangeText={(text) => handleInputChange('description', text)}
+                editable={!loading}
+              />
+              {validationErrors.description && (
+                <Text className="text-red-500 text-xs mt-1">
+                  {validationErrors.description}
+                </Text>
+              )}
+            </View>
+          </ScrollView>
 
-    return (
-        <Modal
-            visible={isOpen}
-            transparent={true}
-            animationType="none"
-            statusBarTranslucent={true}
-        >
-            <KeyboardAvoidingView
-                style={{ flex: 1 }}
-            >
+          {/* Footer Actions */}
+          <View style={{
+            paddingHorizontal: 24,
+            paddingVertical: 16,
+            borderTopWidth: 1,
+            borderTopColor: '#F3F4F6'
+          }}>
+            <View style={{ flexDirection: 'row' }}>
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  backgroundColor: '#F3F4F6',
+                  paddingVertical: 12,
+                  borderRadius: 8,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginRight: 12
+                }}
+                onPress={handleClose}
+                disabled={loading}
+                activeOpacity={0.7}
+              >
+                <MaterialIcons name="close" size={18} color="#6B7280" />
+                <Text style={{ color: '#374151', fontWeight: '600', marginLeft: 8 }}>
+                  Cancel
+                </Text>
+              </TouchableOpacity>
 
-                {/* Animated Backdrop */}
-                <Animated.View
-                    className="flex-1 bg-black/60"
-                    style={{ opacity: backdropOpacity }}
-                >
-                    <TouchableWithoutFeedback onPress={handleClose}>
-                        <View className="flex-1" />
-                    </TouchableWithoutFeedback>
-                </Animated.View>
-
-                {/* Animated Bottom Sheet */}
-                <Animated.View
-                    className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl"
-                    style={{
-                        transform: [{ translateY: slideAnim }],
-                        maxHeight: screenHeight * 0.85,
-                    }}
-                >
-                    {/* Handle Bar */}
-                    <View className="items-center py-3">
-                        <View className="w-12 h-1 bg-gray-300 rounded-full" />
-                    </View>
-
-                    {/* Header */}
-                    <View className="px-6 py-4 border-b border-gray-100">
-                        <View className="flex-row items-center justify-between">
-                            <View className="flex-row items-center">
-                                <View className="bg-blue-100 p-2 rounded-xl mr-3">
-                                    <MaterialIcons
-                                        name={editingTaskId ? "edit" : "add-task"}
-                                        size={20}
-                                        color="#3B82F6"
-                                    />
-                                </View>
-                                <Text className="text-xl font-bold text-gray-800">
-                                    {editingTaskId ? 'Edit Task' : 'Create New Task'}
-                                </Text>
-                            </View>
-                            <TouchableOpacity
-                                className="p-2 bg-gray-100 rounded-xl"
-                                onPress={handleClose}
-                                disabled={loading}
-                                activeOpacity={0.7}
-                            >
-                                <MaterialIcons name="close" size={20} color="#6B7280" />
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-
-                    {/* Form Content */}
-                    <ScrollView
-                        className="px-6 py-4"
-                        style={{ maxHeight: screenHeight * 0.75 }}
-                        showsVerticalScrollIndicator={false}
-                        keyboardShouldPersistTaps="handled"
-                    >
-                        {/* Error/Success Messages */}
-                        <ErrorMessage message={error} />
-                        <SuccessMessage message={success} />
-
-                        {/* Task Title */}
-                        <View className="mb-4">
-                            <View className="flex-row items-center mb-2">
-                                <MaterialIcons name="title" size={18} color="#4B5563" />
-                                <Text className="text-sm font-semibold text-gray-700 ml-2">
-                                    Task Title *
-                                </Text>
-                            </View>
-                            <TextInput
-                                className={`border rounded-lg px-3 py-3 text-sm bg-white ${validationErrors.title ? 'border-red-300' : 'border-gray-300'}`}
-                                value={newTask?.title || ''}
-                                onChangeText={(text) => handleInputChange('title', text)}
-                                placeholder="Enter a descriptive task title"
-                                placeholderTextColor="#9CA3AF"
-                                editable={!loading}
-                            />
-                            {validationErrors.title && (
-                                <Text className="text-red-500 text-xs mt-1">
-                                    {validationErrors.title}
-                                </Text>
-                            )}
-                        </View>
-
-                        {/* Status and Priority Row */}
-                        <View className="flex-row mb-4">
-                            <View className="flex-1 mr-3">
-                                <View className="flex-row items-center mb-2">
-                                    <MaterialIcons name="info-outline" size={18} color="#4B5563" />
-                                    <Text className="text-sm font-semibold text-gray-700 ml-2">
-                                        Status
-                                    </Text>
-                                </View>
-                                <CustomPicker
-                                    options={statusOptions}
-                                    selectedValue={getStatusDisplay().label}
-                                    onSelect={handleStatusSelect}
-                                    placeholder="Select status"
-                                    show={showStatusPicker}
-                                    setShow={setShowStatusPicker}
-                                    error={validationErrors.status}
-                                />
-                            </View>
-
-                            <View className="flex-1">
-                                <View className="flex-row items-center mb-2">
-                                    <MaterialIcons name="flag" size={18} color="#4B5563" />
-                                    <Text className="text-sm font-semibold text-gray-700 ml-2">
-                                        Priority
-                                    </Text>
-                                </View>
-                                <CustomPicker
-                                    options={priorityOptions}
-                                    selectedValue={getPriorityDisplay().label}
-                                    onSelect={handlePrioritySelect}
-                                    placeholder="Select priority"
-                                    show={showPriorityPicker}
-                                    setShow={setShowPriorityPicker}
-                                />
-                            </View>
-                        </View>
-
-                        {/* Due Date and Assignee Row */}
-                        <View className="flex-row mb-4">
-                            <View className="flex-1 mr-3">
-                                <View className="flex-row items-center mb-2">
-                                    <MaterialIcons name="schedule" size={18} color="#4B5563" />
-                                    <Text className="text-sm font-semibold text-gray-700 ml-2">
-                                        Due Date
-                                    </Text>
-                                </View>
-                                <TextInput
-                                    className={`border rounded-lg px-3 py-2 text-xs bg-white ${validationErrors.dueDate ? 'border-red-300' : 'border-gray-300'}`}
-                                    value={newTask?.dueDate || ''}
-                                    placeholder="YYYY-MM-DD"
-                                    placeholderTextColor="#9CA3AF"
-                                    onChangeText={(text) => handleInputChange('dueDate', text)}
-                                    editable={!loading}
-                                />
-                                {validationErrors.dueDate && (
-                                    <Text className="text-red-500 text-xs mt-1">
-                                        {validationErrors.dueDate}
-                                    </Text>
-                                )}
-                            </View>
-
-                            <View className="flex-1">
-                                <View className="flex-row items-center mb-2">
-                                    <MaterialIcons name="person" size={18} color="#4B5563" />
-                                    <Text className="text-sm font-semibold text-gray-700 ml-2">
-                                        Assign To
-                                    </Text>
-                                </View>
-                                <CustomPicker
-                                    options={userOptions}
-                                    selectedValue={getSelectedUserName()}
-                                    onSelect={handleUserSelect}
-                                    placeholder="Select team member"
-                                    show={showUserPicker}
-                                    setShow={setShowUserPicker}
-                                />
-                            </View>
-                        </View>
-
-                        {/* Description */}
-                        <View className="mb-6">
-                            <View className="flex-row items-center mb-2">
-                                <MaterialIcons name="description" size={18} color="#4B5563" />
-                                <Text className="text-sm font-semibold text-gray-700 ml-2">
-                                    Description *
-                                </Text>
-                            </View>
-                            <TextInput
-                                className={`border rounded-lg px-2 py-2 text-sm bg-white ${validationErrors.description ? 'border-red-300' : 'border-gray-300'}`}
-                                style={{
-                                    minHeight: 180,
-                                    textAlignVertical: 'top'
-                                }}
-                                value={newTask?.description || ''}
-                                placeholder="Provide detailed task guidelines and requirements..."
-                                placeholderTextColor="#9CA3AF"
-                                multiline
-                                numberOfLines={4}
-                                onChangeText={(text) => handleInputChange('description', text)}
-                                editable={!loading}
-                            />
-                            {validationErrors.description && (
-                                <Text className="text-red-500 text-xs mt-1">
-                                    {validationErrors.description}
-                                </Text>
-                            )}
-                        </View>
-                    </ScrollView>
-
-                    {/* Footer Actions */}
-                    <View style={{
-                        paddingHorizontal: 24,
-                        paddingVertical: 16,
-                        borderTopWidth: 1,
-                        borderTopColor: '#F3F4F6'
-                    }}>
-                        <View style={{ flexDirection: 'row' }}>
-                            <TouchableOpacity
-                                style={{
-                                    flex: 1,
-                                    backgroundColor: '#F3F4F6',
-                                    paddingVertical: 12,
-                                    borderRadius: 8,
-                                    flexDirection: 'row',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    marginRight: 12
-                                }}
-                                onPress={handleClose}
-                                disabled={loading}
-                                activeOpacity={0.7}
-                            >
-                                <MaterialIcons name="close" size={18} color="#6B7280" />
-                                <Text style={{ color: '#374151', fontWeight: '600', marginLeft: 8 }}>
-                                    Cancel
-                                </Text>
-                            </TouchableOpacity>
-
-                            <TouchableOpacity
-                                style={{
-                                    flex: 1,
-                                    backgroundColor: loading ? '#93C5FD' : '#2563EB',
-                                    paddingVertical: 12,
-                                    borderRadius: 8,
-                                    flexDirection: 'row',
-                                    alignItems: 'center',
-                                    justifyContent: 'center'
-                                }}
-                                onPress={handleSubmit}
-                                disabled={loading}
-                                activeOpacity={0.7}
-                            >
-                                {loading ? (
-                                    <MaterialIcons name="hourglass-empty" size={18} color="#FFFFFF" />
-                                ) : (
-                                    <MaterialIcons
-                                        name={editingTaskId ? "check" : "add"}
-                                        size={18}
-                                        color="#FFFFFF"
-                                    />
-                                )}
-                                <Text style={{ color: 'white', fontWeight: '600', marginLeft: 8 }}>
-                                    {loading ? 'Processing...' : editingTaskId ? 'Update Task' : 'Create Task'}
-                                </Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </Animated.View>
-            </KeyboardAvoidingView>
-        </Modal>
-    );
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  backgroundColor: loading ? '#93C5FD' : '#2563EB',
+                  paddingVertical: 12,
+                  borderRadius: 8,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+                onPress={handleSubmit}
+                disabled={loading}
+                activeOpacity={0.7}
+              >
+                {loading ? (
+                  <MaterialIcons name="hourglass-empty" size={18} color="#FFFFFF" />
+                ) : (
+                  <MaterialIcons
+                    name={editingTaskId ? "check" : "add"}
+                    size={18}
+                    color="#FFFFFF"
+                  />
+                )}
+                <Text style={{ color: 'white', fontWeight: '600', marginLeft: 8 }}>
+                  {loading ? 'Processing...' : editingTaskId ? 'Update Task' : 'Create Task'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Animated.View>
+      </KeyboardAvoidingView>
+    </Modal>
+  );
 };
 
-export default TaskModal;
+export default React.memo(TaskModal);
+//export default TaskModal;

@@ -10,7 +10,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { usePathname } from 'expo-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
     Image,
     ScrollView,
@@ -23,8 +23,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 const AssignTasks = () => {
     const insets = useSafeAreaInsets();
     const projectId = usePathname().split("/").pop();
-
-    // State management
+    
+    const isMountedRef = useRef(true);
+    
     const [isModalOpen, setModalOpen] = useState(false);
     const [projectName, setProjectName] = useState('');
     const [projectTeam, setProjectTeam] = useState('');
@@ -42,8 +43,13 @@ const AssignTasks = () => {
     const [success, setSuccess] = useState('');
     const [editingTaskId, setEditingTaskId] = useState(null);
     const [loading, setLoading] = useState(false);
+ 
+    useEffect(() => {
+        return () => {
+            isMountedRef.current = false;
+        };
+    }, []);
 
-    // Memoized initial task state
     const initialTaskState = useMemo(() => ({
         title: '',
         description: '',
@@ -53,7 +59,6 @@ const AssignTasks = () => {
         assignedTo: ''
     }), []);
 
-    // Optimized fetch function with memoization
     const fetchTasksAndUsers = useCallback(async () => {
         if (loading) return; // Prevent multiple simultaneous fetches
 
@@ -71,21 +76,25 @@ const AssignTasks = () => {
                 })
             ]);
 
-            setTasks(tasksResponse.data.validTasks);
-            //console.log(tasksResponse.data.validTasks)
-            setProjectName(tasksResponse.data.projectName);
-            setProjectTeam(tasksResponse.data.projectTeam);
-            setUsers(usersResponse.data);
-
-            // Clear any previous errors on successful fetch
-            setError('');
+            // Only update state if component is still mounted
+            if (isMountedRef.current) {
+                setTasks(tasksResponse.data.validTasks); 
+                setProjectName(tasksResponse.data.projectName);
+                setProjectTeam(tasksResponse.data.projectTeam);
+                setUsers(usersResponse.data);
+                setError(''); // Clear any previous errors on successful fetch
+            }
         } catch (err) {
             console.error('Fetch error:', err);
-            setError('Failed to fetch tasks or users.');
+            if (isMountedRef.current) {
+                setError('Failed to fetch tasks or users.');
+            }
         } finally {
-            setLoading(false);
+            if (isMountedRef.current) {
+                setLoading(false);
+            }
         }
-    }, [projectId, loading]);
+    }, [projectId]); // Removed 'loading' from dependencies
 
     // Optimized refresh tasks function
     const refreshTasks = useCallback(async () => {
@@ -95,20 +104,20 @@ const AssignTasks = () => {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
-            setTasks(tasksResponse.data.validTasks);
-            setProjectName(tasksResponse.data.projectName);
-            setProjectTeam(tasksResponse.data.projectTeam);
+            if (isMountedRef.current) {
+                setTasks(tasksResponse.data.validTasks);
+                setProjectName(tasksResponse.data.projectName);
+                setProjectTeam(tasksResponse.data.projectTeam);
+            }
         } catch (err) {
             console.error('Refresh tasks error:', err);
-            setError('Failed to refresh tasks.');
+            if (isMountedRef.current) {
+                setError('Failed to refresh tasks.');
+            }
         }
     }, [projectId]);
 
-    useEffect(() => {
-        fetchTasksAndUsers();
-    }, [fetchTasksAndUsers]);
-
-    // Optimized handlers with useCallback
+    // Fixed: Properly memoize handlers first
     const handleChange = useCallback((name, value) => {
         setNewTask(prev => ({ ...prev, [name]: value }));
     }, []);
@@ -118,7 +127,13 @@ const AssignTasks = () => {
         setEditingTaskId(null);
     }, [initialTaskState]);
 
-    const handleCreateTask = useCallback(async (e) => {
+    const handleCloseModal = useCallback(() => {
+        setModalOpen(false);
+        resetTaskForm();
+        setError(''); // Clear errors when closing modal
+    }, [resetTaskForm]);
+
+    const handleCreateTask = useCallback(async () => {
         if (loading) return;
 
         setLoading(true);
@@ -130,24 +145,80 @@ const AssignTasks = () => {
                 { headers: { Authorization: `Bearer ${token}` } }
             );
 
-            setSuccess('Task created successfully.');
-            resetTaskForm();
-            await refreshTasks();
-            handleCloseModal();
-
-            // Clear success message after delay
-            setTimeout(() => setSuccess(''), 3000);
+            if (isMountedRef.current) {
+                setSuccess('Task created successfully.');
+                resetTaskForm();
+                handleCloseModal();
+                
+                // Clear success message after delay
+                setTimeout(() => {
+                    if (isMountedRef.current) {
+                        setSuccess('');
+                    }
+                }, 3000);
+                
+                // Refresh tasks after successful creation
+                await refreshTasks();
+            }
         } catch (err) {
             console.error('Create task error:', err);
-            setError('Failed to create task.');
+            if (isMountedRef.current) {
+                setError('Failed to create task.');
+            }
         } finally {
-            setLoading(false);
+            if (isMountedRef.current) {
+                setLoading(false);
+            }
         }
-    }, [newTask, projectId, loading, resetTaskForm, refreshTasks]);
+    }, [newTask, projectId, resetTaskForm, refreshTasks, handleCloseModal]);
 
-    const handleEditTask = useCallback(async (task) => {
-        handleOpenModal();
-        //console.log("-- "+task.assignedTo.name)
+    const handleUpdateTask = useCallback(async () => {
+        if (loading || !editingTaskId) return;
+
+        setLoading(true);
+        try {
+            const token = await AsyncStorage.getItem('token');  
+            await axios.patch(
+                `${config.VITE_REACT_APP_API_BASE_URL}/manageTasks/${editingTaskId}`,
+                newTask,
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+
+            if (isMountedRef.current) {
+                setSuccess('Task updated successfully.');
+                resetTaskForm();
+                handleCloseModal();
+                
+                // Clear success message after delay
+                setTimeout(() => {
+                    if (isMountedRef.current) {
+                        setSuccess('');
+                    }
+                }, 3000);
+                
+                // Refresh tasks after successful update
+                await refreshTasks();
+            }
+        } catch (err) {
+            //console.error('Update task error:', err);
+            if (isMountedRef.current) {
+                setError('Failed to update task. Assign/ ReAssign to some-one');
+            }
+        } finally {
+            if (isMountedRef.current) {
+                setLoading(false);
+            }
+        }
+    }, [newTask, editingTaskId, resetTaskForm, refreshTasks, handleCloseModal]);
+
+    // Fixed: Now this won't cause circular dependencies
+    const modalSubmitHandler = useMemo(
+        () => editingTaskId ? handleUpdateTask : handleCreateTask,
+        [editingTaskId, handleUpdateTask, handleCreateTask]
+    );
+
+    const handleEditTask = useCallback((task) => {
+        setModalOpen(true);
         setEditingTaskId(task._id);
         setNewTask({
             title: task.title,
@@ -159,33 +230,6 @@ const AssignTasks = () => {
         });
     }, []);
 
-    const handleUpdateTask = useCallback(async (e) => {
-        if (loading || !editingTaskId) return;
-
-        setLoading(true);
-        try {
-            const token = await AsyncStorage.getItem('token');
-            await axios.patch(
-                `${config.VITE_REACT_APP_API_BASE_URL}/manageTasks/${editingTaskId}`,
-                newTask,
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
-
-            setSuccess('Task updated successfully.');
-            resetTaskForm();
-            await refreshTasks();
-            handleCloseModal();
-
-            // Clear success message after delay
-            setTimeout(() => setSuccess(''), 3000);
-        } catch (err) {
-            console.error('Update task error:', err);
-            setError('Failed to update task.');
-        } finally {
-            setLoading(false);
-        }
-    }, [newTask, editingTaskId, loading, resetTaskForm, refreshTasks]);
-
     const handleDeleteTask = useCallback(async (taskId) => {
         if (loading) return;
 
@@ -196,26 +240,36 @@ const AssignTasks = () => {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
-            setSuccess('Task deleted successfully.');
-            await refreshTasks();
-
-            // Clear success message after delay
-            setTimeout(() => setSuccess(''), 3000);
+            if (isMountedRef.current) {
+                setSuccess('Task deleted successfully.');
+                
+                // Clear success message after delay
+                setTimeout(() => {
+                    if (isMountedRef.current) {
+                        setSuccess('');
+                    }
+                }, 3000);
+                
+                await refreshTasks();
+            }
         } catch (err) {
             console.error('Delete task error:', err);
-            setError('Failed to delete task.');
+            if (isMountedRef.current) {
+                setError('Failed to delete task.');
+            }
         } finally {
-            setLoading(false);
+            if (isMountedRef.current) {
+                setLoading(false);
+            }
         }
-    }, [loading, refreshTasks]);
+    }, [refreshTasks]);
 
     const handleOpenModal = useCallback(() => setModalOpen(true), []);
 
-    const handleCloseModal = useCallback(() => {
-        setModalOpen(false);
-        resetTaskForm();
-        setError(''); // Clear errors when closing modal
-    }, [resetTaskForm]);
+    // Use useEffect to fetch data only once on mount
+    useEffect(() => {
+        fetchTasksAndUsers();
+    }, [projectId]); // Only depend on projectId, not the entire function
 
     // Memoized utility functions to prevent re-creation on every render
     const getPriorityColor = useCallback((priority) => {
@@ -256,7 +310,6 @@ const AssignTasks = () => {
 
     // Memoized computed values
     const tasksCount = useMemo(() => tasks.length, [tasks.length]);
-    const shouldShowWarning = useMemo(() => projectTeam === 0, [projectTeam]);
 
     return (
         <ScrollView
@@ -312,7 +365,7 @@ const AssignTasks = () => {
                 </View>
             </View>
 
-            {/* Tasks List - Rendered directly */}
+            {/* Tasks List */}
             {tasks.length > 0 ? (
                 tasks.map((item) => (
                     <View key={item._id} className="bg-white rounded-xl p-4 mb-3 shadow-sm border border-gray-100">
@@ -401,7 +454,7 @@ const AssignTasks = () => {
             <TaskModal
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
-                onSubmit={editingTaskId ? handleUpdateTask : handleCreateTask}
+                onSubmit={modalSubmitHandler}
                 newTask={newTask}
                 users={users}
                 handleChange={handleChange}
@@ -410,7 +463,6 @@ const AssignTasks = () => {
                 success={success}
             />
         </ScrollView>
-
     );
 };
 

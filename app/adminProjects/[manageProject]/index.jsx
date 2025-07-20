@@ -139,7 +139,7 @@ const ProjectDetail = () => {
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ paddingTop: insets.top }}
+      contentContainerStyle={{ paddingTop: insets.top,paddingBottom:insets.bottom }}
       className="flex-1 bg-gray-100 px-4 pt-5"
     >
       {showModal && <EditProject project={project} editModal={showModal} setShowModal={setShowModal} />}
@@ -293,7 +293,7 @@ const ProjectDetail = () => {
         {project.team.length > 0 ? (
           <View className="space-y-3">
             {project.team.map((member, index) => (
-              <View key={index} className="bg-gray-50 rounded-xl p-4 border border-gray-200 flex-row justify-between items-center">
+              <View key={index} className="bg-gray-50 mb-2 rounded-xl p-4 border border-gray-200 flex-row justify-between items-center">
                 <View className="flex-row items-center flex-1">
                   <Image
                     source={avatarImages[member.avatar]}
@@ -332,13 +332,13 @@ const ProjectDetail = () => {
         {project.tasks.length > 0 ? (
           <View className="space-y-3">
             {project.tasks.map((task, index) => (
-              <View key={index} className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+              <View key={index} className="bg-gray-50 mb-2 rounded-xl p-4 border border-gray-200">
                 <View className="flex-row justify-between items-start">
                   <View className="flex-1">
                     <Text className="text-base font-semibold text-gray-900 mb-2">{task.title}</Text>
                     <View className="flex-row items-center">
-                      <View className={`px-2 py-1 rounded-full ${getPriorityColor(task.priority)}/20 mr-3`}>
-                        <Text className={`text-xs font-medium ${getPriorityColor(task.priority)}`}>{task.priority}</Text>
+                      <View className={`rounded-full ${getPriorityColor(task.priority)}/20 mr-3`}>
+                        <Text className={`text-[10px] font-medium text-white px-[8px] py-[2px] rounded-[10px] ${getPriorityColor(task.priority)}`}>{task.priority}</Text>
                       </View>
                       <View className="flex-row items-center">
                         <FontAwesome5 name="calendar-alt" size={12} color="#6B7280" />
