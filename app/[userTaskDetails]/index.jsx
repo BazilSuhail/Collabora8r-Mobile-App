@@ -7,7 +7,6 @@ import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   ScrollView,
-  StatusBar,
   Text,
   TextInput,
   TouchableOpacity,
@@ -16,16 +15,16 @@ import {
 import {
   useSharedValue
 } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle } from 'react-native-svg';
 import ProgressModal from '../../components/ProgressModal';
 import { useAuthContext } from '../../hooks/AuthProvider';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const TaskDetails = () => {
-  const insets = useSafeAreaInsets();
-  const pathname = usePathname().split("/").pop();
-  const [taskId] = pathname.split("-");
   const { user } = useAuthContext();
+  const insets = useSafeAreaInsets(); 
+  const fullId = usePathname().split("/").pop();  
+  const [taskId] = fullId.split("-"); 
 
   const [task, setTask] = useState(null);
   const [status, setStatus] = useState('Not Started');
@@ -46,37 +45,40 @@ const TaskDetails = () => {
   const [tempStatus, setTempStatus] = useState('Not Started');
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const token = await AsyncStorage.getItem('token');
-        const taskRes = await axios.get(
-          `${config.VITE_REACT_APP_API_BASE_URL}/project-tasks/${taskId}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        const commentRes = await axios.get(
-          `${config.VITE_REACT_APP_API_BASE_URL}/comments/tasks/${taskId}/comments`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+  const fetchData = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token'); 
 
-        setTask(taskRes.data);
-        setStatus(taskRes.data.status);
-        setPriority(taskRes.data.priority)
-        setComments(commentRes.data.comments);
-        setTempProgress(taskRes.data.progress);
-        setTempStatus(taskRes.data.status);
+      const taskRes = await axios.get(
+        `${config.VITE_REACT_APP_API_BASE_URL}/project-tasks/${taskId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-        // Initialize slider position based on current progress
-        translateX.value = (taskRes.data.progress / 100) * (sliderWidth - thumbSize);
+      const commentRes = await axios.get(
+        `${config.VITE_REACT_APP_API_BASE_URL}/comments/tasks/${taskId}/comments`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-      } catch (err) {
-        setError("Failed to load task data.");
-      } finally {
-        setLoading(false);
-      }
-    };
+      setTask(taskRes.data);
+      setStatus(taskRes.data.status);
+      setPriority(taskRes.data.priority);
+      setComments(commentRes.data.comments);
+      setTempProgress(taskRes.data.progress);
+      setTempStatus(taskRes.data.status);
+      translateX.value = (taskRes.data.progress / 100) * (sliderWidth - thumbSize);
 
-    fetchData();
-  }, []);
+    } catch (err) {
+      console.log('Full error:', err);
+      console.log('Error response:', err.response?.data);
+      console.log('Error status:', err.response?.status);
+      setError("Failed to load task data.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchData();
+}, [taskId]); // make sure taskId is a dependency!
 
   const handleAddComment = async () => {
     if (!commentContent.trim()) return;
@@ -104,7 +106,6 @@ const TaskDetails = () => {
       setCommentContent('');
 
     } catch (err) {
-      console.error(err);
       setError("Failed to add comment.");
     }
   };
@@ -137,7 +138,6 @@ const TaskDetails = () => {
       );
       handleCancelEditing();
     } catch (err) {
-      console.error(err);
       setError("Failed to edit comment.");
     }
   };
@@ -151,7 +151,6 @@ const TaskDetails = () => {
 
       setComments((prev) => prev.filter((comment) => comment._id !== commentId));
     } catch (err) {
-      console.error(err);
       setError("Failed to delete comment.");
     }
   };
@@ -174,7 +173,6 @@ const TaskDetails = () => {
       setStatus(tempStatus);
       setModalVisible(false);
     } catch (err) {
-      console.error(err);
       setError("Failed to update task details.");
     }
   };
@@ -271,7 +269,7 @@ const TaskDetails = () => {
     <View className="flex-1 bg-gray-100 px-4 pt-2">
 
       <ScrollView
-        contentContainerStyle={{ paddingTop: insets.top }}
+        contentContainerStyle={{ paddingTop: insets.top + 8 }}
         showsVerticalScrollIndicator={false}
       >
 
@@ -294,16 +292,16 @@ const TaskDetails = () => {
             <View className="w-10 h-10 bg-blue-100 rounded-full justify-center items-center mr-3">
               <FontAwesome5 name="file-alt" size={16} color="#3B82F6" />
             </View>
-            <Text className="text-lg font-semibold text-gray-900">Project Description</Text>
+            <Text className="text-lg font-semibold text-gray-900">Task Description</Text>
           </View>
           <Text className="text-sm text-gray-500 leading-5">{task.description}</Text>
 
-          <View className="h-[2px] w-full bg-gray-100"></View>
+          <View className="h-[2px] my-5 w-full bg-gray-100"></View>
 
-          <View className="flex-row items-center justify-between mt-5">
+          <View className="flex-row items-center justify-between">
             <View className="flex-row items-center ">
-              <View className="w-8 h-8 bg-red-50 rounded-lg items-center justify-center mr-3">
-                <FontAwesome5 name="user-circle" size={16} color="#EF4444" />
+              <View className="w-8 h-8 bg-blue-50 rounded-lg items-center justify-center mr-3">
+                <FontAwesome5 name="user-circle" size={16} color="#3B82F6" />
               </View>
               <View>
                 <Text className="text-gray-500 text-[9px] font-medium">Created by</Text>
@@ -394,9 +392,9 @@ const TaskDetails = () => {
 
           {/* Comments List */}
           <View className="space-y-4">
-            <View className="flex-row items-center mb-4">
-              <MaterialIcons name="comment" size={20} color="#6B7280" />
-              <Text className="text-lg font-semibold text-gray-900 ml-2">
+            <View className="flex-row items-center ml-1 mb-4">
+              <MaterialIcons name="comment" size={17} color="#6B7280" />
+              <Text className="text-md mb-[4px] font-semibold text-gray-900 ml-2">
                 Comments ({comments.length})
               </Text>
             </View>
@@ -409,7 +407,7 @@ const TaskDetails = () => {
               </View>
             ) : (
               comments.map((item) => (
-                <View key={item._id} className="bg-white rounded-2xl p-4 shadow-sm">
+                <View key={item._id} className="bg-white rounded-2xl p-4 mb-2">
                   {/* Comment Header */}
                   <View className="flex-row items-center justify-between mb-3">
                     <View className="flex-row items-center flex-1">

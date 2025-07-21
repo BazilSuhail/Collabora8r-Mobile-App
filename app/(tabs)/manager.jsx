@@ -67,16 +67,18 @@ const Manager = () => {
               href={`/adminProjects/tasks/${project._id}`}
               className="w-full bg-white border-2 border-gray-200 rounded-2xl overflow-hidden mb-4"
             >
-              <View className="relative w-full h-[150px] rounded-t-2xl">
+              <View className="relative w-full h-[150px]">
 
                 <View className="absolute inset-0 w-full">
-                  <Image source={themeImages[project.theme]} className="h-full w-full object-cover" />
+                  <Image source={themeImages[project.theme]} className="h-full w-full object-cover rounded-t-2xl" />
                 </View>
 
-                <LinearGradient
+                <View className="absolute w-full h-full rounded-t-2xl overflow-hidden">
+                  <LinearGradient
                   colors={['rgba(0,0,0,0.7)', 'rgba(0,0,0,0.3)']}
-                  className="absolute w-full h-full"
+                  className="w-full h-full"
                 />
+                </View>
 
                 <View className="absolute h-[150px] pt-5 inset-0 w-full px-[18px] z-10">
                   <View className="flex-row items-start justify-between">
@@ -131,8 +133,7 @@ const Manager = () => {
 
               </View>
               {/* Project Details Card */}
-              <View className="p-4">
-                <View className="flex-row items-center justify-between">
+             <View className="flex-row p-4 w-full items-center justify-between">
                   <View className="flex-row items-center">
                     <View className="w-8 h-8 bg-blue-100 rounded-full items-center justify-center">
                       <Ionicons name="folder-open" size={14} color="#3b82f6" />
@@ -143,14 +144,13 @@ const Manager = () => {
                     </View>
                   </View>
 
-                  <View className="flex-row items-center space-x-3">
+                  <View className="flex-row items-center">
                     <View className="bg-blue-50 px-2 py-1 rounded-full">
                       <Text className="text-blue-600 text-xs font-medium">In Progress</Text>
                     </View>
                     <Ionicons name="chevron-forward" size={16} color="#9ca3af" />
                   </View>
                 </View>
-              </View>
             </Link>
           ))}
         </View>
