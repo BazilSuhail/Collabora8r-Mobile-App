@@ -9,6 +9,7 @@ import { usePathname, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Image, Modal, ScrollView, StatusBar, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const JoinedProjectDetails = () => {
   const pathname = usePathname();
@@ -251,37 +252,55 @@ const JoinedProjectDetails = () => {
               </View>
             )}
 
-            <View className="bg-white rounded-lg overflow-hidden">
-              <View className="relative h-48">
-                <Image
-                  source={themeImages[project.theme]}
-                  style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, width: '100%', height: '100%', resizeMode: 'cover' }}
-                />
-                <View className="absolute inset-0 bg-black/40" />
-                <View className="absolute bottom-0 left-0 right-0 p-6">
-                  <Text className="text-white text-2xl font-bold mb-2">{project.name}</Text>
-                  <Text className="text-white/90 text-base leading-6">{project.description}</Text>
+            <View className="rounded-2xl mb-2 overflow-hidden">
+              <View className="relative h-[148px] mb-3 w-full">
+                {/* Background Image */}
+                <View className="absolute inset-0 w-full">
+                  <Image
+                    source={themeImages[project.theme]}
+                    className="h-full w-full rounded-[12px] object-cover"
+                  />
                 </View>
+
+                <LinearGradient
+                  colors={['rgba(0,0,0,0.7)', 'rgba(0,0,0,0.3)']}
+                  className="absolute w-full h-full rounded-[12px] overflow-hidden"
+                />
+                <View className="absolute inset-0 p-5 flex justify-center">
+                  <Text className="text-white text-2xl font-bold mb-2">{project.name}</Text>
+                </View>
+
               </View>
-              <View className="p-6">
-                <View className="flex-row space-x-8">
-                  <View className="flex-row items-center">
-                    <View className="w-10 h-10 bg-purple-100 rounded-full items-center justify-center mr-3">
-                      <Ionicons name="people" size={18} color="#8B5CF6" />
-                    </View>
-                    <View>
-                      <Text className="text-gray-900 font-semibold text-base">{teamDetails.length}</Text>
-                      <Text className="text-gray-500 text-sm">Members</Text>
-                    </View>
+            </View>
+
+            <View className="bg-white rounded-2xl p-5 mb-4 ">
+              <View className="flex-row items-center mb-4">
+                <View className="w-10 h-10 bg-blue-100 rounded-full justify-center items-center mr-3">
+                  <FontAwesome5 name="file-alt" size={16} color="#3B82F6" />
+                </View>
+                <Text className="text-lg font-semibold text-gray-900">Project Description</Text>
+              </View>
+              <Text className="text-sm text-gray-500 leading-5">{project.description}</Text>
+            </View>
+
+            <View className="bg-white rounded-2xl p-5 mb-4 ">
+              <View className="flex-row">
+                <View className="flex-row items-center">
+                  <View className="w-10 h-10 bg-purple-100 rounded-full items-center justify-center mr-3">
+                    <Ionicons name="people" size={18} color="#8B5CF6" />
                   </View>
-                  <View className="flex-row items-center">
-                    <View className="w-10 h-10 bg-green-100 rounded-full items-center justify-center mr-3">
-                      <Ionicons name="checkmark-circle" size={18} color="#10B981" />
-                    </View>
-                    <View>
-                      <Text className="text-gray-900 font-semibold text-base">{totalTasks}</Text>
-                      <Text className="text-gray-500 text-sm">Tasks</Text>
-                    </View>
+                  <View>
+                    <Text className="text-gray-900 font-semibold text-base">{teamDetails.length}</Text>
+                    <Text className="text-gray-500 text-sm">Members</Text>
+                  </View>
+                </View>
+                <View className="flex-row ml-4 items-center">
+                  <View className="w-10 h-10 bg-green-100 rounded-full items-center justify-center mr-3">
+                    <Ionicons name="checkmark-circle" size={18} color="#10B981" />
+                  </View>
+                  <View>
+                    <Text className="text-gray-900 font-semibold text-base">{totalTasks}</Text>
+                    <Text className="text-gray-500 text-sm">Tasks</Text>
                   </View>
                 </View>
               </View>
