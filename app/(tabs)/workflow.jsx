@@ -425,7 +425,7 @@ const Workflow = () => {
     'Completed': [],
   });
   const [selectedTask, setSelectedTask] = useState(null);
-  const [updatedTasks, setUpdatedTasks] = useState({}); 
+  const [updatedTasks, setUpdatedTasks] = useState({});
   const [loading, setLoading] = useState(true);
   const [isDragging, setIsDragging] = useState(false);
   const [draggedTask, setDraggedTask] = useState(null);
@@ -509,7 +509,7 @@ const Workflow = () => {
   }, []);
 
   const openStatusModal = useCallback((task) => {
-    setSelectedTask(task); 
+    setSelectedTask(task);
   }, []);
 
   const confirmUpdate = useCallback(async () => {
@@ -532,7 +532,7 @@ const Workflow = () => {
       Alert.alert('Error', 'Error updating tasks');
     }
   }, [updatedTasks]);
- 
+
   const hasUpdates = useMemo(() => Object.keys(updatedTasks).length > 0, [updatedTasks]);
 
   const totalTasks = useMemo(() =>
@@ -608,6 +608,26 @@ const Workflow = () => {
             </View>
           </View>
         </View>
+
+        {hasUpdates && ( 
+            <TouchableOpacity
+              onPress={confirmUpdate}
+              className="bg-blue-600 rounded-xl py-4 mb-6 flex-row items-center justify-center"
+              style={{
+                shadowColor: '#3B82F6',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                elevation: 8,
+              }}
+            >
+              <AntDesign name="check" size={18} color="white" />
+              <Text className="text-white font-semibold text-base ml-2">
+                Save Changes ({Object.keys(updatedTasks).length})
+              </Text>
+            </TouchableOpacity> 
+        )}
+
         {STATUS_TYPES.map((status) => (
           <DropZoneSection
             key={status}
@@ -626,26 +646,7 @@ const Workflow = () => {
           />
         ))}
 
-         {hasUpdates && (
-        <View className="absolute bottom-0 left-0 right-0 p-4">
-          <TouchableOpacity
-            onPress={confirmUpdate}
-            className="bg-blue-600 rounded-xl py-4 flex-row items-center justify-center"
-            style={{
-              shadowColor: '#3B82F6',
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.3,
-              shadowRadius: 8,
-              elevation: 8,
-            }}
-          >
-            <AntDesign name="check" size={18} color="white" />
-            <Text className="text-white font-semibold text-base ml-2">
-              Save Changes ({Object.keys(updatedTasks).length})
-            </Text>
-          </TouchableOpacity>
-        </View>
-      )} 
+
       </ScrollView>
     </View>
   );

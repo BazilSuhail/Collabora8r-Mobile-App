@@ -95,7 +95,7 @@ const JoinedProjectDetails = () => {
 
   const handleTaskClick = useCallback((taskId) => {
     if (!project?.createdBy) return;
-    router.replace(`/${taskId}-${project.createdBy}`);
+    router.push(`/${taskId}-${project.createdBy}`);
   }, [project?.createdBy, router]);
 
   const getStatusStyle = useCallback((status) => {
@@ -137,7 +137,7 @@ const JoinedProjectDetails = () => {
             <Text className="text-gray-900 font-semibold text-base mb-2 leading-5" numberOfLines={2}>
               {task.title || 'Untitled Task'}
             </Text>
-            
+
           </View>
         </View>
       </View>
@@ -165,24 +165,24 @@ const JoinedProjectDetails = () => {
           </View>
         </View>
         <View className="h-px bg-white my-3" />
-<View className="flex-row items-center justify-between">  
-        <View className="flex-row items-center">
-          <View className="w-8 h-8 bg-gray-50 rounded-lg items-center justify-center mr-3">
-            <MaterialIcons name="comment" size={16} color="#6B7280" />
-          </View>
-          <Text className="text-gray-600 text-sm">
-            {task.comments?.length || 0} {(task.comments?.length || 0) === 1 ? 'Comment' : 'Comments'}
-          </Text>
-        </View>
-<View className="flex-row items-center ">
-              <View className={`px-2 py-1 rounded-full border mr-2 ${getPriorityStyle(task.priority)}`}>
-                <Text className="text-xs font-medium">{task.priority || 'No Priority'}</Text>
-              </View>
-              <View className={`px-2 py-1 rounded-full border ${getStatusStyle(task.status)}`}>
-                <Text className="text-xs font-medium">{task.status || 'No Status'}</Text>
-              </View>
+        <View className="flex-row items-center justify-between">
+          <View className="flex-row items-center">
+            <View className="w-8 h-8 bg-gray-50 rounded-lg items-center justify-center mr-3">
+              <MaterialIcons name="comment" size={16} color="#6B7280" />
             </View>
-</View>
+            <Text className="text-gray-600 text-sm">
+              {task.comments?.length || 0} {(task.comments?.length || 0) === 1 ? 'Comment' : 'Comments'}
+            </Text>
+          </View>
+          <View className="flex-row items-center ">
+            <View className={`px-2 py-1 rounded-full border mr-2 ${getPriorityStyle(task.priority)}`}>
+              <Text className="text-xs font-medium">{task.priority || 'No Priority'}</Text>
+            </View>
+            <View className={`px-2 py-1 rounded-full border ${getStatusStyle(task.status)}`}>
+              <Text className="text-xs font-medium">{task.status || 'No Status'}</Text>
+            </View>
+          </View>
+        </View>
 
       </View>
     </TouchableOpacity>
