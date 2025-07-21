@@ -1,21 +1,21 @@
-import { useCallback, useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  ScrollView,
-  ActivityIndicator,
-  RefreshControl,
-} from 'react-native';
-import { Feather, FontAwesome5, MaterialIcons } from '@expo/vector-icons';
-import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import NoTasks from '@/assets/images/icon.png';
 import config from '@/config/config';
-import { useRouter } from 'expo-router';
-import NoTasks from '@/assets/logo.png'; 
 import themeImages from '@/constants/themes';
 import { useAuthContext } from '@/hooks/AuthProvider';
+import { Feather, FontAwesome5, MaterialIcons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import { useRouter } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Image,
+  RefreshControl,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 const Home = () => {
   const { user } = useAuthContext();

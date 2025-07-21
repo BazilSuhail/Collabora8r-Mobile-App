@@ -2,7 +2,7 @@ import { useAuthContext } from '@/hooks/AuthProvider';
 import { Drawer } from 'expo-router/drawer';
 import { View, Text, Image, TouchableOpacity, ScrollView } from 'react-native';
 import { DrawerContentScrollView, DrawerItem } from '@react-navigation/drawer';
-import { router, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import avatarImages from '@/constants/avatar';
 

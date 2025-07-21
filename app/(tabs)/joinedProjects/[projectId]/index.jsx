@@ -44,7 +44,7 @@ const JoinedProjectDetails = () => {
   }, []);
 
   const fetchProjectDetails = useCallback(async () => {
-    try { 
+    try {
       const token = await AsyncStorage.getItem('token');
       if (!token) {
         setError(prev => ({ ...prev, auth: 'Authentication required' }));
@@ -94,7 +94,7 @@ const JoinedProjectDetails = () => {
   }, [fetchProjectTasks]);
 
   const handleTaskClick = useCallback((taskId) => {
-    if (!project?.createdBy) return; 
+    if (!project?.createdBy) return;
     router.replace(`/${taskId}-${project.createdBy}`);
   }, [project?.createdBy, router]);
 
@@ -126,7 +126,7 @@ const JoinedProjectDetails = () => {
   const TaskCard = useCallback(({ task, user }) => (
     <TouchableOpacity
       onPress={() => handleTaskClick(task._id)}
-      className="bg-blue-50 rounded-2xl p-5 mb-4 border border-gray-200 active:opacity-80"
+      className="bg-gray-100 rounded-2xl p-5 mb-4 border border-gray-200 active:opacity-80"
     >
       <View className="flex-row items-start justify-between mb-4">
         <View className="flex-row items-center flex-1">
@@ -137,14 +137,7 @@ const JoinedProjectDetails = () => {
             <Text className="text-gray-900 font-semibold text-base mb-2 leading-5" numberOfLines={2}>
               {task.title || 'Untitled Task'}
             </Text>
-            <View className="flex-row items-center ">
-              <View className={`px-2 py-1 rounded-full border mr-2 ${getPriorityStyle(task.priority)}`}>
-                <Text className="text-xs font-medium">{task.priority || 'No Priority'}</Text>
-              </View>
-              <View className={`px-2 py-1 rounded-full border ${getStatusStyle(task.status)}`}>
-                <Text className="text-xs font-medium">{task.status || 'No Status'}</Text>
-              </View>
-            </View>
+            
           </View>
         </View>
       </View>
@@ -171,7 +164,8 @@ const JoinedProjectDetails = () => {
             </View>
           </View>
         </View>
-        <View className="h-px bg-gray-100 my-3" />
+        <View className="h-px bg-white my-3" />
+<View className="flex-row items-center justify-between">  
         <View className="flex-row items-center">
           <View className="w-8 h-8 bg-gray-50 rounded-lg items-center justify-center mr-3">
             <MaterialIcons name="comment" size={16} color="#6B7280" />
@@ -180,6 +174,16 @@ const JoinedProjectDetails = () => {
             {task.comments?.length || 0} {(task.comments?.length || 0) === 1 ? 'Comment' : 'Comments'}
           </Text>
         </View>
+<View className="flex-row items-center ">
+              <View className={`px-2 py-1 rounded-full border mr-2 ${getPriorityStyle(task.priority)}`}>
+                <Text className="text-xs font-medium">{task.priority || 'No Priority'}</Text>
+              </View>
+              <View className={`px-2 py-1 rounded-full border ${getStatusStyle(task.status)}`}>
+                <Text className="text-xs font-medium">{task.status || 'No Status'}</Text>
+              </View>
+            </View>
+</View>
+
       </View>
     </TouchableOpacity>
   ), [handleTaskClick, getPriorityStyle, getStatusStyle, formatDate]);
@@ -216,7 +220,7 @@ const JoinedProjectDetails = () => {
   }
 
   return (
-    <View className="flex-1 bg-gray-100 relative">
+    <View className="flex-1 bg-gray-50 relative">
       {project ? (
         <>
           <ScrollView
@@ -260,7 +264,7 @@ const JoinedProjectDetails = () => {
 
             {!showMyTasks && (
               <>
-                <View className="bg-white rounded-2xl p-5 mb-4 ">
+                <View className="bg-white border border-gray-200 rounded-2xl p-5 mb-4 ">
                   <View className="flex-row items-center mb-4">
                     <View className="w-10 h-10 bg-blue-100 rounded-full justify-center items-center mr-3">
                       <FontAwesome5 name="file-alt" size={16} color="#3B82F6" />
@@ -270,7 +274,7 @@ const JoinedProjectDetails = () => {
                   <Text className="text-sm text-gray-500 leading-5">{project.description}</Text>
                 </View>
 
-                <View className="bg-white rounded-2xl p-5 mb-4 ">
+                <View className="bg-white border border-gray-200 rounded-2xl p-5 mb-4 ">
                   <View className="flex-row items-center mb-4">
                     <View className="w-10 h-10 bg-yellow-100 rounded-full justify-center items-center mr-3">
                       <FontAwesome5 name="crown" size={16} color="#F59E0B" />
@@ -278,7 +282,7 @@ const JoinedProjectDetails = () => {
                     <Text className="text-lg font-semibold text-gray-900">Project Manager</Text>
                   </View>
 
-                  <View className={`rounded-xl p-4 border ${project.projectManager.status === "Approved" ? "bg-green-50 border-green-200" : "bg-yellow-50 border-yellow-200"}`}>
+                  <View className={`rounded-xl p-4 border ${project.projectManager.status === "Approved" ? "bg-green-50 border-green-100" : "bg-yellow-50 border-yellow-100"}`}>
                     <View className="flex-row items-center">
                       <View className="w-9 h-9 bg-yellow-500 rounded-full justify-center items-center mr-3">
                         <FontAwesome5 name="user-tie" size={14} color="#FFFFFF" />
@@ -302,7 +306,7 @@ const JoinedProjectDetails = () => {
                   </View>
                 </View>
 
-                <View className="bg-white rounded-2xl p-5 mb-4 flex-row items-center">
+                <View className="bg-white border border-gray-200 rounded-2xl p-5 mb-4 flex-row items-center">
                   <View className="flex-row items-center mr-5 ">
                     <View className="w-12 h-12 bg-purple-100 rounded-full items-center justify-center mr-3">
                       <Ionicons name="people" size={18} color="#8B5CF6" />
@@ -324,8 +328,7 @@ const JoinedProjectDetails = () => {
                 </View>
               </>
             )}
-            <View className="mb-4 bg-white p-4 rounded-2xl flex-row justify-between items-center">
-
+            <View className="mb-4 border border-gray-200 bg-white p-4 rounded-2xl flex-row justify-between items-center">
               <View className="flex-row items-center">
                 <View className="w-12 h-12 bg-indigo-100 rounded-xl items-center justify-center mr-4">
                   <Ionicons name="list" size={20} color="#6366F1" />
@@ -352,11 +355,11 @@ const JoinedProjectDetails = () => {
               </View>
             </View>
 
- <TasksList
-                tasks={currentTasks}
-                isEmpty={currentTasks.length === 0}
-                emptyMessage={showMyTasks ? 'No tasks assigned to you yet' : 'No tasks assigned to other team members'}
-              />
+            <TasksList
+              tasks={currentTasks}
+              isEmpty={currentTasks.length === 0}
+              emptyMessage={showMyTasks ? 'No tasks assigned to you yet' : 'No tasks assigned to other team members'}
+            />
           </ScrollView>
 
           {/* Custom Tab Bar */}
@@ -458,7 +461,7 @@ const JoinedProjectDetails = () => {
                         {teamDetails.length} {teamDetails.length === 1 ? 'member' : 'members'}
                       </Text>
                     </View>
-                  </View> 
+                  </View>
                 </View>
                 <ScrollView className="flex-1 px-6 py-4" showsVerticalScrollIndicator={false}>
                   {teamDetails.length > 0 ? (

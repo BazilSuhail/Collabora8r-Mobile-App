@@ -3,10 +3,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
+  ActivityIndicator, 
   Image,
   StatusBar,
   Animated,
@@ -39,7 +36,7 @@ const Login = () => {
     Animated.loop(
       Animated.timing(rotateAnim, {
         toValue: 1,
-        duration: 3000,
+        duration: 5000,
         useNativeDriver: true,
       })
     ).start();
@@ -91,6 +88,7 @@ const Login = () => {
             zIndex: 0,
             alignItems: 'center',
             justifyContent: 'center',
+            opacity:0.85
           }}
         >
           <LinearGradient
@@ -110,7 +108,7 @@ const Login = () => {
           <View className="flex-row items-center">
             <Image
               source={require('@/assets/images/icon.png')}
-              className="w-[50px] h-[50px] mr-5 border-white border-[2px]"
+              className="w-[50px] h-[50px] mr-5"
             />
             <Text className="text-white/80 font-bold text-[40px] mb-1">Collabora<Text className="text-red-500">8</Text>r</Text>
           </View>
@@ -122,11 +120,7 @@ const Login = () => {
 
       {/* Bottom White Area - 60% */}
       <View className="flex-[0.6] bg-white rounded-t-3xl -mt-4 overflow-hidden">
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          className="flex-1"
-        >
-          <View className="h-full flex-1 px-6 pt-8 justify-center"
+        <View className="h-full flex-1 px-6 pt-8 justify-center"
           >
             {/* Email Input */}
             <View className="mb-4">
@@ -180,12 +174,12 @@ const Login = () => {
             </TouchableOpacity>
 
             {/* Error Message */}
-            {errorMessage ? (
+            {/* {errorMessage ? (
               <View className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 mb-6 flex-row items-center">
                 <Ionicons name="alert-circle-outline" size={20} color="#DC2626" />
                 <Text className="text-red-600 text-sm ml-2 flex-1">{errorMessage}</Text>
               </View>
-            ) : null}
+            ) : null} */}
 
             {/* Log in Button */}
             <TouchableOpacity
@@ -224,7 +218,6 @@ const Login = () => {
               </TouchableOpacity>
             </View>
           </View>
-        </KeyboardAvoidingView>
       </View>
     </View>
   );

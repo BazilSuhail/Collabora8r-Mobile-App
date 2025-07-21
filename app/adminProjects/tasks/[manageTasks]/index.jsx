@@ -23,9 +23,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 const AssignTasks = () => {
     const insets = useSafeAreaInsets();
     const projectId = usePathname().split("/").pop();
-    
+
     const isMountedRef = useRef(true);
-    
+
     const [isModalOpen, setModalOpen] = useState(false);
     const [projectName, setProjectName] = useState('');
     const [projectTeam, setProjectTeam] = useState('');
@@ -43,7 +43,7 @@ const AssignTasks = () => {
     const [success, setSuccess] = useState('');
     const [editingTaskId, setEditingTaskId] = useState(null);
     const [loading, setLoading] = useState(false);
- 
+
     useEffect(() => {
         return () => {
             isMountedRef.current = false;
@@ -60,13 +60,12 @@ const AssignTasks = () => {
     }), []);
 
     const fetchTasksAndUsers = useCallback(async () => {
-        if (loading) return; // Prevent multiple simultaneous fetches
+        if (loading) return;
 
         setLoading(true);
         try {
             const token = await AsyncStorage.getItem('token');
 
-            // Parallel API calls for better performance
             const [tasksResponse, usersResponse] = await Promise.all([
                 axios.get(`${config.VITE_REACT_APP_API_BASE_URL}/manageTasks/project/${projectId}`, {
                     headers: { Authorization: `Bearer ${token}` }
@@ -78,7 +77,7 @@ const AssignTasks = () => {
 
             // Only update state if component is still mounted
             if (isMountedRef.current) {
-                setTasks(tasksResponse.data.validTasks); 
+                setTasks(tasksResponse.data.validTasks);
                 setProjectName(tasksResponse.data.projectName);
                 setProjectTeam(tasksResponse.data.projectTeam);
                 setUsers(usersResponse.data);
@@ -149,14 +148,14 @@ const AssignTasks = () => {
                 setSuccess('Task created successfully.');
                 resetTaskForm();
                 handleCloseModal();
-                
+
                 // Clear success message after delay
                 setTimeout(() => {
                     if (isMountedRef.current) {
                         setSuccess('');
                     }
                 }, 3000);
-                
+
                 // Refresh tasks after successful creation
                 await refreshTasks();
             }
@@ -177,7 +176,7 @@ const AssignTasks = () => {
 
         setLoading(true);
         try {
-            const token = await AsyncStorage.getItem('token');  
+            const token = await AsyncStorage.getItem('token');
             await axios.patch(
                 `${config.VITE_REACT_APP_API_BASE_URL}/manageTasks/${editingTaskId}`,
                 newTask,
@@ -188,14 +187,14 @@ const AssignTasks = () => {
                 setSuccess('Task updated successfully.');
                 resetTaskForm();
                 handleCloseModal();
-                
+
                 // Clear success message after delay
                 setTimeout(() => {
                     if (isMountedRef.current) {
                         setSuccess('');
                     }
                 }, 3000);
-                
+
                 // Refresh tasks after successful update
                 await refreshTasks();
             }
@@ -242,14 +241,14 @@ const AssignTasks = () => {
 
             if (isMountedRef.current) {
                 setSuccess('Task deleted successfully.');
-                
+
                 // Clear success message after delay
                 setTimeout(() => {
                     if (isMountedRef.current) {
                         setSuccess('');
                     }
                 }, 3000);
-                
+
                 await refreshTasks();
             }
         } catch (err) {
@@ -315,8 +314,8 @@ const AssignTasks = () => {
         <ScrollView
             className={`flex-1 bg-gray-100`}
             contentContainerStyle={{
-                paddingTop: insets.top+16,
-                paddingBottom: insets.bottom+8,
+                paddingTop: insets.top + 16,
+                paddingBottom: insets.bottom + 8,
                 paddingHorizontal: 16
             }}
             showsVerticalScrollIndicator={false}
@@ -336,13 +335,15 @@ const AssignTasks = () => {
             </View>
 
             {/* Create Task Button */}
-            <TouchableOpacity
-                className="bg-blue-600 flex-row items-center justify-center py-3 px-6 rounded-xl mb-6 shadow-sm"
-                onPress={handleOpenModal}
-            >
-                <FontAwesome5 name="plus" size={16} color="#FFFFFF" />
-                <Text className="text-white font-semibold ml-2">Create New Task</Text>
-            </TouchableOpacity>
+            {projectTeam !== 0 && (
+                <TouchableOpacity
+                    className="bg-blue-600 flex-row items-center justify-center py-3 px-6 rounded-xl mb-6 shadow-sm"
+                    onPress={handleOpenModal}
+                >
+                    <FontAwesome5 name="plus" size={16} color="#FFFFFF" />
+                    <Text className="text-white font-semibold ml-2">Create New Task</Text>
+                </TouchableOpacity>
+            )}
 
             {/* Warning Message */}
             {projectTeam === 0 && (

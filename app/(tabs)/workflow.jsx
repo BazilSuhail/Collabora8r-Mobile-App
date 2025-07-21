@@ -625,9 +625,9 @@ const Workflow = () => {
             activeDropZone={handleActiveDropZone}
           />
         ))}
-      </ScrollView>
-      {hasUpdates && (
-        <View className="absolute bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200">
+
+         {hasUpdates && (
+        <View className="absolute bottom-0 left-0 right-0 p-4">
           <TouchableOpacity
             onPress={confirmUpdate}
             className="bg-blue-600 rounded-xl py-4 flex-row items-center justify-center"
@@ -646,6 +646,7 @@ const Workflow = () => {
           </TouchableOpacity>
         </View>
       )} 
+      </ScrollView>
     </View>
   );
 };
