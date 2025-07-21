@@ -417,81 +417,6 @@ const DropZoneSection = React.memo(({
   );
 });
 
-const StatusModal = React.memo(({
-  isVisible,
-  selectedTask,
-  onStatusChange,
-  onClose
-}) => {
-  const renderStatusOption = useCallback((statusOption) => {
-    const statusConfig = STATUS_CONFIG[statusOption];
-    const isCurrentStatus = selectedTask?.status === statusOption;
-
-    return (
-      <TouchableOpacity
-        key={statusOption}
-        onPress={() => onStatusChange(statusOption)}
-        className={`flex-row items-center p-4 ${isCurrentStatus ? 'bg-gray-50' : ''}`}
-        style={{
-          borderBottomWidth: 1,
-          borderBottomColor: '#F3F4F6'
-        }}
-      >
-        <MaterialCommunityIcons
-          name={statusConfig.icon}
-          size={20}
-          color={statusConfig.color}
-        />
-        <Text className="text-gray-800 text-base ml-3 flex-1">
-          {statusOption}
-        </Text>
-        {isCurrentStatus && (
-          <AntDesign name="check" size={16} color="#10B981" />
-        )}
-      </TouchableOpacity>
-    );
-  }, [selectedTask, onStatusChange]);
-
-  return (
-    <Modal
-      visible={isVisible}
-      animationType="fade"
-      transparent={true}
-      onRequestClose={onClose}
-    >
-      <StatusBar backgroundColor="#00000066" barStyle="dark-content" />
-      <View className="w-screen h-screen justify-end bg-black/40">
-        <View className="bg-white rounded-t-3xl">
-          <View className="flex-row items-center justify-between p-6 border-b border-gray-100">
-            <Text className="text-xl font-semibold text-gray-800">
-              Update Task Status
-            </Text>
-            <TouchableOpacity
-              onPress={onClose}
-              className="w-8 h-8 rounded-full bg-gray-100 items-center justify-center"
-            >
-              <Feather name="x" size={18} color="#6B7280" />
-            </TouchableOpacity>
-          </View>
-          {selectedTask && (
-            <View className="px-6 py-4 bg-gray-50 border-b border-gray-100">
-              <Text className="text-gray-800 font-medium text-base mb-1">
-                {selectedTask.title || 'Untitled Task'}
-              </Text>
-              <Text className="text-gray-600 text-sm">
-                {selectedTask.projectName || 'No Project'}
-              </Text>
-            </View>
-          )}
-          <View className="pb-8">
-            {STATUS_TYPES.map(renderStatusOption)}
-          </View>
-        </View>
-      </View>
-    </Modal>
-  );
-});
-
 const Workflow = () => {
   const insets = useSafeAreaInsets();
   const [tasks, setTasks] = useState({
@@ -500,8 +425,7 @@ const Workflow = () => {
     'Completed': [],
   });
   const [selectedTask, setSelectedTask] = useState(null);
-  const [updatedTasks, setUpdatedTasks] = useState({});
-  const [isModalVisible, setModalVisible] = useState(false);
+  const [updatedTasks, setUpdatedTasks] = useState({}); 
   const [loading, setLoading] = useState(true);
   const [isDragging, setIsDragging] = useState(false);
   const [draggedTask, setDraggedTask] = useState(null);
@@ -585,28 +509,8 @@ const Workflow = () => {
   }, []);
 
   const openStatusModal = useCallback((task) => {
-    setSelectedTask(task);
-    setModalVisible(true);
+    setSelectedTask(task); 
   }, []);
-
-  const changeTaskStatus = useCallback((newStatus) => {
-    if (!selectedTask) return;
-    setTasks((prev) => {
-      const oldStatus = selectedTask.status;
-      const updatedTask = { ...selectedTask, status: newStatus };
-      return {
-        ...prev,
-        [oldStatus]: prev[oldStatus].filter((t) => t._id !== selectedTask._id),
-        [newStatus]: [...(prev[newStatus] || []), updatedTask],
-      };
-    });
-    setUpdatedTasks((prev) => ({
-      ...prev,
-      [selectedTask._id]: newStatus,
-    }));
-    setModalVisible(false);
-    setSelectedTask(null);
-  }, [selectedTask]);
 
   const confirmUpdate = useCallback(async () => {
     if (Object.keys(updatedTasks).length === 0) {
@@ -628,12 +532,7 @@ const Workflow = () => {
       Alert.alert('Error', 'Error updating tasks');
     }
   }, [updatedTasks]);
-
-  const closeModal = useCallback(() => {
-    setModalVisible(false);
-    setSelectedTask(null);
-  }, []);
-
+ 
   const hasUpdates = useMemo(() => Object.keys(updatedTasks).length > 0, [updatedTasks]);
 
   const totalTasks = useMemo(() =>
@@ -746,13 +645,7 @@ const Workflow = () => {
             </Text>
           </TouchableOpacity>
         </View>
-      )}
-      <StatusModal
-        isVisible={isModalVisible}
-        selectedTask={selectedTask}
-        onStatusChange={changeTaskStatus}
-        onClose={closeModal}
-      />
+      )} 
     </View>
   );
 };
