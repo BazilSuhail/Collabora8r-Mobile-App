@@ -11,9 +11,8 @@ function CustomDrawerContent(props) {
   const { user, projects,logout } = useAuthContext();
  
   const handleLogout = () => {
-    console.log('Logout pressed');
 logout()
-router.push("/authentication/login")
+router.replace("/authentication/login")
   };
 
   const handleProjectPress = (project) => {
