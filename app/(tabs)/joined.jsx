@@ -84,7 +84,7 @@ const JoinedProjects = () => {
                 key={project._id}
                 className="bg-white rounded-2xl mb-2 border border-gray-100 overflow-hidden"
               >
-                <Link href={`/joinedProjects/${project._id}`}>
+                <Link href={`/(tabs)/joinedProjects/${project._id}`}>
                   <View className="relative h-[148px] w-full">
                     {/* Background Image */}
                     <View className="absolute inset-0 w-full">

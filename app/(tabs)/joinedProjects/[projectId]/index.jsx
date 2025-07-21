@@ -44,7 +44,7 @@ const JoinedProjectDetails = () => {
   }, []);
 
   const fetchProjectDetails = useCallback(async () => {
-    try {
+    try { 
       const token = await AsyncStorage.getItem('token');
       if (!token) {
         setError(prev => ({ ...prev, auth: 'Authentication required' }));
@@ -59,7 +59,7 @@ const JoinedProjectDetails = () => {
       setProject(response.data.project);
       setTeamDetails(response.data.project.team || []);
     } catch (err) {
-      console.error('Project fetch error:', err);
+      //console.error('Project fetch error:', err);
       setError(prev => ({ ...prev, project: 'Failed to fetch project details.' }));
     }
   }, [projectId]);
@@ -72,7 +72,7 @@ const JoinedProjectDetails = () => {
       );
       setAllTasks(response.data.tasks || []);
     } catch (err) {
-      console.error('Tasks fetch error:', err);
+      //console.error('Tasks fetch error:', err);
       setError(prev => ({ ...prev, tasks: 'Failed to fetch project tasks.' }));
     } finally {
       setLoading(false);
@@ -222,7 +222,7 @@ const JoinedProjectDetails = () => {
           <ScrollView
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{
-              paddingTop: insets.top + 16,
+              paddingTop: 16,
               paddingBottom: insets.bottom + 55,
               paddingHorizontal: 16
             }}
@@ -230,14 +230,14 @@ const JoinedProjectDetails = () => {
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
           >
-            {(error.project || error.tasks || error.auth) && (
+            {/* {(error.project || error.tasks || error.auth) && (
               <View className="flex-row items-center bg-red-50 p-4 mx-4 mt-4 rounded-xl border border-red-200">
                 <MaterialIcons name="error-outline" size={20} color="#EF4444" />
                 <Text className="text-red-500 text-sm font-medium ml-2">
                   {error.project || error.tasks || error.auth}
                 </Text>
               </View>
-            )}
+            )} */}
 
 
             <View className="rounded-2xl mb-2 overflow-hidden">

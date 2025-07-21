@@ -67,10 +67,7 @@ const TaskDetails = () => {
       setTempStatus(taskRes.data.status);
       translateX.value = (taskRes.data.progress / 100) * (sliderWidth - thumbSize);
 
-    } catch (err) {
-      console.log('Full error:', err);
-      console.log('Error response:', err.response?.data);
-      console.log('Error status:', err.response?.status);
+    } catch (err) { 
       setError("Failed to load task data.");
     } finally {
       setLoading(false);

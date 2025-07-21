@@ -18,7 +18,7 @@ router.push("/authentication/login")
 
   const handleProjectPress = (project) => {
     console.log('Project pressed:', project.name);
-    router.push(`/joinedProjects/${project._id}`)
+    router.push(`/(tabs)/joinedProjects/${project._id}`)
   };
 
   return (
