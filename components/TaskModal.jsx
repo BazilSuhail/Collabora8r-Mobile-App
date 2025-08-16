@@ -1,20 +1,15 @@
-import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
-import { FontAwesome5, MaterialIcons, Ionicons } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
+import BottomSheet from 'entity-bottom-sheet';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  Modal,
+  Alert,
+  Dimensions,
+  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-  ScrollView,
-  StatusBar,
-  Animated,
-  Dimensions,
-  TouchableWithoutFeedback,
-  Alert,
-  KeyboardAvoidingView,
 } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const { height: screenHeight } = Dimensions.get('window');
 
@@ -34,10 +29,6 @@ const TaskModal = ({
   const [showPriorityPicker, setShowPriorityPicker] = useState(false);
   const [showUserPicker, setShowUserPicker] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
-
-  // Use useRef for animation value to prevent recreations
-  const slideAnim = useRef(new Animated.Value(screenHeight)).current;
-  const backdropOpacity = useRef(new Animated.Value(0)).current;
 
   // Memoized options to prevent recreations
   const statusOptions = useMemo(() => [
@@ -98,52 +89,7 @@ const TaskModal = ({
 
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
-  }, [newTask]);
-
-  // Animate modal with proper timing
-  const animateModal = useCallback((show) => {
-    if (show) {
-      // Show backdrop and slide up
-      Animated.parallel([
-        Animated.timing(backdropOpacity, {
-          toValue: 1,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-        Animated.timing(slideAnim, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        })
-      ]).start();
-    } else {
-      // Hide backdrop and slide down
-      Animated.parallel([
-        Animated.timing(backdropOpacity, {
-          toValue: 0,
-          duration: 200,
-          useNativeDriver: true,
-        }),
-        Animated.timing(slideAnim, {
-          toValue: screenHeight,
-          duration: 250,
-          useNativeDriver: true,
-        })
-      ]).start();
-    }
-  }, [slideAnim, backdropOpacity]);
-
-  // Fixed useEffect for modal animation
-  useEffect(() => {
-    if (isOpen) {
-      // Reset animation values when opening
-      slideAnim.setValue(screenHeight);
-      backdropOpacity.setValue(0);
-      animateModal(true);
-    } else {
-      animateModal(false);
-    }
-  }, [isOpen, animateModal]);
+  }, [newTask, editingTaskId]);
 
   // Reset pickers when modal closes
   useEffect(() => {
@@ -208,13 +154,10 @@ const TaskModal = ({
     setShowPriorityPicker(false);
     setShowUserPicker(false);
 
-    // Animate out then call onClose
-    animateModal(false);
-    setTimeout(() => {
-      setValidationErrors({});
-      onClose();
-    }, 300);
-  }, [onClose, animateModal]);
+    // Reset validation errors and call onClose
+    setValidationErrors({});
+    onClose();
+  }, [onClose]);
 
   // FIXED: Better implementation for getting selected user
   const getSelectedUser = useCallback(() => {
@@ -318,275 +261,238 @@ const TaskModal = ({
     ) : null
   ));
 
-  if (!isOpen) return null;
+  // Custom header component
+  const CustomHeader = () => (
+    <View className="px-6 py-4 border-b border-gray-100">
+      <View className="flex-row items-center justify-between">
+        <View className="flex-row items-center">
+          <View className="bg-blue-100 p-2 rounded-xl mr-3">
+            <MaterialIcons
+              name={editingTaskId ? "edit" : "add-task"}
+              size={20}
+              color="#3B82F6"
+            />
+          </View>
+          <Text className="text-xl font-bold text-gray-800">
+            {editingTaskId ? 'Edit Task' : 'Create New Task'}
+          </Text>
+        </View> 
+      </View>
+    </View>
+  );
 
   return (
-    <Modal
+    <BottomSheet
       visible={isOpen}
-      transparent={true}
-      animationType="none"
-      statusBarTranslucent={true}
+      onClose={handleClose}
+      header={<CustomHeader />}
+      heightRatio={error ? 0.88 :0.8}
     >
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-      >
-
-        {/* Animated Backdrop */}
-        <Animated.View
-          className="flex-1 bg-black/60"
-          style={{ opacity: backdropOpacity }}
+      <View className="">
+        {/* Form Content */}
+        <ScrollView
+          className="px-6 py-4" 
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
-          <TouchableWithoutFeedback onPress={handleClose}>
-            <View className="flex-1" />
-          </TouchableWithoutFeedback>
-        </Animated.View>
+          {/* Error/Success Messages */}
+          <ErrorMessage message={error} />
+          <SuccessMessage message={success} />
 
-        {/* Animated Bottom Sheet */}
-        <Animated.View
-          className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl"
-          style={{
-            transform: [{ translateY: slideAnim }],
-            maxHeight: screenHeight * 0.85,
-          }}
-        >
-          {/* Handle Bar */}
-          <View className="items-center py-3">
-            <View className="w-12 h-1 bg-gray-300 rounded-full" />
+          {/* Task Title */}
+          <View className="mb-4">
+            <View className="flex-row items-center mb-2">
+              <MaterialIcons name="title" size={18} color="#4B5563" />
+              <Text className="text-sm font-semibold text-gray-700 ml-2">
+                Task Title *
+              </Text>
+            </View>
+            <TextInput
+              className={`border rounded-lg px-3 py-3 text-sm bg-white ${validationErrors.title ? 'border-red-300' : 'border-gray-300'}`}
+              value={newTask?.title || ''}
+              onChangeText={(text) => handleInputChange('title', text)}
+              placeholder="Enter a descriptive task title"
+              placeholderTextColor="#9CA3AF"
+              editable={!loading}
+            />
+            {validationErrors.title && (
+              <Text className="text-red-500 text-xs mt-1">
+                {validationErrors.title}
+              </Text>
+            )}
           </View>
 
-          {/* Header */}
-          <View className="px-6 py-4 border-b border-gray-100">
-            <View className="flex-row items-center justify-between">
-              <View className="flex-row items-center">
-                <View className="bg-blue-100 p-2 rounded-xl mr-3">
-                  <MaterialIcons
-                    name={editingTaskId ? "edit" : "add-task"}
-                    size={20}
-                    color="#3B82F6"
-                  />
-                </View>
-                <Text className="text-xl font-bold text-gray-800">
-                  {editingTaskId ? 'Edit Task' : 'Create New Task'}
+          {/* Status and Priority Row */}
+          <View className="flex-row mb-4">
+            <View className="flex-1 mr-3">
+              <View className="flex-row items-center mb-2">
+                <MaterialIcons name="info-outline" size={18} color="#4B5563" />
+                <Text className="text-sm font-semibold text-gray-700 ml-2">
+                  Status
                 </Text>
               </View>
-              <TouchableOpacity
-                className="p-2 bg-gray-100 rounded-xl"
-                onPress={handleClose}
-                disabled={loading}
-                activeOpacity={0.7}
-              >
-                <MaterialIcons name="close" size={20} color="#6B7280" />
-              </TouchableOpacity>
+              <CustomPicker
+                options={statusOptions}
+                selectedValue={getStatusDisplay().label}
+                onSelect={handleStatusSelect}
+                placeholder="Select status"
+                show={showStatusPicker}
+                setShow={setShowStatusPicker}
+                error={validationErrors.status}
+              />
+            </View>
+
+            <View className="flex-1">
+              <View className="flex-row items-center mb-2">
+                <MaterialIcons name="flag" size={18} color="#4B5563" />
+                <Text className="text-sm font-semibold text-gray-700 ml-2">
+                  Priority
+                </Text>
+              </View>
+              <CustomPicker
+                options={priorityOptions}
+                selectedValue={getPriorityDisplay().label}
+                onSelect={handlePrioritySelect}
+                placeholder="Select priority"
+                show={showPriorityPicker}
+                setShow={setShowPriorityPicker}
+              />
             </View>
           </View>
 
-          {/* Form Content */}
-          <ScrollView
-            className="px-6 py-4"
-            style={{ maxHeight: screenHeight * 0.75 }}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-          >
-            {/* Error/Success Messages */}
-            <ErrorMessage message={error} />
-            <SuccessMessage message={success} />
-
-            {/* Task Title */}
-            <View className="mb-4">
+          {/* Due Date and Assignee Row */}
+          <View className="flex-row mb-4">
+            <View className="flex-1 mr-3">
               <View className="flex-row items-center mb-2">
-                <MaterialIcons name="title" size={18} color="#4B5563" />
+                <MaterialIcons name="schedule" size={18} color="#4B5563" />
                 <Text className="text-sm font-semibold text-gray-700 ml-2">
-                  Task Title *
+                  Due Date
                 </Text>
               </View>
               <TextInput
-                className={`border rounded-lg px-3 py-3 text-sm bg-white ${validationErrors.title ? 'border-red-300' : 'border-gray-300'}`}
-                value={newTask?.title || ''}
-                onChangeText={(text) => handleInputChange('title', text)}
-                placeholder="Enter a descriptive task title"
+                className={`border rounded-lg px-3 py-2 text-xs bg-white ${validationErrors.dueDate ? 'border-red-300' : 'border-gray-300'}`}
+                value={newTask?.dueDate || ''}
+                placeholder="YYYY-MM-DD"
                 placeholderTextColor="#9CA3AF"
+                onChangeText={(text) => handleInputChange('dueDate', text)}
                 editable={!loading}
               />
-              {validationErrors.title && (
+              {validationErrors.dueDate && (
                 <Text className="text-red-500 text-xs mt-1">
-                  {validationErrors.title}
+                  {validationErrors.dueDate}
                 </Text>
               )}
             </View>
 
-            {/* Status and Priority Row */}
-            <View className="flex-row mb-4">
-              <View className="flex-1 mr-3">
-                <View className="flex-row items-center mb-2">
-                  <MaterialIcons name="info-outline" size={18} color="#4B5563" />
-                  <Text className="text-sm font-semibold text-gray-700 ml-2">
-                    Status
-                  </Text>
-                </View>
-                <CustomPicker
-                  options={statusOptions}
-                  selectedValue={getStatusDisplay().label}
-                  onSelect={handleStatusSelect}
-                  placeholder="Select status"
-                  show={showStatusPicker}
-                  setShow={setShowStatusPicker}
-                  error={validationErrors.status}
-                />
-              </View>
-
-              <View className="flex-1">
-                <View className="flex-row items-center mb-2">
-                  <MaterialIcons name="flag" size={18} color="#4B5563" />
-                  <Text className="text-sm font-semibold text-gray-700 ml-2">
-                    Priority
-                  </Text>
-                </View>
-                <CustomPicker
-                  options={priorityOptions}
-                  selectedValue={getPriorityDisplay().label}
-                  onSelect={handlePrioritySelect}
-                  placeholder="Select priority"
-                  show={showPriorityPicker}
-                  setShow={setShowPriorityPicker}
-                />
-              </View>
-            </View>
-
-            {/* Due Date and Assignee Row */}
-            <View className="flex-row mb-4">
-              <View className="flex-1 mr-3">
-                <View className="flex-row items-center mb-2">
-                  <MaterialIcons name="schedule" size={18} color="#4B5563" />
-                  <Text className="text-sm font-semibold text-gray-700 ml-2">
-                    Due Date
-                  </Text>
-                </View>
-                <TextInput
-                  className={`border rounded-lg px-3 py-2 text-xs bg-white ${validationErrors.dueDate ? 'border-red-300' : 'border-gray-300'}`}
-                  value={newTask?.dueDate || ''}
-                  placeholder="YYYY-MM-DD"
-                  placeholderTextColor="#9CA3AF"
-                  onChangeText={(text) => handleInputChange('dueDate', text)}
-                  editable={!loading}
-                />
-                {validationErrors.dueDate && (
-                  <Text className="text-red-500 text-xs mt-1">
-                    {validationErrors.dueDate}
-                  </Text>
-                )}
-              </View>
-
-              <View className="flex-1">
-                <View className="flex-row items-center mb-2">
-                  <MaterialIcons name="person" size={18} color="#4B5563" />
-                  <Text className="text-sm font-semibold text-gray-700 ml-2">
-                    Assign To
-                  </Text>
-                </View>
-                <CustomPicker
-                  options={userOptions}
-                  selectedValue={getSelectedUserName()}
-                  onSelect={handleUserSelect}
-                  placeholder="Select team member"
-                  show={showUserPicker}
-                  setShow={setShowUserPicker}
-                />
-              </View>
-            </View>
-
-            {/* Description */}
-            <View className="mb-6">
+            <View className="flex-1">
               <View className="flex-row items-center mb-2">
-                <MaterialIcons name="description" size={18} color="#4B5563" />
+                <MaterialIcons name="person" size={18} color="#4B5563" />
                 <Text className="text-sm font-semibold text-gray-700 ml-2">
-                  Description *
+                  Assign To
                 </Text>
               </View>
-              <TextInput
-                className={`border rounded-lg px-2 py-2 text-sm bg-white ${validationErrors.description ? 'border-red-300' : 'border-gray-300'}`}
-                style={{
-                  minHeight: 180,
-                  textAlignVertical: 'top'
-                }}
-                value={newTask?.description || ''}
-                placeholder="Provide detailed task guidelines and requirements..."
-                placeholderTextColor="#9CA3AF"
-                multiline
-                numberOfLines={4}
-                onChangeText={(text) => handleInputChange('description', text)}
-                editable={!loading}
+              <CustomPicker
+                options={userOptions}
+                selectedValue={getSelectedUserName()}
+                onSelect={handleUserSelect}
+                placeholder="Select team member"
+                show={showUserPicker}
+                setShow={setShowUserPicker}
               />
-              {validationErrors.description && (
-                <Text className="text-red-500 text-xs mt-1">
-                  {validationErrors.description}
-                </Text>
-              )}
-            </View>
-          </ScrollView>
-
-          {/* Footer Actions */}
-          <View style={{
-            paddingHorizontal: 24,
-            paddingVertical: 16,
-            borderTopWidth: 1,
-            borderTopColor: '#F3F4F6'
-          }}>
-            <View style={{ flexDirection: 'row' }}>
-              <TouchableOpacity
-                style={{
-                  flex: 1,
-                  backgroundColor: '#F3F4F6',
-                  paddingVertical: 12,
-                  borderRadius: 8,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginRight: 12
-                }}
-                onPress={handleClose}
-                disabled={loading}
-                activeOpacity={0.7}
-              >
-                <MaterialIcons name="close" size={18} color="#6B7280" />
-                <Text style={{ color: '#374151', fontWeight: '600', marginLeft: 8 }}>
-                  Cancel
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={{
-                  flex: 1,
-                  backgroundColor: loading ? '#93C5FD' : '#2563EB',
-                  paddingVertical: 12,
-                  borderRadius: 8,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-                onPress={handleSubmit}
-                disabled={loading}
-                activeOpacity={0.7}
-              >
-                {loading ? (
-                  <MaterialIcons name="hourglass-empty" size={18} color="#FFFFFF" />
-                ) : (
-                  <MaterialIcons
-                    name={editingTaskId ? "check" : "add"}
-                    size={18}
-                    color="#FFFFFF"
-                  />
-                )}
-                <Text style={{ color: 'white', fontWeight: '600', marginLeft: 8 }}>
-                  {loading ? 'Processing...' : editingTaskId ? 'Update Task' : 'Create Task'}
-                </Text>
-              </TouchableOpacity>
             </View>
           </View>
-        </Animated.View>
-      </KeyboardAvoidingView>
-    </Modal>
+
+          {/* Description */}
+          <View className="">
+            <View className="flex-row items-center mb-2">
+              <MaterialIcons name="description" size={18} color="#4B5563" />
+              <Text className="text-sm font-semibold text-gray-700 ml-2">
+                Description *
+              </Text>
+            </View>
+            <TextInput
+              className={`border rounded-lg px-4 text-sm bg-white ${validationErrors.description ? 'border-red-300' : 'border-gray-300'}`}
+              style={{
+                minHeight: 180,
+                textAlignVertical: 'top'
+              }}
+              value={newTask?.description || ''}
+              placeholder="Provide detailed task guidelines and requirements..."
+              placeholderTextColor="#9CA3AF"
+              multiline
+              numberOfLines={4}
+              onChangeText={(text) => handleInputChange('description', text)}
+              editable={!loading}
+            />
+            {validationErrors.description && (
+              <Text className="text-red-500 text-xs mt-1">
+                {validationErrors.description}
+              </Text>
+            )}
+          </View>
+        </ScrollView>
+
+        {/* Footer Actions */}
+        <View style={{
+          paddingHorizontal: 24,
+          paddingVertical: 16,
+          borderTopWidth: 1,
+          borderTopColor: '#F3F4F6'
+        }}>
+          <View style={{ flexDirection: 'row' }}>
+            <TouchableOpacity
+              style={{
+                flex: 1,
+                backgroundColor: '#F3F4F6',
+                paddingVertical: 12,
+                borderRadius: 8,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginRight: 12
+              }}
+              onPress={handleClose}
+              disabled={loading}
+              activeOpacity={0.7}
+            >
+              <MaterialIcons name="close" size={18} color="#6B7280" />
+              <Text style={{ color: '#374151', fontWeight: '600', marginLeft: 8 }}>
+                Cancel
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={{
+                flex: 1,
+                backgroundColor: loading ? '#93C5FD' : '#2563EB',
+                paddingVertical: 12,
+                borderRadius: 8,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+              onPress={handleSubmit}
+              disabled={loading}
+              activeOpacity={0.7}
+            >
+              {loading ? (
+                <MaterialIcons name="hourglass-empty" size={18} color="#FFFFFF" />
+              ) : (
+                <MaterialIcons
+                  name={editingTaskId ? "check" : "add"}
+                  size={18}
+                  color="#FFFFFF"
+                />
+              )}
+              <Text style={{ color: 'white', fontWeight: '600', marginLeft: 8 }}>
+                {loading ? 'Processing...' : editingTaskId ? 'Update Task' : 'Create Task'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </BottomSheet>
   );
 };
 
 export default React.memo(TaskModal);
-//export default TaskModal;
