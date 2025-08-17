@@ -162,11 +162,13 @@ const Home = () => {
     >
       <View className="px-4 pt-6 pb-8">
         {/* Header */}
-        <View className="relative h-32 rounded-t-2xl rounded-b-md overflow-hidden mb-3">
-          <Image source={themeImages["1"]} className="absolute h-full w-full" />
+        <View className="relative h-40 rounded-t-2xl rounded-b-md overflow-hidden mb-3">
+          <Image source={themeImages["3"]} className="absolute h-full w-full" />
           <View className="absolute inset-0 bg-black/40 justify-center px-6">
-            <Text className="text-white text-2xl font-bold">Design You</Text>
-            <Text className="text-white/90 text-sm font-medium mt-1">Professional Plan</Text>
+            <Text className="text-white text-sm font-bold">Welcome !!</Text>
+            <Text className="text-white/90 text-[25px] font-medium mt-1">
+              {user.name.length > 15 ? user.name.slice(0, 15) + "..." : user.name}
+            </Text>
           </View>
           <View className="absolute top-4 right-4">
             <TouchableOpacity className="w-8 h-8 bg-white/20 rounded-full items-center justify-center">
@@ -451,10 +453,10 @@ const Home = () => {
                 );
               })}
             </View>
-          ) : (<EmptyState 
-  title="No tasks found" 
-  desc={"Try creating a new task\nor adjust your filters to get started."} 
-/>
+          ) : (<EmptyState
+            title="No tasks found"
+            desc={"Try creating a new task\nor adjust your filters to get started."}
+          />
           )}
 
         </View>

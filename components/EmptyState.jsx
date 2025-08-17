@@ -3,7 +3,7 @@ import { Image, Text, View } from "react-native";
 export default function EmptyState({ title, desc }) {
   return (
     <View className="flex-1 w-full p-8 items-center justify-center mb-5">
-      <View className="w-[250px] h-[250px]">
+      <View className="w-[200px] h-[200px]">
         <Image
           source={require("@/assets/placeholders/noTasks.png")}
           className="w-full h-full"
@@ -16,7 +16,7 @@ export default function EmptyState({ title, desc }) {
       </Text>
 
       {desc && (
-        <Text className="text-gray-400 text-[12px] w-[220px] text-center">
+        <Text className="text-gray-400 text-[12px] w-[200px] text-center">
           {desc}
         </Text>
       )}

@@ -1,5 +1,5 @@
 import config from '@/config/config';
-import { FontAwesome5, Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { AntDesign, Feather, FontAwesome5, Ionicons, MaterialCommunityIcons, FontAwesome6, MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { usePathname } from 'expo-router';
@@ -19,6 +19,60 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle } from 'react-native-svg';
 import ProgressModal from '../../components/ProgressModal';
 import { useAuthContext } from '../../hooks/AuthProvider';
+
+const getStatusColor = (status) => {
+  switch (status) {
+    case 'Not Started':
+      return {
+        bg: 'bg-blue-100',
+        text: 'text-blue-700',
+        icon: 'clock-outline',
+        iconColor: '#3B82F6' // blue-700
+      };
+    case 'In Progress':
+      return {
+        bg: 'bg-yellow-100',
+        text: 'text-yellow-700',
+        icon: 'play-circle', // ✅ Valid icon
+        iconColor: '#F59E0B' // yellow-700
+      };
+    case 'Completed':
+      return {
+        bg: 'bg-green-100',
+        text: 'text-green-700',
+        icon: 'check-circle', // ✅ Valid icon
+        iconColor: '#10B981' // green-700
+      };
+    case 'Low':
+      return {
+        bg: 'bg-blue-100',
+        text: 'text-blue-700',
+        icon: 'clock-outline',
+        iconColor: '#3B82F6' // blue-700
+      };
+    case 'Medium':
+      return {
+        bg: 'bg-yellow-100',
+        text: 'text-yellow-700',
+        icon: 'exclamation', // ✅ Valid icon for AntDesign
+        iconColor: '#F59E0B' // yellow-700
+      };
+    case 'High':
+      return {
+        bg: 'bg-red-100',
+        text: 'text-red-700',
+        icon: 'exclamation-circle', // ✅ Valid icon for AntDesign
+        iconColor: '#EF4444' // red-700
+      };
+    default:
+      return {
+        bg: 'bg-gray-100',
+        text: 'text-gray-700',
+        icon: 'clock-outline',
+        iconColor: '#374151' // gray-700
+      };
+  }
+};
 
 const TaskDetails = () => {
   const { user } = useAuthContext();
@@ -184,28 +238,9 @@ const TaskDetails = () => {
     setModalVisible(!modalVisible);
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'Not Started':
-        return { bg: 'bg-gray-100', text: 'text-gray-700', icon: 'time-outline' };
-      case 'In Progress':
-        return { bg: 'bg-blue-100', text: 'text-blue-700', icon: 'play-circle-outline' };
-      case 'Completed':
-        return { bg: 'bg-green-100', text: 'text-green-700', icon: 'checkmark-circle-outline' };
-      case 'Low':
-        return { bg: 'bg-gray-100', text: 'text-gray-700', icon: 'time-outline' };
-      case 'Medium':
-        return { bg: 'bg-yellow-100', text: 'text-yellow-700', icon: 'play-circle-outline' };
-      case 'High':
-        return { bg: 'bg-red-100', text: 'text-red-700', icon: 'checkmark-circle-outline' };
-      default:
-        return { bg: 'bg-gray-100', text: 'text-gray-700', icon: 'clock-outline' };
-    }
-  };
-
   const renderProgress = () => {
-    const radius = 80;
-    const strokeWidth = 12;
+    const radius = 56;
+    const strokeWidth = 8;
     const normalizedRadius = radius - strokeWidth / 2;
     const circumference = normalizedRadius * 2 * Math.PI;
     const strokeDashoffset = circumference - (task.progress / 100) * circumference;
@@ -213,16 +248,18 @@ const TaskDetails = () => {
     return (
       <View className="relative">
         <Svg height={radius * 2} width={radius * 2}>
+          {/* Background circle */}
           <Circle
-            stroke="#F3F4F6"
+            stroke="#F1F5F9"
             fill="transparent"
             strokeWidth={strokeWidth}
             r={normalizedRadius}
             cx={radius}
             cy={radius}
           />
+          {/* Progress circle */}
           <Circle
-            stroke="#3B82F6"
+            stroke="#6366F1"
             fill="transparent"
             strokeWidth={strokeWidth}
             strokeLinecap="round"
@@ -234,12 +271,12 @@ const TaskDetails = () => {
           />
         </Svg>
         <View className="absolute inset-0 justify-center items-center">
-          <Text className="text-2xl font-bold text-blue-600">{task.progress}%</Text>
-          <Text className="text-xs text-gray-500 mt-1">Complete</Text>
+          <Text className="text-xl font-bold text-gray-900">{task.progress}%</Text>
         </View>
       </View>
     );
   };
+
 
   if (loading) {
     return (
@@ -266,7 +303,7 @@ const TaskDetails = () => {
     <View className="flex-1 bg-gray-100 px-4 pt-2">
 
       <ScrollView
-        contentContainerStyle={{ paddingTop: insets.top + 8, paddingBottom: insets.bottom + 85 }}
+        contentContainerStyle={{ paddingTop: insets.top + 8, paddingBottom: insets.bottom + 65 }}
         showsVerticalScrollIndicator={false}
       >
 
@@ -327,122 +364,191 @@ const TaskDetails = () => {
         </View>
 
         {/* Header Section */}
-        <View className="bg-white rounded-xl px-6 py-6">
-          {/* Status Badge */}
-          <View className="flex-row items-center">
-            <View className={`${statusInfo.bg} px-4 py-2 rounded-full self-start flex-row items-center`}>
-              <Ionicons name={statusInfo.icon} size={14} color={statusInfo.text.replace('text-', '')} />
-              <Text className={`${statusInfo.text} text-[11px] font-medium ml-2`}>{status}</Text>
+        <View className="bg-white rounded-3xl">
+          {/* Header with gradient background */}
+          <View className="px-6 py-4">
+            <View className="flex-row mb-5 items-center justify-between">
+              <View className="flex-row items-center">
+                <View className="w-8 h-8 bg-blue-100 rounded-full justify-center items-center mr-3">
+                  <FontAwesome6 name="bars-progress" size={14} color="#3B82F6" />
+                </View>
+                <Text className="text-md font-semibold text-gray-600">Task Progress</Text>
+              </View>
+              <TouchableOpacity
+                onPress={toggleModal}
+                className="bg-blue-600 rounded-2xl px-5 py-1 flex-row items-center border border-white/30"
+              >
+                <MaterialIcons name="edit" size={16} color="white" />
+                <Text className="text-white text-sm font-medium ml-1.5">Edit</Text>
+              </TouchableOpacity>
             </View>
-            <View className={`${priorityInfo.bg} ml-[6px] px-4 py-2 rounded-full self-start flex-row items-center`}>
-              <Ionicons name={priorityInfo.icon} size={14} color={priorityInfo.text.replace('text-', '')} />
-              <Text className={`${priorityInfo.text} text-[11px] font-medium ml-2`}>{priority}</Text>
-            </View>
-
-            <TouchableOpacity
-              onPress={toggleModal}
-              className="bg-blue-500 rounded-[6px] px-4 py-[5px] ml-auto flex-row items-center justify-center"
-            >
-              <MaterialIcons name="update" size={18} color="white" />
-              <Text className="text-white text-[12px] font-semibold ml-2">Update Task</Text>
-            </TouchableOpacity>
           </View>
 
-          {/* Progress Circle */}
-          <View className="items-center mt-8">
-            {renderProgress()}
+          <View className="px-6 pb-5 bg-">
+            <View className="flex-row items-center justify-between mb-5">
+              <View className="items-center">
+                {renderProgress()}
+              </View>
+
+              {/* Stats cards */}
+            <View className="flex-1 ml-6" style={{ gap: 10 }}>
+  {/* Status card */}
+  <View className={`rounded-2xl px-4 py-2 flex-row items-center ${
+    status === 'Completed' ? 'bg-green-50' :
+    status === 'In Progress' ? 'bg-yellow-50' :
+    status === 'Not Started' ? 'bg-blue-50' :
+    'bg-gray-50'
+  }`}>
+    <View className={`p-2.5 rounded-xl ${
+      status === 'Completed' ? 'bg-green-200' :
+      status === 'In Progress' ? 'bg-yellow-200' :
+      status === 'Not Started' ? 'bg-blue-200' :
+      'bg-gray-200'
+    }`}>
+      <MaterialCommunityIcons
+        name={statusInfo.icon}
+        size={18}
+        color={statusInfo.iconColor}
+      />
+    </View>
+    <View className="ml-3 flex-1">
+      <Text className="text-gray-500 text-[9px] font-medium uppercase tracking-wide">Status</Text>
+      <Text className={`${statusInfo.text} text-sm font-bold mt-0.5`}>{status}</Text>
+    </View>
+  </View>
+
+  {/* Priority card */}
+  <View className={`rounded-2xl px-4 py-2 flex-row items-center ${
+    priority === 'High' ? 'bg-red-50' :
+    priority === 'Medium' ? 'bg-yellow-50' :
+    priority === 'Low' ? 'bg-blue-50' :
+    'bg-gray-50'
+  }`}>
+    <View className={`p-2.5 rounded-xl ${
+      priority === 'High' ? 'bg-red-200' :
+      priority === 'Medium' ? 'bg-yellow-200' :
+      priority === 'Low' ? 'bg-blue-200' :
+      'bg-gray-200'
+    }`}>
+      <AntDesign
+        name={priorityInfo.icon}
+        size={16}
+        color={priorityInfo.iconColor}
+      />
+    </View>
+    <View className="ml-3 flex-1">
+      <Text className="text-gray-500 text-[9px] font-medium uppercase tracking-wide">Priority</Text>
+      <Text className={`${priorityInfo.text} text-sm font-bold mt-0.5`}>{priority}</Text>
+    </View>
+  </View>
+</View>
+            </View>
+
+            {/* Progress bar alternative */}
+            <View className="bg-gray-200 rounded-full h-[2px] mb-4" />
+
+            {/* Bottom info section */}
+            <View className="flex-row items-center justify-between">
+              <View className="flex-row items-center">
+                <View className="bg-indigo-100 p-2 rounded-lg">
+                  <Feather name="clock" size={14} color="#6366F1" />
+                </View>
+                <Text className="text-gray-600 text-xs font-medium ml-2">Updated 2h ago</Text>
+              </View>
+
+              <View className="flex-row items-center">
+                <View className="bg-green-100 p-2 rounded-lg">
+                  <Feather name="trending-up" size={14} color="#10B981" />
+                </View>
+                <Text className="text-gray-600 text-xs font-medium ml-2">On Track</Text>
+              </View>
+            </View>
           </View>
- 
         </View>
 
         {/* Comments Section */}
-        <View className="py-6">
-     
+        <View className="space-y-4 py-6">
+          <View className="flex-row items-center ml-1 mb-4">
+            <MaterialIcons name="comment" size={17} color="#6B7280" />
+            <Text className="text-md mb-[4px] font-semibold text-gray-900 ml-2">
+              Comments ({comments.length})
+            </Text>
+          </View>
 
-          {/* Comments List */}
-          <View className="space-y-4">
-            <View className="flex-row items-center ml-1 mb-4">
-              <MaterialIcons name="comment" size={17} color="#6B7280" />
-              <Text className="text-md mb-[4px] font-semibold text-gray-900 ml-2">
-                Comments ({comments.length})
-              </Text>
+          {comments.length === 0 ? (
+            <View className="bg-white rounded-2xl p-8 items-center shadow-sm">
+              <MaterialIcons name="chat-bubble-outline" size={48} color="#D1D5DB" />
+              <Text className="text-gray-500 text-center mt-4">No comments yet</Text>
+              <Text className="text-gray-400 text-sm text-center mt-1">Be the first to add a comment!</Text>
             </View>
-
-            {comments.length === 0 ? (
-              <View className="bg-white rounded-2xl p-8 items-center shadow-sm">
-                <MaterialIcons name="chat-bubble-outline" size={48} color="#D1D5DB" />
-                <Text className="text-gray-500 text-center mt-4">No comments yet</Text>
-                <Text className="text-gray-400 text-sm text-center mt-1">Be the first to add a comment!</Text>
-              </View>
-            ) : (
-              comments.map((item) => (
-                <View key={item._id} className="bg-white rounded-2xl p-4 mb-2">
-                  {/* Comment Header */}
-                  <View className="flex-row items-center justify-between mb-3">
-                    <View className="flex-row items-center flex-1">
-                      <View className="bg-blue-100 rounded-full p-2">
-                        <FontAwesome5 name="user" size={12} color="#3B82F6" />
-                      </View>
-                      <View className="ml-3 flex-1">
-                        <Text className="text-sm font-semibold text-gray-900">
-                          {item.user?.name || 'Unknown User'}
-                        </Text>
-                        <Text className="text-xs text-gray-500">{item.user?.email || 'unknown'}</Text>
-                      </View>
+          ) : (
+            comments.map((item) => (
+              <View key={item._id} className="bg-white rounded-2xl p-4 mb-2">
+                {/* Comment Header */}
+                <View className="flex-row items-center justify-between mb-3">
+                  <View className="flex-row items-center flex-1">
+                    <View className="bg-blue-100 rounded-full p-2">
+                      <FontAwesome5 name="user" size={12} color="#3B82F6" />
                     </View>
-
-                    {/* Action Buttons */}
-                    {item.user._id === user._id && (
-                      <View className="flex-row space-x-3">
-                        <TouchableOpacity
-                          onPress={() => handleStartEditing(item)}
-                          className="p-2"
-                        >
-                          <MaterialIcons name="edit" size={18} color="#3B82F6" />
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          onPress={() => handleDeleteComment(item._id)}
-                          className="p-2"
-                        >
-                          <MaterialIcons name="delete-outline" size={18} color="#EF4444" />
-                        </TouchableOpacity>
-                      </View>
-                    )}
+                    <View className="ml-3 flex-1">
+                      <Text className="text-sm font-semibold text-gray-900">
+                        {item.user?.name || 'Unknown User'}
+                      </Text>
+                      <Text className="text-xs text-gray-500">{item.user?.email || 'unknown'}</Text>
+                    </View>
                   </View>
 
-                  {/* Comment Content */}
-                  {editCommentId === item._id ? (
-                    <View style={{ gap: 12 }}>
-                      <TextInput
-                        value={editCommentContent}
-                        onChangeText={setEditCommentContent}
-                        className="bg-gray-50 rounded-xl px-4 py-3 text-base"
-                        multiline
-                      />
-                      <View className="flex-row justify-end" style={{ gap: 8 }}>
-                        <TouchableOpacity
-                          onPress={() => handleEditComment(item._id)}
-                          className="bg-blue-500 px-4 py-2 rounded-xl flex-row items-center"
-                        >
-                          <Ionicons name="checkmark" size={16} color="white" />
-                          <Text className="text-white text-[13px] font-medium ml-1">Save</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          onPress={handleCancelEditing}
-                          className="bg-red-50 px-5 py-2 rounded-xl flex-row items-center"
-                        >
-                          <Ionicons name="close" size={16} color="#6B7280" />
-                          <Text className="text-red-700 text-[13px] font-medium ml-1">Cancel</Text>
-                        </TouchableOpacity>
-                      </View>
+                  {/* Action Buttons */}
+                  {item.user._id === user._id && (
+                    <View className="flex-row space-x-3">
+                      <TouchableOpacity
+                        onPress={() => handleStartEditing(item)}
+                        className="p-2"
+                      >
+                        <MaterialIcons name="edit" size={18} color="#3B82F6" />
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => handleDeleteComment(item._id)}
+                        className="p-2"
+                      >
+                        <MaterialIcons name="delete-outline" size={18} color="#EF4444" />
+                      </TouchableOpacity>
                     </View>
-                  ) : (
-                    <Text className="text-gray-700 text-base leading-relaxed">{item.content}</Text>
                   )}
                 </View>
-              ))
-            )}
-          </View>
+
+                {/* Comment Content */}
+                {editCommentId === item._id ? (
+                  <View style={{ gap: 12 }}>
+                    <TextInput
+                      value={editCommentContent}
+                      onChangeText={setEditCommentContent}
+                      className="bg-gray-50 rounded-xl px-4 py-3 text-base"
+                      multiline
+                    />
+                    <View className="flex-row justify-end" style={{ gap: 8 }}>
+                      <TouchableOpacity
+                        onPress={() => handleEditComment(item._id)}
+                        className="bg-blue-500 px-4 py-2 rounded-xl flex-row items-center"
+                      >
+                        <Ionicons name="checkmark" size={16} color="white" />
+                        <Text className="text-white text-[13px] font-medium ml-1">Save</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={handleCancelEditing}
+                        className="bg-red-50 px-5 py-2 rounded-xl flex-row items-center"
+                      >
+                        <Ionicons name="close" size={16} color="#6B7280" />
+                        <Text className="text-red-700 text-[13px] font-medium ml-1">Cancel</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                ) : (
+                  <Text className="text-gray-700 text-base leading-relaxed">{item.content}</Text>
+                )}
+              </View>
+            ))
+          )}
         </View>
       </ScrollView>
 

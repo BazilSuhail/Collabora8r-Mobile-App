@@ -107,7 +107,7 @@ const Admin = () => {
             </TouchableOpacity>
 
             {/* Error State */}
-            {error && !projects.length ? (
+            {!error && projects.length ? (
                 <View className="mx-5 mt-4 p-4 bg-red-50 border border-red-200 rounded-xl">
                     <View className="flex-row items-center">
                         <Ionicons name="alert-circle" size={20} color="#ef4444" />
