@@ -2,7 +2,7 @@ import NoTasks from '@/assets/images/icon.png';
 import config from '@/config/config';
 import themeImages from '@/constants/themes';
 import { useAuthContext } from '@/hooks/AuthProvider';
-import { Feather, FontAwesome5, MaterialIcons } from '@expo/vector-icons';
+import { FontAwesome5, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { useRouter } from 'expo-router';
@@ -23,10 +23,17 @@ const Home = () => {
   const [tasks, setTasks] = useState([]);
   const [filteredTasks, setFilteredTasks] = useState([]);
   const [statusFilter, setStatusFilter] = useState('All');
-  const [dateFilter, setDateFilter] = useState('All');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
+
+  // New state for projects
+  const [projectStats, setProjectStats] = useState({
+    joined: 0,
+    admin: 0,
+    manageed: 0,
+    allProjects: 0,
+  });
 
   const fetchUserData = async (initial = false) => {
     try {
@@ -36,6 +43,7 @@ const Home = () => {
       const token = await AsyncStorage.getItem('token');
       if (!token) return router.push('/authentication/login');
 
+      // Fetch tasks
       const tasksResponse = await axios.get(
         `${config.VITE_REACT_APP_API_BASE_URL}/overview/assigned-tasks`,
         { headers: { Authorization: `Bearer ${token}` } }
@@ -44,9 +52,40 @@ const Home = () => {
       const fetchedTasks = tasksResponse.data.tasks;
       setTasks(fetchedTasks);
       setFilteredTasks(fetchedTasks);
+
+      // Fetch admin projects
+      const adminProjectsResponse = await axios.get(
+        `${config.VITE_REACT_APP_API_BASE_URL}/admin-projects/`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // Fetch joined projects
+      const joinedProjectsResponse = await axios.get(
+        `${config.VITE_REACT_APP_API_BASE_URL}/joinedprojects`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const managedProjectsResponse = await axios.get(
+        `${config.VITE_REACT_APP_API_BASE_URL}/joinedprojects/as-manager`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      // Calculate project statistics
+      const adminProjects = adminProjectsResponse.data;
+      const joinedProjects = joinedProjectsResponse.data;
+      const manageedProjects = managedProjectsResponse.data;
+      const allProjects = [...adminProjects, ...joinedProjects, ...manageedProjects];
+
+      setProjectStats({
+        admin: adminProjects.length,
+        joined: joinedProjects.length,
+        manageed: manageedProjects.length,
+        allProjects: allProjects.length,
+      });
+
       setError(null);
     } catch (err) {
-      setError(err.message || 'Error fetching tasks');
+      setError(err.message || 'Error fetching data');
     } finally {
       if (initial) setLoading(false);
       setRefreshing(false);
@@ -59,24 +98,26 @@ const Home = () => {
 
   const filterTasks = useCallback(() => {
     let filtered = [...tasks];
-    const now = new Date();
 
     if (statusFilter !== 'All') {
       filtered = filtered.filter(task => task.status === statusFilter);
     }
 
-    if (dateFilter === 'Missed') {
-      filtered = filtered.filter(task => new Date(task.dueDate) < now && task.status !== 'Completed');
-    } else if (dateFilter === 'Upcoming') {
-      filtered = filtered.filter(task => new Date(task.dueDate) > now);
-    }
-
     setFilteredTasks(filtered);
-  }, [tasks, statusFilter, dateFilter]);
+  }, [tasks, statusFilter]);
 
   useEffect(() => {
     filterTasks();
-  }, [statusFilter, dateFilter, filterTasks]);
+  }, [statusFilter, filterTasks]);
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
 
   const statusCounts = {
     'Not Started': tasks.filter(t => t.status === 'Not Started').length,
@@ -86,132 +127,226 @@ const Home = () => {
 
   if (loading) {
     return (
-      <View className="flex-1 justify-center items-center bg-gray-50">
-        <ActivityIndicator size="large" color="#3b82f6" />
-        <Text className="mt-4 text-gray-600 text-base">Loading tasks...</Text>
+      <View className="flex-1 justify-center items-center bg-gray-100">
+        <ActivityIndicator size="large" color="#6366f1" />
+        <Text className="mt-3 text-gray-500 text-sm font-medium">Loading dashboard...</Text>
       </View>
     );
   }
 
   if (error) {
     return (
-      <View className="flex-1 justify-center items-center bg-gray-50 p-6">
-        <MaterialIcons name="error-outline" size={48} color="#ef4444" />
-        <Text className="text-red-500 text-center mt-4 text-base">{error}</Text>
+      <View className="flex-1 justify-center items-center bg-gray-100 p-6">
+        <View className="w-16 h-16 bg-red-50 rounded-full items-center justify-center mb-4">
+          <MaterialIcons name="error-outline" size={28} color="#ef4444" />
+        </View>
+        <Text className="text-red-600 text-center text-sm font-medium">{error}</Text>
+        <TouchableOpacity
+          onPress={() => fetchUserData(true)}
+          className="mt-4 px-4 py-2 bg-red-50 rounded-lg"
+        >
+          <Text className="text-red-600 text-sm font-medium">Try again</Text>
+        </TouchableOpacity>
       </View>
     );
   }
 
   return (
     <ScrollView
-      className="bg-gray-50 flex-1"
+      className="bg-gray-100 flex-1"
+      showsVerticalScrollIndicator={false}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={() => fetchUserData(false)} />
       }
     >
-      <View className="px-4 pt-4">
+      <View className="px-4 pt-6 pb-8">
         {/* Header */}
-        <View className="relative h-32 rounded-2xl overflow-hidden mb-6">
+        <View className="relative h-32 rounded-t-2xl rounded-b-md overflow-hidden mb-3">
           <Image source={themeImages["1"]} className="absolute h-full w-full" />
           <View className="absolute inset-0 bg-black/40 justify-center px-6">
-            <Text className="text-white text-2xl font-bold">Welcome back,</Text>
-            <Text className="text-white text-lg font-medium">{user.name}</Text>
+            <Text className="text-white text-2xl font-bold">Design You</Text>
+            <Text className="text-white/90 text-sm font-medium mt-1">Professional Plan</Text>
+          </View>
+          <View className="absolute top-4 right-4">
+            <TouchableOpacity className="w-8 h-8 bg-white/20 rounded-full items-center justify-center">
+              <MaterialIcons name="more-horiz" size={20} color="white" />
+            </TouchableOpacity>
           </View>
         </View>
 
-        {/* Date Filter */}
+        {/* Overview Section */}
         <View className="mb-6">
-          <Text className="text-gray-800 text-lg font-semibold mb-3">Filter by Date</Text>
-          <View className="flex-row space-x-3">
-            {[
-              { label: 'All Dates', value: 'All', icon: 'calendar' },
-              { label: 'Missed', value: 'Missed', icon: 'alert-circle' },
-              { label: 'Upcoming', value: 'Upcoming', icon: 'clock' }
-            ].map(filter => (
-              <TouchableOpacity
-                key={filter.value}
-                onPress={() => setDateFilter(filter.value)}
-                className={`flex-row items-center px-4 py-3 rounded-xl border-2 ${
-                  dateFilter === filter.value 
-                    ? 'bg-blue-600 border-blue-600' 
-                    : 'bg-white border-gray-200'
-                }`}
-              >
-                <Feather 
-                  name={filter.icon} 
-                  size={16} 
-                  color={dateFilter === filter.value ? 'white' : '#6b7280'} 
-                  style={{ marginRight: 8 }}
-                />
-                <Text className={`font-medium ${
-                  dateFilter === filter.value ? 'text-white' : 'text-gray-600'
-                }`}>
-                  {filter.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        {/* Task Overview */}
-        <View className="mb-6">
-          <Text className="text-gray-800 text-lg font-semibold mb-3">Task Overview</Text>
-          <View className="bg-white rounded-2xl p-5 border border-gray-100">
-            {Object.entries(statusCounts).map(([label, count], index) => (
-              <View key={label} className="flex-row items-center justify-between py-3">
-                <View className="flex-row items-center">
-                  <View className={`w-12 h-12 rounded-xl items-center justify-center ${
-                    index === 0 ? 'bg-blue-100' : index === 1 ? 'bg-yellow-100' : 'bg-green-100'
-                  }`}>
-                    <FontAwesome5
-                      name={
-                        label === 'Not Started' ? 'calendar-alt' :
-                        label === 'In Progress' ? 'running' : 'check-circle'
-                      }
-                      size={20}
-                      color={
-                        index === 0 ? '#3b82f6' :
-                        index === 1 ? '#f59e0b' : '#10b981'
-                      }
-                    />	
+          <View className="">
+            {/* Top Row */}
+            <View className="flex-row justify-between mb-4">
+              {/* Time Tracked */}
+              <View className="flex-1 mr-2">
+                <View className="bg-white rounded-lg p-6 items-start relative">
+                  <View className="absolute top-2 right-2 bg-red-500 rounded-full w-5 h-5 items-center justify-center">
+                    <Text className="text-white text-xs font-bold">1</Text>
                   </View>
-                  <Text className="ml-4 text-gray-700 font-medium text-base">{label}</Text>
-                </View>
-                <View className={`px-3 py-1 rounded-full ${
-                  index === 0 ? 'bg-blue-100' :
-                  index === 1 ? 'bg-yellow-100' : 'bg-green-100'
-                }`}>
-                  <Text className={`font-bold text-lg ${
-                    index === 0 ? 'text-blue-600' :
-                    index === 1 ? 'text-yellow-600' : 'text-green-600'
-                  }`}>
-                    {count}
-                  </Text>
+                  <View className="w-8 h-8 bg-red-100 rounded-lg items-center justify-center mb-3">
+                    <MaterialIcons name="schedule" size={16} color="#ef4444" />
+                  </View>
+                  <Text className="text-gray-900 text-xl font-bold mb-1">{projectStats.allProjects}</Text>
+                  <Text className="text-gray-600 text-xs font-medium">All Projects</Text>
                 </View>
               </View>
-            ))}
+
+              {/* Projects Finished */}
+              <View className="flex-1 ml-2">
+                <View className="bg-white rounded-lg p-6 items-start">
+                  <View className="absolute top-3 right-3">
+                    <TouchableOpacity>
+                      <MaterialIcons name="more-horiz" size={18} color="#9ca3af" />
+                    </TouchableOpacity>
+                  </View>
+                  <View className="w-8 h-8 bg-blue-100 rounded-lg items-center justify-center mb-3">
+                    <MaterialIcons name="check-circle" size={16} color="#3b82f6" />
+                  </View>
+                  <Text className="text-gray-900 text-xl font-bold mb-1">{projectStats.admin}</Text>
+                  <Text className="text-gray-600 text-xs font-medium">Projects Adminstered</Text>
+                </View>
+              </View>
+            </View>
+
+
+            {/* Bottom Row */}
+            <View className="flex-row justify-between">
+              {/* Total Revenue */}
+              <View className="flex-1 mr-2">
+                <View className="bg-white rounded-lg p-6 items-start">
+                  <View className="absolute top-3 right-3">
+                    <TouchableOpacity>
+                      <MaterialIcons name="more-horiz" size={18} color="#9ca3af" />
+                    </TouchableOpacity>
+                  </View>
+                  <View className="w-8 h-8 bg-yellow-100 rounded-lg items-center justify-center mb-3">
+                    <MaterialIcons name="attach-money" size={16} color="#f59e0b" />
+                  </View>
+                  <Text className="text-gray-900 text-xl font-bold mb-1">{projectStats.manageed}</Text>
+                  <Text className="text-gray-600 text-xs font-medium">Managed Projects</Text>
+                </View>
+              </View>
+
+              {/* Total Members */}
+              <View className="flex-1 ml-2">
+                <View className="bg-white rounded-lg p-6 items-start">
+                  <View className="absolute top-3 right-3">
+                    <TouchableOpacity>
+                      <MaterialIcons name="more-horiz" size={18} color="#9ca3af" />
+                    </TouchableOpacity>
+                  </View>
+                  <View className="w-8 h-8 bg-purple-100 rounded-lg items-center justify-center mb-3">
+                    <MaterialIcons name="group" size={16} color="#8b5cf6" />
+                  </View>
+                  <Text className="text-gray-900 text-xl font-bold mb-1">{projectStats.joined}</Text>
+                  <Text className="text-gray-600 text-xs font-medium">Joined Projects</Text>
+                </View>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        {/* Task Statistics */}
+        <View className="mb-6">
+
+          <View className="bg-white rounded-xl p-4">
+            <View className="flex-row justify-between" style={{gap:12}}>
+              {Object.entries(statusCounts).map(([label, count], index) => {
+                const colors = {
+                  0: {
+                    bg: 'bg-blue-50',
+                    iconBg: 'bg-blue-100',
+                    iconColor: '#3b82f6',
+                    accent: 'bg-blue-500',
+                    textColor: 'text-blue-600'
+                  },
+                  1: {
+                    bg: 'bg-yellow-50',
+                    iconBg: 'bg-yellow-100',
+                    iconColor: '#f59e0b',
+                    accent: 'bg-yellow-500',
+                    textColor: 'text-yellow-600'
+                  },
+                  2: {
+                    bg: 'bg-green-50',
+                    iconBg: 'bg-green-100',
+                    iconColor: '#10b981',
+                    accent: 'bg-green-500',
+                    textColor: 'text-green-600'
+                  }
+                };
+
+                const config = colors[index];
+
+                return (
+                  <View key={label} className="flex-1 items-center ">
+                    <View
+                      className={`w-full  h-24 ${config.bg} rounded-xl items-center justify-center relative p-2`}
+                    >
+                      {/* Count badge */}
+                      <View
+                        className={`absolute -top-1 -right-1 w-6 h-6 ${config.accent} rounded-full items-center justify-center`}
+                      >
+                        <Text className="text-white text-xs font-bold">{count}</Text>
+                      </View>
+
+                      {/* Icon */}
+                      <View className={`w-12 h-12 ${config.iconBg} rounded-lg items-center justify-center mb-1`}>
+                        <FontAwesome5
+                          name={
+                            label === 'Not Started'
+                              ? 'calendar-alt'
+                              : label === 'In Progress'
+                                ? 'clock'
+                                : 'check-circle'
+                          }
+                          size={20}
+                          color={config.iconColor}
+                        />
+                      </View>
+
+                      {/* Label inside the card */}
+                      <Text className={`${config.textColor} text-[10px] font-semibold text-center`}>
+                        {label === 'Not Started' ? 'To Start' : label === 'In Progress' ? 'Active' : 'Done'}
+                      </Text>
+                    </View>
+                  </View>
+                );
+              })}
+            </View>
+
           </View>
         </View>
 
         {/* Status Filter */}
         <View className="mb-6">
-          <Text className="text-gray-800 text-lg font-semibold mb-3">Filter by Status</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row">
-            <View className="flex-row">
-              {['All', 'Not Started', 'In Progress', 'Completed'].map((status) => (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <View className="flex-row px-1" style={{ gap: 8 }}>
+              {[
+                { label: 'All', value: 'All', icon: 'layers' },
+                { label: 'To Start', value: 'Not Started', icon: 'calendar' },
+                { label: 'Active', value: 'In Progress', icon: 'play' },
+                { label: 'Done', value: 'Completed', icon: 'checkmark-circle' }
+              ].map((status) => (
                 <TouchableOpacity
-                  key={status}
-                  onPress={() => setStatusFilter(status)}
-                  className={`px-[15px] py-[5px] mr-[6px] rounded-[15px] border-[1px] ${
-                    statusFilter === status 
-                      ? 'bg-blue-600 border-blue-600' 
-                      : 'bg-white border-gray-200'
-                  }`}
+                  key={status.value}
+                  onPress={() => setStatusFilter(status.value)}
+                  className={`flex-row items-center px-4 py-2.5 rounded-lg ${statusFilter === status.value
+                    ? 'bg-blue-500'
+                    : 'bg-white'
+                    }`}
                 >
-                  <Text className={`font-medium text-[12px] ${
-                    statusFilter === status ? 'text-white' : 'text-gray-600'
-                  }`}>
-                    {status}
+                  <Ionicons
+                    name={status.icon}
+                    size={14}
+                    color={statusFilter === status.value ? 'white' : '#6b7280'}
+                    style={{ marginRight: 6 }}
+                  />
+                  <Text className={`font-medium text-sm ${statusFilter === status.value ? 'text-white' : 'text-gray-600'
+                    }`}>
+                    {status.label}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -219,59 +354,115 @@ const Home = () => {
           </ScrollView>
         </View>
 
-        {/* Tasks List */}
-        <View className="mb-6">
-          <Text className="text-gray-800 text-lg font-semibold mb-3">
-            Your Tasks ({filteredTasks.length})
-          </Text>
+        {/* To-do List Section */}
+        <View className="min-h-[400px]">
+          <View className="flex-row items-center justify-between mb-3">
+            <Text className="text-gray-900 text-lg font-semibold">To-do List</Text>
+            <TouchableOpacity>
+              <Text className="text-indigo-500 text-sm font-medium">View All</Text>
+            </TouchableOpacity>
+          </View>
           {filteredTasks.length > 0 ? (
-            <View className="space-y-3">
-              {filteredTasks.map(task => (
-                <TouchableOpacity
-                  key={task._id}
-                  onPress={() => router.push(`/${task._id}-${user._id}`)}
-                  className="bg-white rounded-2xl p-4 border border-gray-100"
-                >
-                  <View className="flex-row items-center">
-                    <View className="w-12 h-12 bg-gray-100 rounded-xl items-center justify-center mr-4">
-                      <FontAwesome5 
-                        name="clipboard-list" 
-                        size={20} 
-                        color="#6b7280" 
-                      />
-                    </View>
-                    <View className="flex-1">
-                      <Text className="text-gray-800 font-semibold text-base leading-5">
-                        {task.title.slice(0, 48)}{task.title.length > 48 && '...'}
-                      </Text>
-                      <View className="flex-row items-center mt-2">
-                        <View className={`px-2 py-1 rounded-full ${
-                          task.status === 'Not Started' ? 'bg-blue-100' :
-                          task.status === 'In Progress' ? 'bg-yellow-100' : 'bg-green-100'
-                        }`}>
-                          <Text className={`text-xs font-medium ${
-                            task.status === 'Not Started' ? 'text-blue-600' :
-                            task.status === 'In Progress' ? 'text-yellow-600' : 'text-green-600'
-                          }`}>
-                            {task.status}
+            <View className="]" style={{ gap: 12 }}>
+              {filteredTasks.slice(0, 5).map((task) => {
+                // Map status to styles
+                const statusConfig = {
+                  "Not Started": {
+                    icon: "hourglass-empty",
+                    iconBg: "bg-blue-100",
+                    iconColor: "#3b82f6", // blue-500
+                    progressColor: "bg-blue-500",
+                    textColor: "text-blue-600",
+                    label: "To Start",
+                  },
+                  "In Progress": {
+                    icon: "autorenew",
+                    iconBg: "bg-yellow-100",
+                    iconColor: "#eab308", // yellow-500
+                    progressColor: "bg-yellow-500",
+                    textColor: "text-yellow-600",
+                    label: "Active",
+                  },
+                  "Completed": {
+                    icon: "check-circle",
+                    iconBg: "bg-green-100",
+                    iconColor: "#22c55e", // green-500
+                    progressColor: "bg-green-500",
+                    textColor: "text-green-600",
+                    label: "Done",
+                  },
+                };
+
+                const config = statusConfig[task.status] || statusConfig["Not Started"];
+
+                return (
+                  <TouchableOpacity
+                    key={task._id}
+                    onPress={() => router.push(`/${task._id}-${user._id}`)}
+                    className="bg-white rounded-xl p-4"
+                  >
+                    <View className="flex-row items-start">
+                      {/* Status Icon */}
+                      <View
+                        className={`w-10 h-10 rounded-lg items-center justify-center mr-3 ${config.iconBg}`}
+                      >
+                        <MaterialIcons name={config.icon} size={18} color={config.iconColor} />
+                      </View>
+
+                      {/* Task Details */}
+                      <View className="flex-1">
+                        {/* Title */}
+                        <Text className="text-gray-900 font-semibold text-sm mb-1">
+                          {task.title.slice(0, 50)}
+                          {task.title.length > 50 && "..."}
+                        </Text>
+
+                        {/* Status + Due Date */}
+                        <View className="flex-row items-center justify-between">
+                          <View className={`px-2.5 py-1 rounded-full ${config.iconBg}`}>
+                            <Text className={`text-xs font-medium ${config.textColor}`}>
+                              {config.label}
+                            </Text>
+                          </View>
+
+                          {task.dueDate && (
+                            <Text className="text-gray-500 text-xs">
+                              Due: {formatDate(task.dueDate)}
+                            </Text>
+                          )}
+                        </View>
+
+                        {/* Progress bar */}
+                        <View className="mt-2">
+                          <View className="w-full bg-gray-200 rounded-full h-1">
+                            <View
+                              className={`${config.progressColor} h-1 rounded-full`}
+                              style={{ width: task.progress }}
+                            />
+                          </View>
+                          <Text className={`${config.textColor} text-xs font-medium mt-1`}>
+                            {task.progress}
                           </Text>
                         </View>
                       </View>
                     </View>
-                    <MaterialIcons name="chevron-right" size={24} color="#9ca3af" />
-                  </View>
-                </TouchableOpacity>
-              ))}
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           ) : (
-            <View className="items-center py-12">
-              <Image source={NoTasks} className="w-32 h-32 mb-6 opacity-50" resizeMode="contain" />
-              <Text className="text-gray-500 text-lg font-medium mb-2">No tasks found</Text>
-              <Text className="text-gray-400 text-center px-8">
+            <View className="bg-white rounded-xl p-8 items-center">
+              <View className="w-16 h-16 bg-gray-100 rounded-xl items-center justify-center mb-4">
+                <Image source={NoTasks} className="w-8 h-8 opacity-40" resizeMode="contain" />
+              </View>
+              <Text className="text-gray-500 text-base font-medium mb-2">No tasks found</Text>
+              <Text className="text-gray-400 text-sm text-center">
                 Try adjusting your filters or create a new task to get started.
               </Text>
             </View>
           )}
+
+
         </View>
       </View>
     </ScrollView>

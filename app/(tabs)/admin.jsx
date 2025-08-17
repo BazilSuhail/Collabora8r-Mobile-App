@@ -10,6 +10,7 @@ import EditProject from '@/components/adminProjects/EditProject';
 import avatarImages from '@/constants/avatar';
 import themeImages from '@/constants/themes';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const colors = [
     'bg-red-400', 'bg-blue-400', 'bg-green-700', 'bg-yellow-600', 'bg-indigo-400', 'bg-orange-400', 'bg-cyan-400', 'bg-violet-400'
@@ -18,6 +19,7 @@ const colors = [
 const getRandomColor = () => colors[Math.floor(Math.random() * colors.length)];
 
 const Admin = () => {
+    const insets = useSafeAreaInsets();
     const navigate = useRouter();
     const [projects, setProjects] = useState([]);
     const [projectDetails, setProjectDetails] = useState([]);
@@ -98,7 +100,8 @@ const Admin = () => {
             {/* Floating Action Button */}
             <TouchableOpacity
                 onPress={() => setShowModal(true)}
-                className="absolute bg-blue-200 w-14 h-14 border border-blue-300 rounded-[12px] right-5 z-50 bottom-2 items-center justify-center"
+                className="absolute bg-blue-200 w-14 h-14 border border-blue-300 rounded-[12px] right-5 z-50 items-center justify-center"
+                style={{ bottom: insets.bottom }} // ensures it stays above nav bar
             >
                 <Ionicons name="add" size={26} color={"#2563EB"} />
             </TouchableOpacity>

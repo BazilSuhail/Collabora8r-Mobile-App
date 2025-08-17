@@ -22,9 +22,9 @@ import { useAuthContext } from '../../hooks/AuthProvider';
 
 const TaskDetails = () => {
   const { user } = useAuthContext();
-  const insets = useSafeAreaInsets(); 
-  const fullId = usePathname().split("/").pop();  
-  const [taskId] = fullId.split("-"); 
+  const insets = useSafeAreaInsets();
+  const fullId = usePathname().split("/").pop();
+  const [taskId] = fullId.split("-");
 
   const [task, setTask] = useState(null);
   const [status, setStatus] = useState('Not Started');
@@ -45,37 +45,37 @@ const TaskDetails = () => {
   const [tempStatus, setTempStatus] = useState('Not Started');
 
   useEffect(() => {
-  const fetchData = async () => {
-    try {
-      const token = await AsyncStorage.getItem('token'); 
+    const fetchData = async () => {
+      try {
+        const token = await AsyncStorage.getItem('token');
 
-      const taskRes = await axios.get(
-        `${config.VITE_REACT_APP_API_BASE_URL}/project-tasks/${taskId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+        const taskRes = await axios.get(
+          `${config.VITE_REACT_APP_API_BASE_URL}/project-tasks/${taskId}`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
 
-      const commentRes = await axios.get(
-        `${config.VITE_REACT_APP_API_BASE_URL}/comments/tasks/${taskId}/comments`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+        const commentRes = await axios.get(
+          `${config.VITE_REACT_APP_API_BASE_URL}/comments/tasks/${taskId}/comments`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
 
-      setTask(taskRes.data);
-      setStatus(taskRes.data.status);
-      setPriority(taskRes.data.priority);
-      setComments(commentRes.data.comments);
-      setTempProgress(taskRes.data.progress);
-      setTempStatus(taskRes.data.status);
-      translateX.value = (taskRes.data.progress / 100) * (sliderWidth - thumbSize);
+        setTask(taskRes.data);
+        setStatus(taskRes.data.status);
+        setPriority(taskRes.data.priority);
+        setComments(commentRes.data.comments);
+        setTempProgress(taskRes.data.progress);
+        setTempStatus(taskRes.data.status);
+        translateX.value = (taskRes.data.progress / 100) * (sliderWidth - thumbSize);
 
-    } catch (err) { 
-      setError("Failed to load task data.");
-    } finally {
-      setLoading(false);
-    }
-  };
+      } catch (err) {
+        setError("Failed to load task data.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  fetchData();
-}, [taskId]); // make sure taskId is a dependency!
+    fetchData();
+  }, [taskId]); // make sure taskId is a dependency!
 
   const handleAddComment = async () => {
     if (!commentContent.trim()) return;
@@ -440,27 +440,27 @@ const TaskDetails = () => {
 
                   {/* Comment Content */}
                   {editCommentId === item._id ? (
-                    <View className="space-y-3">
+                    <View style={{ gap: 12 }}>
                       <TextInput
                         value={editCommentContent}
                         onChangeText={setEditCommentContent}
                         className="bg-gray-50 rounded-xl px-4 py-3 text-base"
                         multiline
                       />
-                      <View className="flex-row space-x-2">
+                      <View className="flex-row justify-end" style={{ gap: 8 }}>
                         <TouchableOpacity
                           onPress={() => handleEditComment(item._id)}
-                          className="bg-blue-500 px-4 py-2 rounded-lg flex-row items-center"
+                          className="bg-blue-500 px-4 py-2 rounded-xl flex-row items-center"
                         >
                           <Ionicons name="checkmark" size={16} color="white" />
-                          <Text className="text-white font-medium ml-1">Save</Text>
+                          <Text className="text-white text-[13px] font-medium ml-1">Save</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
                           onPress={handleCancelEditing}
-                          className="bg-gray-200 px-4 py-2 rounded-lg flex-row items-center"
+                          className="bg-red-50 px-5 py-2 rounded-xl flex-row items-center"
                         >
                           <Ionicons name="close" size={16} color="#6B7280" />
-                          <Text className="text-gray-700 font-medium ml-1">Cancel</Text>
+                          <Text className="text-red-700 text-[13px] font-medium ml-1">Cancel</Text>
                         </TouchableOpacity>
                       </View>
                     </View>
