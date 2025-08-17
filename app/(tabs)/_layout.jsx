@@ -1,10 +1,10 @@
+import avatarImages from '@/constants/avatar';
 import { useAuthContext } from '@/hooks/AuthProvider';
-import { Drawer } from 'expo-router/drawer';
-import { View, Text, Image, TouchableOpacity, ScrollView } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { DrawerContentScrollView, DrawerItem } from '@react-navigation/drawer';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
-import avatarImages from '@/constants/avatar';
+import { Drawer } from 'expo-router/drawer';
+import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 
 function CustomDrawerContent(props) {
     const router = useRouter();
@@ -70,7 +70,7 @@ router.replace("/authentication/login")
           />
           <DrawerItem
             label="Workflow"
-            onPress={() => router.push('/meow')}
+            onPress={() => router.push('/workflow')}
             icon={({ color }) => <Ionicons name="git-branch-outline" size={20} color={color} />}
             labelStyle={{ fontSize: 14, color: '#333' }}
           />
@@ -139,8 +139,7 @@ export default function TabsLayout() {
       <Drawer.Screen name="joined" options={{ drawerLabel: 'Joined' }} />
       <Drawer.Screen name="manager" options={{ drawerLabel: 'Manager' }} />
       <Drawer.Screen name="profile" options={{ drawerLabel: 'Profile' }} />
-      <Drawer.Screen name="workflow" options={{ drawerLabel: 'Workflow' }} />
-      <Drawer.Screen name="meow" options={{ drawerLabel: 'meow' }} />
+      <Drawer.Screen name="workflow" options={{ drawerLabel: 'Workflow' }} /> 
     </Drawer>
   );
 }

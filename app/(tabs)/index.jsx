@@ -453,10 +453,12 @@ const Home = () => {
                 );
               })}
             </View>
-          ) : (<EmptyState
-            title="No tasks found"
-            desc={"Try creating a new task\nor adjust your filters to get started."}
-          />
+          ) : (
+          <EmptyState 
+  title="No Projects Found" 
+  desc="Create your first project to get started"
+  imageSource={require('@/assets/placeholders/noTasks.png')}
+/>
           )}
 
         </View>

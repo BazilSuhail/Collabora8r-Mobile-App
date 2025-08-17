@@ -46,7 +46,7 @@ const ProjectDetail = () => {
         );
         setProject(projectResponse.data)
       } catch (err) {
-        console.error(err);
+        //console.error(err);
         setError('Using mock data - API connection failed');
       }
     };

@@ -5,12 +5,13 @@ import themeImages from '@/constants/themes';
 import { FontAwesome, FontAwesome5, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import BottomSheet from 'entity-bottom-sheet';
 import { LinearGradient } from 'expo-linear-gradient';
 import { usePathname, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Image, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import BottomSheet from 'entity-bottom-sheet';
+import EmptyState from '../../../../components/EmptyState';
 
 const JoinedProjectDetails = () => {
   const pathname = usePathname();
@@ -124,9 +125,10 @@ const JoinedProjectDetails = () => {
     return isNaN(dateObj.getTime()) ? 'Invalid date' : dateObj.toLocaleDateString();
   }, []);
 
-  const TaskCard = useCallback(({ task, user }) => (
+  const TaskCard = useCallback(({ task, user, showMyTasks }) => (
     <TouchableOpacity
       onPress={() => handleTaskClick(task._id)}
+      disabled={!showMyTasks}
       className="bg-gray-100 rounded-2xl p-5 mb-4 border border-gray-200 active:opacity-80"
     >
       <View className="flex-row items-start justify-between mb-4">
@@ -189,21 +191,19 @@ const JoinedProjectDetails = () => {
     </TouchableOpacity>
   ), [handleTaskClick, getPriorityStyle, getStatusStyle, formatDate]);
 
-  const EmptyState = useCallback(({ message }) => (
-    <View className="items-center py-12">
-      <View className="w-16 h-16 bg-gray-100 rounded-full items-center justify-center mb-4">
-        <FontAwesome5 name="clipboard-list" size={24} color="#9CA3AF" />
-      </View>
-      <Text className="text-gray-500 text-base font-medium text-center">{message}</Text>
-    </View>
-  ), []);
-
-  const TasksList = useCallback(({ tasks, isEmpty, emptyMessage }) => {
-    if (isEmpty) return <EmptyState message={emptyMessage} />;
+  const TasksList = useCallback(({ tasks, isEmpty, emptyMessage, showMyTasks }) => {
+    if (isEmpty) return (
+      <EmptyState
+        title={emptyMessage}
+        imageSource={require('@/assets/placeholders/noJoinedTasks.png')}
+        imageWidth={150}
+        imageHeight={150}
+      />
+    );
     return (
       <View>
         {tasks.map((item, index) => (
-          <TaskCard key={item.task._id || index} task={item.task} user={item.user} />
+          <TaskCard key={item.task._id || index} task={item.task} user={item.user} showMyTasks={showMyTasks} />
         ))}
       </View>
     );
@@ -235,16 +235,6 @@ const JoinedProjectDetails = () => {
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
           >
-            {/* {(error.project || error.tasks || error.auth) && (
-              <View className="flex-row items-center bg-red-50 p-4 mx-4 mt-4 rounded-xl border border-red-200">
-                <MaterialIcons name="error-outline" size={20} color="#EF4444" />
-                <Text className="text-red-500 text-sm font-medium ml-2">
-                  {error.project || error.tasks || error.auth}
-                </Text>
-              </View>
-            )} */}
-
-
             <View className="rounded-2xl mb-2 overflow-hidden">
               <View className="relative h-[148px] mb-3 w-full">
                 <View className="absolute inset-0 w-full">
@@ -359,7 +349,8 @@ const JoinedProjectDetails = () => {
             <TasksList
               tasks={currentTasks}
               isEmpty={currentTasks.length === 0}
-              emptyMessage={showMyTasks ? 'No tasks assigned to you yet' : 'No tasks assigned to other team members'}
+              showMyTasks={showMyTasks}
+              emptyMessage={showMyTasks ? 'No tasks for you' : 'No tasks for others'}
             />
           </ScrollView>
 
@@ -527,14 +518,14 @@ const JoinedProjectDetails = () => {
           </BottomSheet>
         </>
       ) : (
-        <View className="flex-1 justify-center items-center px-10">
-          <View className="w-20 h-20 bg-gray-100 rounded-full items-center justify-center mb-6">
-            <MaterialIcons name="search" size={32} color="#9CA3AF" />
-          </View>
-          <Text className="text-gray-900 text-xl font-bold mb-2">Project not found</Text>
-          <Text className="text-gray-500 text-base text-center leading-6">
-            Please check the project ID and try again
-          </Text>
+        <View className="h-screen bg-gray-50 flex-1 items-center">
+          <EmptyState
+            title="No Projects Joined"
+            desc="Join a project to get started"
+            imageSource={require('@/assets/placeholders/noAdmin.png')}
+            imageWidth={280}
+            imageHeight={280}
+          />
         </View>
       )}
     </View>

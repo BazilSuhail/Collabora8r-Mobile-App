@@ -1,11 +1,11 @@
 import { Image, Text, View } from "react-native";
 
-export default function EmptyState({ title, desc }) {
+export default function EmptyState({ title, desc, imageSource, imageWidth = 200, imageHeight = 200 }) {
   return (
     <View className="flex-1 w-full p-8 items-center justify-center mb-5">
-      <View className="w-[200px] h-[200px]">
+      <View className="w-[200px] h-[200px]" style={{ width: imageWidth, height: imageHeight }}>
         <Image
-          source={require("@/assets/placeholders/noTasks.png")}
+          source={imageSource}
           className="w-full h-full"
           resizeMode="contain"
         />

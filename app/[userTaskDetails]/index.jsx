@@ -1,5 +1,5 @@
 import config from '@/config/config';
-import { AntDesign, Feather, FontAwesome5, Ionicons, MaterialCommunityIcons, FontAwesome6, MaterialIcons } from '@expo/vector-icons';
+import { AntDesign, Feather, FontAwesome5, FontAwesome6, Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { usePathname } from 'expo-router';
@@ -206,59 +206,34 @@ const TaskDetails = () => {
       setError("Failed to delete comment.");
     }
   };
-// Update the handleSaveChanges function
-const handleSaveChanges = async () => {
-  try {
-    const token = await AsyncStorage.getItem('token');
-    // Update both status and priority in the API call
-    await axios.put(
-      `${config.VITE_REACT_APP_API_BASE_URL}/projecttasks/update-task-progress/${taskId}`,
-      { 
-        progress: tempProgress, 
+
+  const handleSaveChanges = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      await axios.put(
+        `${config.VITE_REACT_APP_API_BASE_URL}/projecttasks/update-task-progress/${taskId}`,
+        {
+          progress: tempProgress,
+          status: tempStatus,
+          priority: tempPriority
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setTask((prev) => ({
+        ...prev,
+        progress: tempProgress,
         status: tempStatus,
-        priority: tempPriority // Add priority to the update
-      },
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
-    setTask((prev) => ({
-      ...prev,
-      progress: tempProgress,
-      status: tempStatus,
-      priority: tempPriority // Update priority in task state
-    }));
-    setStatus(tempStatus);
-    setPriority(tempPriority); // Update priority state
-    setModalVisible(false);
-  } catch (err) {
-    setError("Failed to update task details.");
-  }
-};
-  
-  // const handleSaveChanges = async () => {
-  //   try {
-  //     const token = await AsyncStorage.getItem('token');
-  //     await axios.put(
-  //       `${config.VITE_REACT_APP_API_BASE_URL}/projecttasks/update-task-progress/${taskId}`,
-  //       { progress: tempProgress, status: tempStatus },
-  //       {
-  //         headers: { Authorization: `Bearer ${token}` },
-  //       }
-  //     );
-  //     setTask((prev) => ({
-  //       ...prev,
-  //       progress: tempProgress,
-  //       status: tempStatus,
-  //       priority: tempPriority
-  //     }));
-  //     setStatus(tempStatus);
-  //     setTempPriority(tempPriority);
-  //     setModalVisible(false);
-  //   } catch (err) {
-  //     setError("Failed to update task details.");
-  //   }
-  // };
+        priority: tempPriority
+      }));
+      setStatus(tempStatus);
+      setPriority(tempPriority);
+      setModalVisible(false);
+    } catch (err) {
+      setError("Failed to update task details.");
+    }
+  };
 
   const toggleModal = () => {
     if (!modalVisible) {
@@ -427,14 +402,14 @@ const handleSaveChanges = async () => {
               <View className="flex-1 ml-6" style={{ gap: 10 }}>
                 {/* Status card */}
                 <View className={`rounded-2xl px-4 py-2 flex-row items-center ${status === 'Completed' ? 'bg-green-50' :
-                    status === 'In Progress' ? 'bg-yellow-50' :
-                      status === 'Not Started' ? 'bg-blue-50' :
-                        'bg-gray-50'
+                  status === 'In Progress' ? 'bg-yellow-50' :
+                    status === 'Not Started' ? 'bg-blue-50' :
+                      'bg-gray-50'
                   }`}>
                   <View className={`p-2.5 rounded-xl ${status === 'Completed' ? 'bg-green-200' :
-                      status === 'In Progress' ? 'bg-yellow-200' :
-                        status === 'Not Started' ? 'bg-blue-200' :
-                          'bg-gray-200'
+                    status === 'In Progress' ? 'bg-yellow-200' :
+                      status === 'Not Started' ? 'bg-blue-200' :
+                        'bg-gray-200'
                     }`}>
                     <MaterialCommunityIcons
                       name={statusInfo.icon}
@@ -450,14 +425,14 @@ const handleSaveChanges = async () => {
 
                 {/* Priority card */}
                 <View className={`rounded-2xl px-4 py-2 flex-row items-center ${priority === 'High' ? 'bg-red-50' :
-                    priority === 'Medium' ? 'bg-yellow-50' :
-                      priority === 'Low' ? 'bg-blue-50' :
-                        'bg-gray-50'
+                  priority === 'Medium' ? 'bg-yellow-50' :
+                    priority === 'Low' ? 'bg-blue-50' :
+                      'bg-gray-50'
                   }`}>
                   <View className={`p-2.5 rounded-xl ${priority === 'High' ? 'bg-red-200' :
-                      priority === 'Medium' ? 'bg-yellow-200' :
-                        priority === 'Low' ? 'bg-blue-200' :
-                          'bg-gray-200'
+                    priority === 'Medium' ? 'bg-yellow-200' :
+                      priority === 'Low' ? 'bg-blue-200' :
+                        'bg-gray-200'
                     }`}>
                     <AntDesign
                       name={priorityInfo.icon}
