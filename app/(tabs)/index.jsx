@@ -16,6 +16,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import EmptyState from '../../components/EmptyState';
 
 const Home = () => {
   const { user } = useAuthContext();
@@ -252,7 +253,7 @@ const Home = () => {
         <View className="mb-6">
 
           <View className="bg-white rounded-xl p-4">
-            <View className="flex-row justify-between" style={{gap:12}}>
+            <View className="flex-row justify-between" style={{ gap: 12 }}>
               {Object.entries(statusCounts).map(([label, count], index) => {
                 const colors = {
                   0: {
@@ -450,18 +451,11 @@ const Home = () => {
                 );
               })}
             </View>
-          ) : (
-            <View className="bg-white rounded-xl p-8 items-center">
-              <View className="w-16 h-16 bg-gray-100 rounded-xl items-center justify-center mb-4">
-                <Image source={NoTasks} className="w-8 h-8 opacity-40" resizeMode="contain" />
-              </View>
-              <Text className="text-gray-500 text-base font-medium mb-2">No tasks found</Text>
-              <Text className="text-gray-400 text-sm text-center">
-                Try adjusting your filters or create a new task to get started.
-              </Text>
-            </View>
+          ) : (<EmptyState 
+  title="No tasks found" 
+  desc={"Try creating a new task\nor adjust your filters to get started."} 
+/>
           )}
-
 
         </View>
       </View>

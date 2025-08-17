@@ -266,7 +266,7 @@ const TaskDetails = () => {
     <View className="flex-1 bg-gray-100 px-4 pt-2">
 
       <ScrollView
-        contentContainerStyle={{ paddingTop: insets.top + 8 }}
+        contentContainerStyle={{ paddingTop: insets.top + 8, paddingBottom: insets.bottom + 85 }}
         showsVerticalScrollIndicator={false}
       >
 
@@ -352,40 +352,12 @@ const TaskDetails = () => {
           <View className="items-center mt-8">
             {renderProgress()}
           </View>
-
-          {/* Update Progress Button */}
-          {/* <TouchableOpacity
-            onPress={toggleModal}
-            className="bg-blue-500 rounded-2xl px-6 py-4 flex-row items-center justify-center shadow-sm"
-          >
-            <MaterialIcons name="update" size={20} color="white" />
-            <Text className="text-white text-base font-semibold ml-2">Update Progress</Text>
-          </TouchableOpacity> */}
+ 
         </View>
 
         {/* Comments Section */}
         <View className="py-6">
-          {/* Add Comment */}
-          <View className="bg-white rounded-2xl p-4 shadow-sm mb-6">
-            <View className="flex-row items-center space-x-3">
-              <View className="flex-1">
-                <TextInput
-                  className="bg-gray-50 rounded-xl px-4 py-3 text-base"
-                  placeholder="Add a comment..."
-                  placeholderTextColor="#9CA3AF"
-                  value={commentContent}
-                  onChangeText={setCommentContent}
-                  multiline
-                />
-              </View>
-              <TouchableOpacity
-                onPress={handleAddComment}
-                className="bg-blue-500 p-3 rounded-xl shadow-sm"
-              >
-                <Ionicons name="send" size={18} color="white" />
-              </TouchableOpacity>
-            </View>
-          </View>
+     
 
           {/* Comments List */}
           <View className="space-y-4">
@@ -473,6 +445,32 @@ const TaskDetails = () => {
           </View>
         </View>
       </ScrollView>
+
+      {/* Fixed Comment Input at Bottom */}
+      <View
+        className="absolute bottom-0 left-0 right-0 rounded-t-[32px] bg-blue-50 pt-6 px-4 pb-4"
+        style={{ paddingBottom: insets.bottom + 16 }} // Padding for Android nav bar
+      >
+        <View className="flex-row items-center space-x-3">
+          <View className="flex-1">
+            <TextInput
+              className="bg-white rounded-xl px-4 py-3 text-base"
+              placeholder="Add a comment..."
+              placeholderTextColor="#9CA3AF"
+              value={commentContent}
+              onChangeText={setCommentContent}
+              multiline
+            />
+          </View>
+          <TouchableOpacity
+            onPress={handleAddComment}
+            className="bg-blue-500 p-3 ml-3 rounded-xl shadow-sm"
+          >
+            <Ionicons name="send" size={18} color="white" />
+          </TouchableOpacity>
+        </View>
+      </View>
+
 
       {/* Progress Update Modal */}
       <ProgressModal

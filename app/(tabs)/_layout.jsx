@@ -70,7 +70,7 @@ router.replace("/authentication/login")
           />
           <DrawerItem
             label="Workflow"
-            onPress={() => router.push('/workflow')}
+            onPress={() => router.push('/meow')}
             icon={({ color }) => <Ionicons name="git-branch-outline" size={20} color={color} />}
             labelStyle={{ fontSize: 14, color: '#333' }}
           />
@@ -140,6 +140,7 @@ export default function TabsLayout() {
       <Drawer.Screen name="manager" options={{ drawerLabel: 'Manager' }} />
       <Drawer.Screen name="profile" options={{ drawerLabel: 'Profile' }} />
       <Drawer.Screen name="workflow" options={{ drawerLabel: 'Workflow' }} />
+      <Drawer.Screen name="meow" options={{ drawerLabel: 'meow' }} />
     </Drawer>
   );
 }
