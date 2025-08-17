@@ -47,7 +47,7 @@ const getStatusColor = (status) => {
       return {
         bg: 'bg-blue-100',
         text: 'text-blue-700',
-        icon: 'clock-outline',
+        icon: 'arrowdown',
         iconColor: '#3B82F6' // blue-700
       };
     case 'Medium':
@@ -61,7 +61,7 @@ const getStatusColor = (status) => {
       return {
         bg: 'bg-red-100',
         text: 'text-red-700',
-        icon: 'exclamation-circle', // ✅ Valid icon for AntDesign
+        icon: 'arrowup', // ✅ Valid icon for AntDesign
         iconColor: '#EF4444' // red-700
       };
     default:
@@ -97,6 +97,7 @@ const TaskDetails = () => {
   const thumbSize = 24;
   const [tempProgress, setTempProgress] = useState(1);
   const [tempStatus, setTempStatus] = useState('Not Started');
+  const [tempPriority, setTempPriority] = useState('Not Started');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -205,34 +206,66 @@ const TaskDetails = () => {
       setError("Failed to delete comment.");
     }
   };
-
-  const handleSaveChanges = async () => {
-    try {
-      const token = await AsyncStorage.getItem('token');
-      await axios.put(
-        `${config.VITE_REACT_APP_API_BASE_URL}/projecttasks/update-task-progress/${taskId}`,
-        { progress: tempProgress, status: tempStatus },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-      setTask((prev) => ({
-        ...prev,
-        progress: tempProgress,
+// Update the handleSaveChanges function
+const handleSaveChanges = async () => {
+  try {
+    const token = await AsyncStorage.getItem('token');
+    // Update both status and priority in the API call
+    await axios.put(
+      `${config.VITE_REACT_APP_API_BASE_URL}/projecttasks/update-task-progress/${taskId}`,
+      { 
+        progress: tempProgress, 
         status: tempStatus,
-      }));
-      setStatus(tempStatus);
-      setModalVisible(false);
-    } catch (err) {
-      setError("Failed to update task details.");
-    }
-  };
+        priority: tempPriority // Add priority to the update
+      },
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+    setTask((prev) => ({
+      ...prev,
+      progress: tempProgress,
+      status: tempStatus,
+      priority: tempPriority // Update priority in task state
+    }));
+    setStatus(tempStatus);
+    setPriority(tempPriority); // Update priority state
+    setModalVisible(false);
+  } catch (err) {
+    setError("Failed to update task details.");
+  }
+};
+  
+  // const handleSaveChanges = async () => {
+  //   try {
+  //     const token = await AsyncStorage.getItem('token');
+  //     await axios.put(
+  //       `${config.VITE_REACT_APP_API_BASE_URL}/projecttasks/update-task-progress/${taskId}`,
+  //       { progress: tempProgress, status: tempStatus },
+  //       {
+  //         headers: { Authorization: `Bearer ${token}` },
+  //       }
+  //     );
+  //     setTask((prev) => ({
+  //       ...prev,
+  //       progress: tempProgress,
+  //       status: tempStatus,
+  //       priority: tempPriority
+  //     }));
+  //     setStatus(tempStatus);
+  //     setTempPriority(tempPriority);
+  //     setModalVisible(false);
+  //   } catch (err) {
+  //     setError("Failed to update task details.");
+  //   }
+  // };
 
   const toggleModal = () => {
     if (!modalVisible) {
       // Reset temp values when opening modal
       setTempProgress(task.progress);
       setTempStatus(status);
+      setTempPriority(priority);
       translateX.value = (task.progress / 100) * (sliderWidth - thumbSize);
     }
     setModalVisible(!modalVisible);
@@ -391,57 +424,53 @@ const TaskDetails = () => {
               </View>
 
               {/* Stats cards */}
-            <View className="flex-1 ml-6" style={{ gap: 10 }}>
-  {/* Status card */}
-  <View className={`rounded-2xl px-4 py-2 flex-row items-center ${
-    status === 'Completed' ? 'bg-green-50' :
-    status === 'In Progress' ? 'bg-yellow-50' :
-    status === 'Not Started' ? 'bg-blue-50' :
-    'bg-gray-50'
-  }`}>
-    <View className={`p-2.5 rounded-xl ${
-      status === 'Completed' ? 'bg-green-200' :
-      status === 'In Progress' ? 'bg-yellow-200' :
-      status === 'Not Started' ? 'bg-blue-200' :
-      'bg-gray-200'
-    }`}>
-      <MaterialCommunityIcons
-        name={statusInfo.icon}
-        size={18}
-        color={statusInfo.iconColor}
-      />
-    </View>
-    <View className="ml-3 flex-1">
-      <Text className="text-gray-500 text-[9px] font-medium uppercase tracking-wide">Status</Text>
-      <Text className={`${statusInfo.text} text-sm font-bold mt-0.5`}>{status}</Text>
-    </View>
-  </View>
+              <View className="flex-1 ml-6" style={{ gap: 10 }}>
+                {/* Status card */}
+                <View className={`rounded-2xl px-4 py-2 flex-row items-center ${status === 'Completed' ? 'bg-green-50' :
+                    status === 'In Progress' ? 'bg-yellow-50' :
+                      status === 'Not Started' ? 'bg-blue-50' :
+                        'bg-gray-50'
+                  }`}>
+                  <View className={`p-2.5 rounded-xl ${status === 'Completed' ? 'bg-green-200' :
+                      status === 'In Progress' ? 'bg-yellow-200' :
+                        status === 'Not Started' ? 'bg-blue-200' :
+                          'bg-gray-200'
+                    }`}>
+                    <MaterialCommunityIcons
+                      name={statusInfo.icon}
+                      size={18}
+                      color={statusInfo.iconColor}
+                    />
+                  </View>
+                  <View className="ml-3 flex-1">
+                    <Text className="text-gray-500 text-[9px] font-medium uppercase tracking-wide">Status</Text>
+                    <Text className={`${statusInfo.text} text-sm font-bold mt-0.5`}>{status}</Text>
+                  </View>
+                </View>
 
-  {/* Priority card */}
-  <View className={`rounded-2xl px-4 py-2 flex-row items-center ${
-    priority === 'High' ? 'bg-red-50' :
-    priority === 'Medium' ? 'bg-yellow-50' :
-    priority === 'Low' ? 'bg-blue-50' :
-    'bg-gray-50'
-  }`}>
-    <View className={`p-2.5 rounded-xl ${
-      priority === 'High' ? 'bg-red-200' :
-      priority === 'Medium' ? 'bg-yellow-200' :
-      priority === 'Low' ? 'bg-blue-200' :
-      'bg-gray-200'
-    }`}>
-      <AntDesign
-        name={priorityInfo.icon}
-        size={16}
-        color={priorityInfo.iconColor}
-      />
-    </View>
-    <View className="ml-3 flex-1">
-      <Text className="text-gray-500 text-[9px] font-medium uppercase tracking-wide">Priority</Text>
-      <Text className={`${priorityInfo.text} text-sm font-bold mt-0.5`}>{priority}</Text>
-    </View>
-  </View>
-</View>
+                {/* Priority card */}
+                <View className={`rounded-2xl px-4 py-2 flex-row items-center ${priority === 'High' ? 'bg-red-50' :
+                    priority === 'Medium' ? 'bg-yellow-50' :
+                      priority === 'Low' ? 'bg-blue-50' :
+                        'bg-gray-50'
+                  }`}>
+                  <View className={`p-2.5 rounded-xl ${priority === 'High' ? 'bg-red-200' :
+                      priority === 'Medium' ? 'bg-yellow-200' :
+                        priority === 'Low' ? 'bg-blue-200' :
+                          'bg-gray-200'
+                    }`}>
+                    <AntDesign
+                      name={priorityInfo.icon}
+                      size={16}
+                      color={priorityInfo.iconColor}
+                    />
+                  </View>
+                  <View className="ml-3 flex-1">
+                    <Text className="text-gray-500 text-[9px] font-medium uppercase tracking-wide">Priority</Text>
+                    <Text className={`${priorityInfo.text} text-sm font-bold mt-0.5`}>{priority}</Text>
+                  </View>
+                </View>
+              </View>
             </View>
 
             {/* Progress bar alternative */}
@@ -585,6 +614,8 @@ const TaskDetails = () => {
         setTempProgress={setTempProgress}
         tempStatus={tempStatus}
         setTempStatus={setTempStatus}
+        tempPriority={tempPriority}
+        setTempPriority={setTempPriority}
         onClose={() => setModalVisible(false)}
         onSave={handleSaveChanges}
         getStatusColor={getStatusColor}

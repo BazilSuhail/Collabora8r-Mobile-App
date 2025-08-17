@@ -5,7 +5,9 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const ProgressModal = ({
     visible,
@@ -13,6 +15,8 @@ const ProgressModal = ({
     setTempProgress,
     tempStatus,
     setTempStatus,
+    tempPriority,
+    setTempPriority,
     onClose,
     onSave,
     getStatusColor,
@@ -21,7 +25,6 @@ const ProgressModal = ({
     const CustomHeader = () => (
         <View className="flex-row items-center px-6 mb-4">
             <Text className="text-xl font-bold text-gray-900">Update Progress</Text>
-        
         </View>
     );
 
@@ -57,41 +60,85 @@ const ProgressModal = ({
                     </View>
                 </View>
 
-                {/* Status Selector */}
+                {/* Status and Priority Selector - Row Layout */}
                 <View className="mb-8">
-                    <Text className="text-base font-semibold text-gray-900 mb-4">Task Status</Text>
-                    <View className="space-y-3">
-                        {['Not Started', 'In Progress', 'Completed'].map((statusOption) => {
-                            const isSelected = tempStatus === statusOption;
-                            const statusColor = getStatusColor(statusOption);
-                            return (
-                                <TouchableOpacity
-                                    key={statusOption}
-                                    onPress={() => setTempStatus(statusOption)}
-                                    className={`p-4 rounded-xl border-2 mb-2 flex-row items-center ${isSelected
-                                            ? 'bg-blue-50 border-blue-500'
-                                            : 'bg-gray-50 border-gray-200'
-                                        }`}
-                                >
-                                    <Ionicons
-                                        name={statusColor.icon}
-                                        size={20}
-                                        color={isSelected ? '#3B82F6' : '#6B7280'}
-                                    />
-                                    <Text
-                                        className={`font-medium ml-3 ${isSelected ? 'text-blue-700' : 'text-gray-700'
+                    <Text className="text-base font-semibold text-gray-900 mb-4">Task Details</Text>
+                    <View className="flex-row" style={{ gap: 12 }}>
+                        {/* Status Selector */}
+                        <View className="flex-1">
+                            <Text className="text-sm font-medium text-gray-700 mb-3">Status</Text>
+                            <View style={{gap:12}}>
+                                {['Not Started', 'In Progress', 'Completed'].map((statusOption) => {
+                                    const isSelected = tempStatus === statusOption;
+                                    const statusColor = getStatusColor(statusOption);
+                                    return (
+                                        <TouchableOpacity
+                                            key={statusOption}
+                                            onPress={() => setTempStatus(statusOption)}
+                                            className={`p-3 rounded-xl flex-row items-center ${isSelected 
+                                                ? `${statusColor.bg.replace('100', '50')} border-${statusColor.text.replace('text-', '')}` 
+                                                : 'border-[1px] bg-gray-50 border-gray-200'
                                             }`}
-                                    >
-                                        {statusOption}
-                                    </Text>
-                                    {isSelected && (
-                                        <View className="ml-auto">
-                                            <Ionicons name="checkmark-circle" size={20} color="#3B82F6" />
-                                        </View>
-                                    )}
-                                </TouchableOpacity>
-                            );
-                        })}
+                                        >
+                                            <MaterialCommunityIcons
+                                                name={statusColor.icon}
+                                                size={18}
+                                                color={statusColor.iconColor}
+                                            />
+                                            <Text
+                                                className={`font-medium ml-2 text-sm ${isSelected ? statusColor.text : 'text-gray-700'}`}
+                                                numberOfLines={1}
+                                            >
+                                                {statusOption}
+                                            </Text>
+                                            {isSelected && (
+                                                <View className="ml-auto">
+                                                    <Ionicons name="checkmark-circle" size={18} color={statusColor.iconColor} />
+                                                </View>
+                                            )}
+                                        </TouchableOpacity>
+                                    );
+                                })}
+                            </View>
+                        </View>
+
+                        {/* Priority Selector */}
+                        <View className="flex-1">
+                            <Text className="text-sm font-medium text-gray-700 mb-3">Priority</Text>
+                            <View style={{gap:12}}>
+                                {['Low', 'Medium', 'High'].map((priorityOption) => {
+                                    const isSelected = tempPriority === priorityOption;
+                                    const priorityColor = getStatusColor(priorityOption);
+                                    return (
+                                        <TouchableOpacity
+                                            key={priorityOption}
+                                            onPress={() => setTempPriority(priorityOption)}
+                                            className={`p-3 rounded-xl flex-row items-center ${isSelected 
+                                                ? `${priorityColor.bg.replace('100', '50')}` 
+                                                : 'border-[1px] bg-gray-50 border-gray-200'
+                                            }`}
+                                        >
+                                            <AntDesign
+                                                name={priorityColor.icon}
+                                                size={16}
+                                                color={priorityColor.iconColor}
+                                            />
+                                            <Text
+                                                className={`font-medium ml-2 text-sm ${isSelected ? priorityColor.text : 'text-gray-700'}`}
+                                                numberOfLines={1}
+                                            >
+                                                {priorityOption}
+                                            </Text>
+                                            {isSelected && (
+                                                <View className="ml-auto">
+                                                    <Ionicons name="checkmark-circle" size={18} color={priorityColor.iconColor} />
+                                                </View>
+                                            )}
+                                        </TouchableOpacity>
+                                    );
+                                })}
+                            </View>
+                        </View>
                     </View>
                 </View>
 
