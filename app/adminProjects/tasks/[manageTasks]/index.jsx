@@ -19,6 +19,7 @@ import {
     View
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import EmptyState from '../../../../components/EmptyState';
 
 const AssignTasks = () => {
     const insets = useSafeAreaInsets();
@@ -335,7 +336,7 @@ const AssignTasks = () => {
             </View>
 
             {/* Create Task Button */}
-            {projectTeam !== 0 && (
+            {projectTeam !== 0 ? (
                 <TouchableOpacity
                     className="bg-blue-600 flex-row items-center justify-center py-3 px-6 rounded-xl mb-6 shadow-sm"
                     onPress={handleOpenModal}
@@ -343,111 +344,110 @@ const AssignTasks = () => {
                     <FontAwesome5 name="plus" size={16} color="#FFFFFF" />
                     <Text className="text-white font-semibold ml-2">Create New Task</Text>
                 </TouchableOpacity>
-            )}
-
-            {/* Warning Message */}
-            {projectTeam === 0 && (
-                <View className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+            ) : (
+                <View className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
                     <View className="flex-row items-center">
                         <MaterialIcons name="warning" size={20} color="#F59E0B" />
-                        <Text className="text-amber-800 ml-2 font-medium">
+                        <Text className="text-amber-700 ml-3 text-[12px] font-medium">
                             Add team members to start assigning tasks
                         </Text>
                     </View>
                 </View>
             )}
 
-            {/* Tasks Section Header */}
-            <View className="flex-row bg-white rounded-xl p-4 items-center mb-4">
-                <MaterialIcons name="task" size={24} color="#4B5563" />
-                <Text className="text-lg font-semibold text-gray-700 ml-2">Tasks Overview</Text>
-                <View className="bg-gray-200 px-3 py-1 rounded-full ml-auto">
-                    <Text className="text-sm text-gray-600 font-medium">{tasksCount} tasks</Text>
-                </View>
-            </View>
-
             {/* Tasks List */}
             {tasks.length > 0 ? (
-                tasks.map((item) => (
-                    <View key={item._id} className="bg-white rounded-xl p-4 mb-3 shadow-sm border border-gray-100">
-                        {/* Task Header */}
-                        <View className="flex-row items-start justify-between mb-3">
-                            <View className="flex-1">
-                                <Text className="text-lg font-semibold text-gray-800 mb-1">
-                                    {item.title.length > 25 ? `${item.title.slice(0, 25)}...` : item.title}
-                                </Text>
-                                <Text className="text-sm text-gray-500 leading-5">
-                                    {item.description?.length > 60 ? `${item.description.slice(0, 60)}...` : item.description}
-                                </Text>
-                            </View>
-
-                            {/* Actions */}
-                            <View className="flex-row items-center space-x-3 ml-4">
-                                <TouchableOpacity
-                                    className="p-2 bg-blue-50 rounded-lg"
-                                    onPress={() => handleEditTask(item)}
-                                >
-                                    <FontAwesome name="edit" size={16} color="#3B82F6" />
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    className="p-2 bg-red-50 rounded-lg ml-2"
-                                    onPress={() => handleDeleteTask(item._id)}
-                                >
-                                    <MaterialIcons name="delete-outline" size={16} color="#EF4444" />
-                                </TouchableOpacity>
-                            </View>
+                <>
+                    {/* Tasks Section Header */}
+                    <View className="flex-row bg-white rounded-xl p-4 items-center mb-4">
+                        <MaterialIcons name="task" size={24} color="#4B5563" />
+                        <Text className="text-lg font-semibold text-gray-700 ml-2">Tasks Overview</Text>
+                        <View className="bg-gray-200 px-3 py-1 rounded-full ml-auto">
+                            <Text className="text-sm text-gray-600 font-medium">{tasksCount} tasks</Text>
                         </View>
-
-                        {/* Task Details */}
-                        <View className="flex-row items-center justify-between">
-                            {/* Priority */}
-                            <View className={`flex-row items-center px-2 py-1 rounded-full ${getPriorityColor(item.priority)}`}>
-                                {getPriorityIcon(item.priority)}
-                                <Text className="text-xs font-medium ml-1">{item.priority}</Text>
-                            </View>
-
-                            {/* Status */}
-                            <View className={`flex-row items-center px-2 py-1 rounded-full ${getStatusColor(item.status)}`}>
-                                {getStatusIcon(item.status)}
-                                <Text className="text-xs font-medium ml-1">{item.status}</Text>
-                            </View>
-                        </View>
-
-                        {/* Assignee */}
-                        <View className="flex-row items-center mt-3 pt-3 border-t border-gray-100">
-                            <View className="flex-row items-center flex-1">
-                                <Image
-                                    source={avatarImages[item.assignedTo?.avatar]}
-                                    className="w-8 h-8 rounded-full mr-3"
-                                />
-                                <View>
-                                    <Text className="text-sm font-medium text-gray-700">
-                                        {item.assignedTo?.name || 'Unassigned'}
+                    </View>
+                    {tasks.map((item) => (
+                        <View key={item._id} className="bg-white rounded-xl p-4 mb-3 shadow-sm border border-gray-100">
+                            {/* Task Header */}
+                            <View className="flex-row items-start justify-between mb-3">
+                                <View className="flex-1">
+                                    <Text className="text-lg font-semibold text-gray-800 mb-1">
+                                        {item.title.length > 25 ? `${item.title.slice(0, 25)}...` : item.title}
                                     </Text>
-                                    <Text className="text-xs text-gray-500">
-                                        {item.assignedTo?.email || 'No assignee'}
+                                    <Text className="text-sm text-gray-500 leading-5">
+                                        {item.description?.length > 60 ? `${item.description.slice(0, 60)}...` : item.description}
                                     </Text>
+                                </View>
+
+                                {/* Actions */}
+                                <View className="flex-row items-center space-x-3 ml-4">
+                                    <TouchableOpacity
+                                        className="p-2 bg-blue-50 rounded-lg"
+                                        onPress={() => handleEditTask(item)}
+                                    >
+                                        <FontAwesome name="edit" size={16} color="#3B82F6" />
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        className="p-2 bg-red-50 rounded-lg ml-2"
+                                        onPress={() => handleDeleteTask(item._id)}
+                                    >
+                                        <MaterialIcons name="delete-outline" size={16} color="#EF4444" />
+                                    </TouchableOpacity>
                                 </View>
                             </View>
 
-                            {/* Due Date */}
-                            <View className="flex-row items-center">
-                                <MaterialIcons name="schedule" size={14} color="#6B7280" />
-                                <Text className="text-xs text-gray-500 ml-1">
-                                    {item.dueDate ? new Date(item.dueDate).toLocaleDateString() : 'No due date'}
-                                </Text>
+                            {/* Task Details */}
+                            <View className="flex-row items-center justify-between">
+                                {/* Priority */}
+                                <View className={`flex-row items-center px-2 py-1 rounded-full ${getPriorityColor(item.priority)}`}>
+                                    {getPriorityIcon(item.priority)}
+                                    <Text className="text-xs font-medium ml-1">{item.priority}</Text>
+                                </View>
+
+                                {/* Status */}
+                                <View className={`flex-row items-center px-2 py-1 rounded-full ${getStatusColor(item.status)}`}>
+                                    {getStatusIcon(item.status)}
+                                    <Text className="text-xs font-medium ml-1">{item.status}</Text>
+                                </View>
+                            </View>
+
+                            {/* Assignee */}
+                            <View className="flex-row items-center mt-3 pt-3 border-t border-gray-100">
+                                <View className="flex-row items-center flex-1">
+                                    <Image
+                                        source={avatarImages[item.assignedTo?.avatar]}
+                                        className="w-8 h-8 rounded-full mr-3"
+                                    />
+                                    <View>
+                                        <Text className="text-sm font-medium text-gray-700">
+                                            {item.assignedTo?.name || 'Unassigned'}
+                                        </Text>
+                                        <Text className="text-xs text-gray-500">
+                                            {item.assignedTo?.email || 'No assignee'}
+                                        </Text>
+                                    </View>
+                                </View>
+
+                                {/* Due Date */}
+                                <View className="flex-row items-center">
+                                    <MaterialIcons name="schedule" size={14} color="#6B7280" />
+                                    <Text className="text-xs text-gray-500 ml-1">
+                                        {item.dueDate ? new Date(item.dueDate).toLocaleDateString() : 'No due date'}
+                                    </Text>
+                                </View>
                             </View>
                         </View>
-                    </View>
-                ))
+                    ))}
+                </>
             ) : (
-                // Empty State
-                <View className="bg-white rounded-xl p-8 items-center justify-center">
-                    <MaterialIcons name="assignment" size={48} color="#D1D5DB" />
-                    <Text className="text-gray-500 text-lg font-medium mt-4">No tasks yet</Text>
-                    <Text className="text-gray-400 text-sm mt-2 text-center">
-                        Create your first task to get started with project management
-                    </Text>
+                <View className="flex-1 mt-16">
+                    <EmptyState
+                        title="No Team Members Found"
+                        desc="Add some members in your project to continue developing."
+                        imageSource={require('@/assets/placeholders/noTeamMembers.png')}
+                        imageWidth={300}
+                        imageHeight={200}
+                    />
                 </View>
             )}
 
