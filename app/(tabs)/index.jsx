@@ -17,6 +17,7 @@ import {
   View,
 } from 'react-native';
 import EmptyState from '../../components/EmptyState';
+import HomeLoader from '../../components/skeletonLoaders/home';
 
 const Home = () => {
   const { user } = useAuthContext();
@@ -128,10 +129,7 @@ const Home = () => {
 
   if (loading) {
     return (
-      <View className="flex-1 justify-center items-center bg-gray-100">
-        <ActivityIndicator size="large" color="#6366f1" />
-        <Text className="mt-3 text-gray-500 text-sm font-medium">Loading dashboard...</Text>
-      </View>
+     <HomeLoader/>
     );
   }
 
@@ -454,11 +452,11 @@ const Home = () => {
               })}
             </View>
           ) : (
-          <EmptyState 
-  title="No Projects Found" 
-  desc="Create your first project to get started"
-  imageSource={require('@/assets/placeholders/noTasks.png')}
-/>
+            <EmptyState
+              title="No Projects Found"
+              desc="Create your first project to get started"
+              imageSource={require('@/assets/placeholders/noTasks.png')}
+            />
           )}
 
         </View>
