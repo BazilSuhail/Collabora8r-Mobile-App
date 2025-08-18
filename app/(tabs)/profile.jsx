@@ -5,145 +5,29 @@ import { useAuthContext } from '@/hooks/AuthProvider';
 import { Feather, MaterialIcons } from "@expo/vector-icons";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
+import BottomSheet from 'entity-bottom-sheet';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  Animated, Dimensions,
-  FlatList,
   Image,
-  Modal,
-  PanGestureHandler,
   ScrollView,
-  State,
   Text, TextInput,
   TouchableOpacity,
   View
 } from "react-native";
 
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
-
-const BottomSheet = ({ isVisible, onClose, children, title }) => {
-  const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
-  const opacity = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    if (isVisible) {
-      Animated.parallel([
-        Animated.timing(translateY, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.timing(opacity, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    } else {
-      Animated.parallel([
-        Animated.timing(translateY, {
-          toValue: SCREEN_HEIGHT,
-          duration: 250,
-          useNativeDriver: true,
-        }),
-        Animated.timing(opacity, {
-          toValue: 0,
-          duration: 250,
-          useNativeDriver: true,
-        }),
-      ]).start();
-    }
-  }, [isVisible]);
-
-  if (!isVisible) return null;
-
-  return (
-    <Modal transparent visible={isVisible} animationType="none">
-      <View className="flex-1">
-        {/* Background overlay */}
-        <Animated.View
-          className="absolute inset-0 bg-black/50"
-          style={{ opacity }}
-        >
-          <TouchableOpacity
-            className="flex-1"
-            activeOpacity={1}
-            onPress={onClose}
-          />
-        </Animated.View>
-
-        {/* Bottom Sheet */}
-        <Animated.View
-          className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl"
-          style={{
-            transform: [{ translateY }],
-            minHeight: SCREEN_HEIGHT * 0.7,
-            maxHeight: SCREEN_HEIGHT * 0.9,
-          }}
-        >
-          {/* Drag Handle */}
-          <View className="items-center py-3">
-            <View className="w-12 h-1 bg-gray-300 rounded-full" />
-          </View>
-
-          {/* Header */}
-          <View className="flex-row justify-between items-center px-6 pb-4 border-b border-gray-100">
-            <Text className="text-xl font-bold text-gray-800">{title}</Text>
-            <TouchableOpacity
-              onPress={onClose}
-              className="w-8 h-8 bg-gray-100 rounded-full justify-center items-center"
-            >
-              <Feather name="x" size={18} color="#6b7280" />
-            </TouchableOpacity>
-          </View>
-
-          {/* Content */}
-          <ScrollView className="flex-1 px-6 py-4" showsVerticalScrollIndicator={false}>
-            {children}
-          </ScrollView>
-        </Animated.View>
-      </View>
-    </Modal>
-  );
-};
-
-// Avatar Selection Component
-const AvatarSelector = ({ selectedAvatar, onSelect }) => (
-  <View className="mb-6">
-    <Text className="text-base font-semibold text-gray-800 mb-4">Choose Avatar</Text>
-    <FlatList
-      data={Array.from({ length: 12 }, (_, i) => i + 1)}
-      keyExtractor={(item) => item.toString()}
-      numColumns={4}
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ paddingBottom: 20 }}
-      renderItem={({ item }) => (
-        <TouchableOpacity 
-          onPress={() => onSelect(item)} 
-          className="flex-1 items-center p-2"
-        >
-          <View className={`rounded-full p-1 ${selectedAvatar === item ? 'bg-indigo-500' : 'bg-gray-200'}`}>
-            <Image source={avatarImages[item]} className="w-16 h-16 rounded-full" />
-          </View>
-        </TouchableOpacity>
-      )}
-    />
-  </View>
-);
-
 // Profile Field Component
 const ProfileField = ({ field, value, onChangeText, isEditing }) => {
   if (!isEditing) {
     const colors = {
-      user: "#6366f1", mail: "#ec4899", phone: "#10b981", 
+      user: "#6366f1", mail: "#ec4899", phone: "#10b981",
       users: "#f59e0b", calendar: "#8b5cf6"
     };
-    
+
     return (
-      <View className="flex-row items-center p-4 mb-3 bg-white rounded-2xl border border-gray-100">
-        <View 
-          className="w-10 h-10 rounded-full justify-center items-center mr-4" 
+      <View className="flex-row items-center px-4 py-2 mb-3 bg-white rounded-2xl border border-gray-100">
+        <View
+          className="w-10 h-10 rounded-full justify-center items-center mr-4"
           style={{ backgroundColor: `${colors[field.icon]}20` }}
         >
           <Feather name={field.icon} size={18} color={colors[field.icon]} />
@@ -157,10 +41,10 @@ const ProfileField = ({ field, value, onChangeText, isEditing }) => {
   }
 
   return (
-    <View className="mb-4">
+    <View className="mb-3">
       <Text className="text-sm text-gray-700 mb-2">{field.label}</Text>
-      <View className="flex-row items-center bg-gray-50 border border-gray-200 rounded-2xl p-4">
-        <Feather name={field.icon} size={18} color="#6b7280" />
+      <View className="flex-row items-center bg-gray-50 border border-gray-200 rounded-xl px-3 py-1">
+        <Feather name={field.icon} size={16} color="#6b7280" />
         <TextInput
           className="flex-1 text-base text-gray-800 ml-3"
           placeholder={`Enter ${field.label.toLowerCase()}`}
@@ -173,8 +57,28 @@ const ProfileField = ({ field, value, onChangeText, isEditing }) => {
   );
 };
 
+// Avatar Selection Component
+const AvatarSelector = ({ selectedAvatar, onSelect }) => (
+  <View className="mb-6">
+    <Text className="text-base font-semibold text-gray-800 mb-4">Choose Avatar</Text>
+    <View className="flex-row flex-wrap justify-between">
+      {Array.from({ length: 12 }, (_, i) => i + 1).map((item) => (
+        <TouchableOpacity
+          key={item.toString()}
+          onPress={() => onSelect(item)}
+          className="w-1/4 items-center p-2"
+        >
+          <View className={`rounded-full p-1 ${selectedAvatar === item ? 'bg-indigo-500' : 'bg-gray-200'}`}>
+            <Image source={avatarImages[item]} className="w-16 h-16 rounded-full" />
+          </View>
+        </TouchableOpacity>
+      ))}
+    </View>
+  </View>
+);
+
 const Profile = () => {
-  const { user, reFetchProfile } = useAuthContext();
+  const { user, updateAvatar  } = useAuthContext();
 
   // State management
   const [profile, setProfile] = useState(null);
@@ -200,29 +104,29 @@ const Profile = () => {
 
   // Profile fields configuration
   const profileFields = useMemo(() => [
-    { 
-      icon: "user", 
-      label: "Full Name", 
-      name: "name", 
-      keyboardType: "default" 
+    {
+      icon: "user",
+      label: "Full Name",
+      name: "name",
+      keyboardType: "default"
     },
-    { 
-      icon: "users", 
-      label: "Gender", 
-      name: "gender", 
-      keyboardType: "default" 
+    {
+      icon: "users",
+      label: "Gender",
+      name: "gender",
+      keyboardType: "default"
     },
-    { 
-      icon: "calendar", 
-      label: "Date of Birth", 
-      name: "dob", 
-      keyboardType: "default" 
+    {
+      icon: "calendar",
+      label: "Date of Birth",
+      name: "dob",
+      keyboardType: "default"
     },
-    { 
-      icon: "phone", 
-      label: "Phone", 
-      name: "phone", 
-      keyboardType: "phone-pad" 
+    {
+      icon: "phone",
+      label: "Phone",
+      name: "phone",
+      keyboardType: "phone-pad"
     },
   ], []);
 
@@ -232,10 +136,10 @@ const Profile = () => {
     { icon: "mail", label: "Email", value: profile?.email },
     { icon: "phone", label: "Phone", value: profile?.phone },
     { icon: "users", label: "Gender", value: profile?.gender },
-    { 
-      icon: "calendar", 
-      label: "Date of Birth", 
-      value: profile?.dob ? new Date(profile.dob).toLocaleDateString() : '' 
+    {
+      icon: "calendar",
+      label: "Date of Birth",
+      value: profile?.dob ? new Date(profile.dob).toLocaleDateString() : ''
     },
   ], [profile]);
 
@@ -246,7 +150,8 @@ const Profile = () => {
 
   // Handle avatar selection
   const handleAvatarSelect = useCallback((avatarIndex) => {
-    setSelectedAvatar(avatarIndex);
+    setSelectedAvatar(avatarIndex)
+    updateAvatar(avatarIndex)
   }, []);
 
   // Open edit modal
@@ -271,13 +176,13 @@ const Profile = () => {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const token = await AsyncStorage.getItem('token');
       const updatedProfile = { ...editedProfile, avatar: selectedAvatar };
 
       const response = await axios.put(
-        `${config.VITE_REACT_APP_API_BASE_URL}/profile`, 
-        updatedProfile, 
+        `${config.VITE_REACT_APP_API_BASE_URL}/profile`,
+        updatedProfile,
         {
           headers: { Authorization: `Bearer ${token}` }
         }
@@ -339,10 +244,10 @@ const Profile = () => {
           <View className="mb-6">
             <Text className="text-xl font-bold text-gray-800 mb-4 px-2">Profile Information</Text>
             {displayFields.map((field, idx) => (
-              <ProfileField 
-                key={idx} 
-                field={field} 
-                value={field.value} 
+              <ProfileField
+                key={idx}
+                field={field}
+                value={field.value}
                 isEditing={false}
               />
             ))}
@@ -361,76 +266,97 @@ const Profile = () => {
 
       {/* Edit Bottom Sheet */}
       <BottomSheet
-        isVisible={isEditModalOpen}
+        visible={isEditModalOpen}
         onClose={closeEditModal}
-        title="Edit Profile"
-      >
-        {/* Avatar Section */}
-        <View className="mb-6">
-          <View className="flex-row items-center mb-4">
-            <Image
-              source={avatarImages[selectedAvatar]}
-              className="w-16 h-16 rounded-full border-3 border-gray-200"
-            />
-            <View className="ml-4">
-              <Text className="text-lg font-semibold text-gray-800">Profile Picture</Text>
-              <Text className="text-sm text-gray-500">Tap to change your avatar</Text>
+        header={
+          <View className="border-b-[2px] border-gray-100 px-6">
+            <View className="flex-row items-center mb-4">
+              <Image
+                source={avatarImages[selectedAvatar]}
+                className="w-16 h-16 rounded-full border-3 border-gray-200"
+              />
+              <View className="ml-4">
+                <Text className="text-lg font-semibold text-gray-800">Edit Profile Picture</Text>
+                <Text className="text-sm text-gray-500">Tap to change your avatar</Text>
+              </View>
             </View>
           </View>
-          <AvatarSelector 
-            selectedAvatar={selectedAvatar} 
-            onSelect={handleAvatarSelect} 
-          />
-        </View>
-
-        {/* Profile Fields */}
-        <View className="mb-6">
-          <Text className="text-base font-semibold text-gray-800 mb-4">Personal Information</Text>
-          {profileFields.map((field, idx) => (
-            <ProfileField
-              key={idx}
-              field={field}
-              value={editedProfile[field.name]}
-              onChangeText={(text) => handleInputChange(field.name, text)}
-              isEditing={true}
+        }
+        heightRatio={0.85}
+      >
+        <View className="flex-1">
+          <ScrollView className="flex-1 p-6" showsVerticalScrollIndicator={false}>
+            
+            <AvatarSelector
+              selectedAvatar={selectedAvatar}
+              onSelect={handleAvatarSelect}
             />
-          ))}
-        </View>
+            {/* Profile Fields - Two in a Row */}
+            <View className="mb-6">
+              <Text className="text-base font-semibold text-gray-800 mb-4">Personal Information</Text>
+              <View className="flex-row" style={{ gap: 12 }}>
+                <View className="flex-1">
+                  {profileFields.slice(0, 2).map((field, idx) => (
+                    <ProfileField
+                      key={idx}
+                      field={field}
+                      value={editedProfile[field.name]}
+                      onChangeText={(text) => handleInputChange(field.name, text)}
+                      isEditing={true}
+                    />
+                  ))}
+                </View>
+                <View className="flex-1">
+                  {profileFields.slice(2, 4).map((field, idx) => (
+                    <ProfileField
+                      key={idx}
+                      field={field}
+                      value={editedProfile[field.name]}
+                      onChangeText={(text) => handleInputChange(field.name, text)}
+                      isEditing={true}
+                    />
+                  ))}
+                </View>
+              </View>
+            </View>
 
-        {/* Error Message */}
-        {error && (
-          <View className="bg-red-50 border border-red-200 rounded-2xl p-4 mb-4">
-            <Text className="text-red-600 text-sm">{error}</Text>
-          </View>
-        )}
-
-        {/* Action Buttons */}
-        <View className="space-y-3 pb-6">
-          <TouchableOpacity
-            onPress={handleUpdate}
-            disabled={isLoading}
-            className={`p-4 rounded-2xl flex-row justify-center items-center ${
-              isLoading ? 'bg-gray-400' : 'bg-green-600'
-            }`}
-          >
-            {isLoading ? (
-              <MaterialIcons name="refresh" size={20} color="white" />
-            ) : (
-              <Feather name="check" size={20} color="white" />
+            {/* Error Message */}
+            {error && (
+              <View className="bg-red-50 border border-red-200 rounded-2xl p-4 mb-4">
+                <Text className="text-red-600 text-sm">{error}</Text>
+              </View>
             )}
-            <Text className="text-white ml-3 text-base font-semibold">
-              {isLoading ? 'Updating...' : 'Update Profile'}
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            onPress={closeEditModal}
-            disabled={isLoading}
-            className="bg-gray-100 p-4 rounded-2xl flex-row justify-center items-center border border-gray-200"
-          >
-            <Feather name="x" size={20} color="#6b7280" />
-            <Text className="text-gray-700 ml-3 text-base font-semibold">Cancel</Text>
-          </TouchableOpacity>
+          </ScrollView>
+
+          {/* Action Buttons - In One Row */}
+          <View className="px-6 pb-6">
+            <View className="flex-row" style={{ gap: 12 }}>
+              <TouchableOpacity
+                onPress={closeEditModal}
+                disabled={isLoading}
+                className="bg-gray-100 px-6 py-3 rounded-2xl flex-1 flex-row justify-center items-center border border-gray-200"
+              >
+                <Feather name="x" size={20} color="#6b7280" />
+                <Text className="text-gray-700 ml-2 text-base font-semibold">Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={handleUpdate}
+                disabled={isLoading}
+                className={`px-6 py-3 rounded-2xl flex-1 flex-row justify-center items-center ${isLoading ? 'bg-gray-400' : 'bg-green-600'
+                  }`}
+              >
+                {isLoading ? (
+                  <MaterialIcons name="refresh" size={20} color="white" />
+                ) : (
+                  <Feather name="check" size={20} color="white" />
+                )}
+                <Text className="text-white ml-2 text-base font-semibold">
+                  {isLoading ? 'Updating...' : 'Update'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
       </BottomSheet>
     </>

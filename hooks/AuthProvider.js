@@ -59,6 +59,14 @@ const authReducer = (state, action) => {
         notifications: [],
         notificationsCount: 0,
       };
+    case 'SET_AVATAR':
+      return {
+        ...state,
+        user: {
+          ...state.user,
+          avatar: action.payload,  // update only the avatar
+        },
+      };
     case 'SET_NOTIFICATION_COUNT':
       return { ...state, notificationsCount: action.payload };
     default:
@@ -180,7 +188,13 @@ export const AuthProvider = ({ children }) => {
     }
   }, [fetchUserData, handleLogout]);
 
-
+const updateAvatar = useCallback(async (newAvatar) => {
+  try {
+    dispatch({ type: 'SET_AVATAR', payload: newAvatar });
+  } catch (error) {
+    console.error("Error updating avatar:", error);
+  }
+}, [axiosInstance]);
 
   const logout = useCallback(() => {
     handleLogout();
@@ -231,6 +245,7 @@ export const AuthProvider = ({ children }) => {
     userNotifications: state.userNotifications,
     login,
     logout,
+    updateAvatar,
     reFetchProfile,
     refreshProjects: fetchJoinedProjects,
     refreshNotifications: fetchUserNotifications,
@@ -241,6 +256,7 @@ export const AuthProvider = ({ children }) => {
     reFetchProfile,
     fetchJoinedProjects,
     fetchUserNotifications,
+    updateAvatar
   ]);
 
   return (
