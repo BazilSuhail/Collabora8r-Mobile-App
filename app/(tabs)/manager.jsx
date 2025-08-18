@@ -1,16 +1,17 @@
+// Manager.jsx - updated version
 import { FontAwesome5, Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { Image, ScrollView, Text, View } from 'react-native';
 
+import EmptyState from '@/components/EmptyState';
+import ManagerSkeletonLoader from '@/components/skeletonLoaders/manager';
 import config from '@/config/config';
 import avatarImages from '@/constants/avatar';
 import themeImages from '@/constants/themes';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Link } from 'expo-router';
-import EmptyState from '../../components/EmptyState';
-
 
 const colors = [
   'bg-red-400', 'bg-blue-400', 'bg-green-700', 'bg-yellow-600', 'bg-indigo-400', 'bg-orange-400', 'bg-cyan-400', 'bg-violet-400'
@@ -20,10 +21,12 @@ const getRandomColor = () => colors[Math.floor(Math.random() * colors.length)];
 const Manager = () => {
   const [projects, setProjects] = useState([]);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true); // Add loading state
 
   useEffect(() => {
     const fetchAsManagerProjects = async () => {
       try {
+        setLoading(true); // Set loading to true
         const token = await AsyncStorage.getItem('token');
         const response = await axios.get(`${config.VITE_REACT_APP_API_BASE_URL}/joinedprojects/as-manager`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -38,11 +41,18 @@ const Manager = () => {
       } catch (err) {
         console.error(err);
         setError('Failed to fetch projects.');
+      } finally {
+        setLoading(false); // Set loading to false when done
       }
     };
 
     fetchAsManagerProjects();
   }, []);
+
+  // Show skeleton loader while loading
+  if (loading) {
+    return <ManagerSkeletonLoader />;
+  }
 
   // Render conditional components
   return (
@@ -164,7 +174,7 @@ const Manager = () => {
         </>
       )}
     </ScrollView>
-
   )
 };
-export default Manager
+
+export default Manager;

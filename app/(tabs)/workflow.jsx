@@ -30,6 +30,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import config from '@/config/config';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import WorkflowSkeletonLoader from '@/components/skeletonLoaders/workflow';
 
 const STATUS_TYPES = ['Not Started', 'In Progress', 'Completed'];
 
@@ -542,10 +543,7 @@ const Workflow = () => {
 
   if (loading) {
     return (
-      <View className="flex-1 justify-center items-center bg-gray-50">
-        <MaterialCommunityIcons name="loading" size={32} color="#3B82F6" />
-        <Text className="text-gray-600 mt-2">Loading tasks...</Text>
-      </View>
+      <WorkflowSkeletonLoader />
     );
   }
 
@@ -609,23 +607,23 @@ const Workflow = () => {
           </View>
         </View>
 
-        {hasUpdates && ( 
-            <TouchableOpacity
-              onPress={confirmUpdate}
-              className="bg-blue-600 rounded-xl py-4 mb-6 flex-row items-center justify-center"
-              style={{
-                shadowColor: '#3B82F6',
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.3,
-                shadowRadius: 8,
-                elevation: 8,
-              }}
-            >
-              <AntDesign name="check" size={18} color="white" />
-              <Text className="text-white font-semibold text-base ml-2">
-                Save Changes ({Object.keys(updatedTasks).length})
-              </Text>
-            </TouchableOpacity> 
+        {hasUpdates && (
+          <TouchableOpacity
+            onPress={confirmUpdate}
+            className="bg-blue-600 rounded-xl py-4 mb-6 flex-row items-center justify-center"
+            style={{
+              shadowColor: '#3B82F6',
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.3,
+              shadowRadius: 8,
+              elevation: 8,
+            }}
+          >
+            <AntDesign name="check" size={18} color="white" />
+            <Text className="text-white font-semibold text-base ml-2">
+              Save Changes ({Object.keys(updatedTasks).length})
+            </Text>
+          </TouchableOpacity>
         )}
 
         {STATUS_TYPES.map((status) => (
