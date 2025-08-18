@@ -19,6 +19,7 @@ import {
 } from "react-native";
 import avatarImages from '@/constants/avatar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import AdminProjectSkeletonLoader from '@/components/skeletonLoaders/adminProject';
 
 const ProjectDetail = () => {
   const projectId = usePathname().split("/").pop();
@@ -31,8 +32,9 @@ const ProjectDetail = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  useEffect(() => { 
     const fetchProjectDetails = async () => {
       try {
         const token = await AsyncStorage.getItem('token');
@@ -45,6 +47,7 @@ const ProjectDetail = () => {
           }
         );
         setProject(projectResponse.data)
+        setLoading(false)
       } catch (err) {
         //console.error(err);
         setError('Using mock data - API connection failed');
@@ -122,6 +125,10 @@ const ProjectDetail = () => {
       day: 'numeric'
     });
   };
+
+  if(loading){
+    return <AdminProjectSkeletonLoader/>
+  }
 
   if (!project) {
     return (

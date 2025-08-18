@@ -19,7 +19,8 @@ import {
     View
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import EmptyState from '../../../../components/EmptyState';
+import EmptyState from '@/components/EmptyState';
+import AssignTasksSkeletonLoader from '@/components/skeletonLoaders/assignTasks';
 
 const AssignTasks = () => {
     const insets = useSafeAreaInsets();
@@ -310,6 +311,10 @@ const AssignTasks = () => {
 
     // Memoized computed values
     const tasksCount = useMemo(() => tasks.length, [tasks.length]);
+
+if(loading){
+    return <AssignTasksSkeletonLoader/>
+}
 
     return (
         <ScrollView

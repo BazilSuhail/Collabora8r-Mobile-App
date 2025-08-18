@@ -5,7 +5,6 @@ import axios from 'axios';
 import { usePathname } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   ScrollView,
   Text,
   TextInput,
@@ -18,7 +17,9 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle } from 'react-native-svg';
 import ProgressModal from '../../components/ProgressModal';
+import TaskDetailsSkeletonLoader from '../../components/skeletonLoaders/taskDetails';
 import { useAuthContext } from '../../hooks/AuthProvider';
+import EmptyState from '../../components/EmptyState';
 
 const getStatusColor = (status) => {
   switch (status) {
@@ -285,22 +286,18 @@ const TaskDetails = () => {
     );
   };
 
-
   if (loading) {
     return (
-      <View className="flex-1 justify-center items-center bg-gray-50">
-        <ActivityIndicator size="large" color="#3B82F6" />
-        <Text className="text-gray-500 mt-4">Loading task details...</Text>
-      </View>
+      <TaskDetailsSkeletonLoader />
     );
   }
 
   if (error) {
     return (
-      <View className="flex-1 justify-center items-center bg-gray-50">
-        <MaterialIcons name="error-outline" size={48} color="#EF4444" />
-        <Text className="text-red-500 text-lg font-medium mt-4">{error || "Task not found."}</Text>
-      </View>
+      <EmptyState
+        title="Task Not Found"
+        imageSource={require('@/assets/placeholders/noTasks.png')}
+      />
     );
   }
 
