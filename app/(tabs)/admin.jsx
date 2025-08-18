@@ -1,17 +1,18 @@
-import { useState, useEffect } from 'react';
-import axios from 'axios';
-import { View, Text, TouchableOpacity, FlatList, Image } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import config from '@/config/config';
-import { useRouter } from 'expo-router';
+// Admin.jsx - updated version
 import CreateProject from '@/components/adminProjects/CreateProject';
 import EditProject from '@/components/adminProjects/EditProject';
-import avatarImages from '@/constants/avatar';
+import config from '@/config/config';
 import themeImages from '@/constants/themes';
+import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { FlatList, Image, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import EmptyState from '../../components/EmptyState';
+import EmptyState from '@/components/EmptyState';
+import AdminSkeletonLoader from '@/components/skeletonLoaders/admin';
 
 const colors = [
     'bg-red-400', 'bg-blue-400', 'bg-green-700', 'bg-yellow-600', 'bg-indigo-400', 'bg-orange-400', 'bg-cyan-400', 'bg-violet-400'
@@ -28,11 +29,14 @@ const Admin = () => {
     const [showModal, setShowModal] = useState(false);
     const [editModal, setshowEditModal] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
+    const [loading, setLoading] = useState(true); // Add loading state
 
     const fetchProjects = async (isRefreshing = false) => {
         try {
             if (isRefreshing) {
                 setRefreshing(true);
+            } else {
+                setLoading(true); // Set loading only for initial fetch
             }
             const token = await AsyncStorage.getItem('token');
             const response = await axios.get(`${config.VITE_REACT_APP_API_BASE_URL}/admin-projects/`, {
@@ -51,6 +55,8 @@ const Admin = () => {
         } finally {
             if (isRefreshing) {
                 setRefreshing(false);
+            } else {
+                setLoading(false); // Stop loading
             }
         }
     };
@@ -58,7 +64,6 @@ const Admin = () => {
     useEffect(() => {
         fetchProjects();
     }, []);
-
 
     const handleTaskManagement = (projectId) => {
         navigate.push(`/adminProjects/tasks/${projectId}`);
@@ -72,6 +77,11 @@ const Admin = () => {
         setshowEditModal(true)
         setProjectDetails(project)
     };
+
+    // Show skeleton loader while loading
+    if (loading) {
+        return <AdminSkeletonLoader />;
+    }
 
     return (
         <View className="flex-1 bg-gray-50">
@@ -94,7 +104,7 @@ const Admin = () => {
             <TouchableOpacity
                 onPress={() => setShowModal(true)}
                 className="absolute bg-blue-200 w-14 h-14 border border-blue-300 rounded-[12px] right-5 z-50 items-center justify-center"
-                style={{ bottom: insets.bottom }} // ensures it stays above nav bar
+                style={{ bottom: insets.bottom }}
             >
                 <Ionicons name="add" size={26} color={"#2563EB"} />
             </TouchableOpacity>

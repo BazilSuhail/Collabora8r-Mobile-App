@@ -1,3 +1,4 @@
+// JoinedProjects.jsx - updated version
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
@@ -9,7 +10,8 @@ import themeImages from '@/constants/themes';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Link } from 'expo-router';
-import EmptyState from '../../components/EmptyState';
+import EmptyState from '@/components/EmptyState'; 
+import JoinedSkeletonLoader from '@/components/skeletonLoaders/joined';
 
 const colors = [
   'bg-red-400', 'bg-blue-400', 'bg-green-700', 'bg-yellow-600', 'bg-indigo-400', 'bg-orange-400', 'bg-cyan-400', 'bg-violet-400'
@@ -19,10 +21,12 @@ const getRandomColor = () => colors[Math.floor(Math.random() * colors.length)];
 const JoinedProjects = () => {
   const [projects, setProjects] = useState([]);
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true); // Add loading state
 
   useEffect(() => {
     const fetchJoinedProjects = async () => {
       try {
+        setLoading(true); // Set loading to true
         const token = await AsyncStorage.getItem('token');
         const response = await axios.get(`${config.VITE_REACT_APP_API_BASE_URL}/joinedprojects`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -37,12 +41,18 @@ const JoinedProjects = () => {
       } catch (err) {
         console.error(err);
         setError('Failed to fetch projects.');
+      } finally {
+        setLoading(false); // Set loading to false when done
       }
     };
 
     fetchJoinedProjects();
   }, []);
 
+  // Show skeleton loader while loading
+  if (loading) {
+    return <JoinedSkeletonLoader />;
+  }
 
   return (
     <View className="flex-1 ">
@@ -60,11 +70,11 @@ const JoinedProjects = () => {
         </View>
       ) : (
         <ScrollView
-          className="flex-1 px-3 py-4 bg-gray-100"
+          className="flex-1 px-3 py-3 bg-gray-100"
           showsVerticalScrollIndicator={false}
         >
           {/* Header */}
-          <View className=" border-b border-gray-100 px-3 py-4 shadow-sm">
+          <View className="border-b-[2px] border-gray-200 px-3 py-3 mb-5">
             <View className="flex-row items-center justify-between">
               <View>
                 <View className="flex-row items-center">
@@ -186,8 +196,6 @@ const JoinedProjects = () => {
               </Text>
             </View>
           )}
-
-
         </ScrollView>
       )}
     </View>
