@@ -94,48 +94,74 @@ const DraggableTaskCard = React.memo(({
     return title.length > maxLength ? `${title.slice(0, maxLength)}...` : title;
   }, []);
 
-  const findDropZone = useCallback((x, y) => {
-    'worklet';
-    const padding = 20; // Added padding for forgiving hitbox
-    for (const status of STATUS_TYPES) {
-      const zone = dropZones[status];
-      if (zone && x >= (zone.x - padding) && x <= (zone.x + zone.width + padding) &&
-        y >= (zone.y - padding) && y <= (zone.y + zone.height + padding)) {
-        return status;
-      }
-    }
-    return null;
-  }, [dropZones]);
-
   const panGesture = Gesture.Pan()
+    .enabled(!globalDragging || isDragging)
     .onStart(() => {
       runOnJS(onDragStart)(task);
-      scale.value = withSpring(1.05, { damping: 15 });
-      opacity.value = withTiming(0.9, { duration: 200 });
+      scale.value = withSpring(1.1, { damping: 10, mass: 0.8 });
+      opacity.value = withTiming(0.92, { duration: 150 });
       zIndex.value = 999;
     })
     .onUpdate((event) => {
+      // Card smoothly follows finger
       translateX.value = event.translationX;
       translateY.value = event.translationY;
-      const absoluteX = event.absoluteX;
-      const absoluteY = event.absoluteY;
-      const currentDropZone = findDropZone(absoluteX, absoluteY);
-      if (currentDropZone) {
-        runOnJS(activeDropZone)(currentDropZone);
+      
+      // Check all drop zones
+      let foundZone = null;
+      const padding = 100;
+      
+      for (const status of STATUS_TYPES) {
+        const zone = dropZones[status];
+        if (zone) {
+          if (
+            event.absoluteX >= (zone.x - padding) && 
+            event.absoluteX <= (zone.x + zone.width + padding) &&
+            event.absoluteY >= (zone.y - padding) && 
+            event.absoluteY <= (zone.y + zone.height + padding)
+          ) {
+            foundZone = status;
+            break;
+          }
+        }
+      }
+      
+      // Update active zone for visual feedback
+      if (foundZone) {
+        runOnJS(activeDropZone)(foundZone);
       } else {
         runOnJS(activeDropZone)(null);
       }
     })
     .onEnd((event) => {
-      const absoluteX = event.absoluteX;
-      const absoluteY = event.absoluteY;
-      const targetStatus = findDropZone(absoluteX, absoluteY);
-      translateX.value = withSpring(0, { damping: 15 });
-      translateY.value = withSpring(0, { damping: 15 });
-      scale.value = withSpring(1, { damping: 15 });
-      opacity.value = withTiming(1, { duration: 200 });
+      // Find target zone
+      let targetStatus = null;
+      const padding = 100;
+      
+      for (const status of STATUS_TYPES) {
+        const zone = dropZones[status];
+        if (
+          zone &&
+          event.absoluteX >= (zone.x - padding) && 
+          event.absoluteX <= (zone.x + zone.width + padding) &&
+          event.absoluteY >= (zone.y - padding) && 
+          event.absoluteY <= (zone.y + zone.height + padding)
+        ) {
+          targetStatus = status;
+          break;
+        }
+      }
+      
+      // Snap back to original position
+      translateX.value = withSpring(0, { damping: 10, mass: 0.8 });
+      translateY.value = withSpring(0, { damping: 10, mass: 0.8 });
+      scale.value = withSpring(1, { damping: 10, mass: 0.8 });
+      opacity.value = withTiming(1, { duration: 150 });
       zIndex.value = 1;
+      
       runOnJS(onDragEnd)();
+      
+      // Execute drop
       if (targetStatus && targetStatus !== task.status) {
         runOnJS(onDrop)(task, targetStatus);
       }
@@ -150,7 +176,7 @@ const DraggableTaskCard = React.memo(({
       ],
       opacity: opacity.value,
       zIndex: zIndex.value,
-      elevation: isDragging ? 999 : 2,
+      elevation: zIndex.value,
     };
   });
 
@@ -158,14 +184,14 @@ const DraggableTaskCard = React.memo(({
     return {
       shadowOpacity: interpolate(
         scale.value,
-        [1, 1.05],
-        [0.05, 0.25],
+        [1, 1.1],
+        [0.1, 0.4],
         'clamp'
       ),
       shadowRadius: interpolate(
         scale.value,
-        [1, 1.05],
-        [3, 12],
+        [1, 1.1],
+        [4, 20],
         'clamp'
       ),
     };
@@ -180,7 +206,7 @@ const DraggableTaskCard = React.memo(({
             className="bg-white rounded-xl p-4 shadow-sm border border-gray-100"
             style={{
               shadowColor: '#000',
-              shadowOffset: { width: 0, height: 1 },
+              shadowOffset: { width: 0, height: 2 },
             }}
             activeOpacity={globalDragging ? 1 : 0.7}
           >
@@ -460,18 +486,16 @@ const Workflow = () => {
   }, [fetchTasks]);
 
   const handleDropZoneLayout = useCallback((status, layout) => {
-    setTimeout(() => {
-      setDropZones(prev => ({
-        ...prev,
-        [status]: {
-          x: Math.round(layout.x),
-          y: Math.round(layout.y + insets.top),
-          width: Math.round(layout.width),
-          height: Math.round(layout.height)
-        }
-      }));
-    }, 100);
-  }, [insets.top]);
+    setDropZones(prev => ({
+      ...prev,
+      [status]: {
+        x: layout.x,
+        y: layout.y,
+        width: layout.width,
+        height: layout.height
+      }
+    }));
+  }, []);
 
   const handleDragStart = useCallback((task) => {
     setIsDragging(true);
@@ -485,16 +509,25 @@ const Workflow = () => {
   }, []);
 
   const handleTaskDrop = useCallback((task, targetStatus) => {
+    // Prevent dropping task in same status
     if (task.status === targetStatus) return;
+
+    // Update tasks state
     setTasks(prev => {
       const oldStatus = task.status;
+      const newTasks = { ...prev };
+      
+      // Remove from old status
+      newTasks[oldStatus] = newTasks[oldStatus].filter(t => t._id !== task._id);
+      
+      // Add to new status
       const updatedTask = { ...task, status: targetStatus };
-      return {
-        ...prev,
-        [oldStatus]: prev[oldStatus].filter(t => t._id !== task._id),
-        [targetStatus]: [...(prev[targetStatus] || []), updatedTask],
-      };
+      newTasks[targetStatus] = [...(newTasks[targetStatus] || []), updatedTask];
+      
+      return newTasks;
     });
+    
+    // Track this task for backend update
     setUpdatedTasks(prev => ({
       ...prev,
       [task._id]: targetStatus,
@@ -518,21 +551,27 @@ const Workflow = () => {
       Alert.alert('Info', 'No tasks to update.');
       return;
     }
+
     const updates = Object.entries(updatedTasks).map(([taskId, newStatus]) => ({
       id: taskId,
       status: newStatus,
     }));
+
     try {
+      const token = await AsyncStorage.getItem('token');
       await axios.patch(
         `${config.VITE_REACT_APP_API_BASE_URL}/projecttasks/tasks/update`,
-        { updates }
+        { updates },
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       Alert.alert('Success', 'Tasks updated successfully.');
       setUpdatedTasks({});
     } catch (error) {
-      Alert.alert('Error', 'Error updating tasks');
+      Alert.alert('Error', error.response?.data?.message || 'Error updating tasks');
+      // Revert changes on error by fetching fresh tasks
+      fetchTasks();
     }
-  }, [updatedTasks]);
+  }, [updatedTasks, fetchTasks]);
 
   const hasUpdates = useMemo(() => Object.keys(updatedTasks).length > 0, [updatedTasks]);
 

@@ -95,10 +95,10 @@ const JoinedProjects = () => {
           {projects.map((project) => (
             <View
               key={project._id}
-              className="bg-white rounded-2xl mb-2 border border-gray-100 overflow-hidden"
+              className="bg-white rounded-2xl mb-2  border border-gray-100 overflow-hidden"
             >
               <Link href={`/(tabs)/joinedProjects/${project._id}`}>
-                <View className="relative h-[148px] w-full">
+                <View className="relative h-41 w-full">
                   {/* Background Image */}
                   <View className="absolute inset-0 w-full">
                     <Image

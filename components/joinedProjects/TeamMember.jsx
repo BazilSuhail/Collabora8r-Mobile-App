@@ -106,7 +106,7 @@ const TeamMembers = ({ teamDetails }) => {
         visible={showAllMembers}
         onClose={() => setShowAllMembers(false)}
         header={<CustomHeader />}
-        heightRatio={0.8}
+        heightRatio={0.85}
       >
         <View className="flex-1">
           {/* Members List */}

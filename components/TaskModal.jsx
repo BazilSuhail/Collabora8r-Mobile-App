@@ -9,9 +9,10 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Modal,
 } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
-const { height: screenHeight } = Dimensions.get('window');
 
 const TaskModal = ({
   isOpen,
@@ -28,6 +29,7 @@ const TaskModal = ({
   const [showStatusPicker, setShowStatusPicker] = useState(false);
   const [showPriorityPicker, setShowPriorityPicker] = useState(false);
   const [showUserPicker, setShowUserPicker] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
 
   // Memoized options to prevent recreations
@@ -97,6 +99,7 @@ const TaskModal = ({
       setShowStatusPicker(false);
       setShowPriorityPicker(false);
       setShowUserPicker(false);
+      setShowDatePicker(false);
       setValidationErrors({});
     }
   }, [isOpen]);
@@ -123,6 +126,32 @@ const TaskModal = ({
     handleChange('assignedTo', value);
     setShowUserPicker(false);
   }, [handleChange]);
+
+  const handleDateChange = useCallback((event, selectedDate) => {
+    if (event.type === 'dismissed') {
+      setShowDatePicker(false);
+      return;
+    }
+
+    if (selectedDate) {
+      // Format date as YYYY-MM-DD
+      const year = selectedDate.getFullYear();
+      const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+      const day = String(selectedDate.getDate()).padStart(2, '0');
+      const formattedDate = `${year}-${month}-${day}`;
+      
+      handleChange('dueDate', formattedDate);
+      setShowDatePicker(false);
+      
+      if (validationErrors.dueDate) {
+        setValidationErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors.dueDate;
+          return newErrors;
+        });
+      }
+    }
+  }, [handleChange, validationErrors.dueDate]);
 
   const handleInputChange = useCallback((field, value) => {
     handleChange(field, value);
@@ -153,6 +182,7 @@ const TaskModal = ({
     setShowStatusPicker(false);
     setShowPriorityPicker(false);
     setShowUserPicker(false);
+    setShowDatePicker(false);
 
     // Reset validation errors and call onClose
     setValidationErrors({});
@@ -286,9 +316,9 @@ const TaskModal = ({
       visible={isOpen}
       onClose={handleClose}
       header={<CustomHeader />}
-      heightRatio={error ? 0.88 :0.8}
+      heightRatio={error ? 0.88 :0.85}
     >
-      <View className="">
+      <View className="pb-4">
         {/* Form Content */}
         <ScrollView
           className="px-6 py-4" 
@@ -369,14 +399,20 @@ const TaskModal = ({
                   Due Date
                 </Text>
               </View>
-              <TextInput
-                className={`border rounded-lg px-3 py-2 text-xs bg-white ${validationErrors.dueDate ? 'border-red-300' : 'border-gray-300'}`}
-                value={newTask?.dueDate || ''}
-                placeholder="YYYY-MM-DD"
-                placeholderTextColor="#9CA3AF"
-                onChangeText={(text) => handleInputChange('dueDate', text)}
-                editable={!loading}
-              />
+              <TouchableOpacity
+                onPress={() => setShowDatePicker(true)}
+                disabled={loading}
+                activeOpacity={0.7}
+                className={`border rounded-lg px-3 py-3 bg-white flex-row items-center justify-between ${validationErrors.dueDate ? 'border-red-300' : 'border-gray-300'}`}
+              >
+                <View className="flex-row items-center flex-1">
+                  <MaterialIcons name="calendar-today" size={16} color="#6B7280" />
+                  <Text className={`text-sm ml-2 ${newTask?.dueDate ? 'text-gray-800' : 'text-gray-400'}`}>
+                    {newTask?.dueDate || 'Select a date'}
+                  </Text>
+                </View>
+                <MaterialIcons name="keyboard-arrow-down" size={20} color="#6B7280" />
+              </TouchableOpacity>
               {validationErrors.dueDate && (
                 <Text className="text-red-500 text-xs mt-1">
                   {validationErrors.dueDate}
@@ -401,6 +437,17 @@ const TaskModal = ({
               />
             </View>
           </View>
+
+          {/* Date Picker Modal */}
+          {showDatePicker && (
+            <DateTimePicker
+              value={newTask?.dueDate ? new Date(newTask.dueDate) : new Date()}
+              mode="date"
+              display="spinner"
+              onChange={handleDateChange}
+              minimumDate={new Date()}
+            />
+          )}
 
           {/* Description */}
           <View className="">

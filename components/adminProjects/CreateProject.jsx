@@ -75,7 +75,7 @@ const CreateProject = ({ setShowModal, showModal }) => {
                 visible={showModal}
                 onClose={handleClose}
                 header={<CustomHeader />} // Using custom header instead of title
-                heightRatio={0.6}
+                heightRatio={0.64}
             >
                 <View className="flex-1 p-5">
                     {/* Header is now handled by BottomSheet */}

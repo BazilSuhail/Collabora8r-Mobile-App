@@ -8,167 +8,22 @@ import {
   Animated,
   Dimensions,
   Image,
-  StatusBar,
   Text,
   TextInput,
   TouchableOpacity,
   View,
+  LinearGradient,
 } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import config from '@/config/config';
 
 const { width, height } = Dimensions.get('window');
 
-const AnimatedShape = ({ children, delay = 0, duration = 4000 }) => {
-  const translateXValue = useRef(new Animated.Value(0)).current;
-  const translateYValue = useRef(new Animated.Value(0)).current;
-  const rotationValue = useRef(new Animated.Value(0)).current;
-  const scaleValue = useRef(new Animated.Value(1)).current;
-
-  useEffect(() => {
-    const startAnimations = () => {
-      // More centered horizontal movement
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(translateXValue, {
-            toValue: width * 0.6,
-            duration: duration * 0.7,
-            useNativeDriver: true,
-          }),
-          Animated.timing(translateXValue, {
-            toValue: -width * 0.3,
-            duration: duration * 1.0,
-            useNativeDriver: true,
-          }),
-          Animated.timing(translateXValue, {
-            toValue: width * 0.2,
-            duration: duration * 0.8,
-            useNativeDriver: true,
-          }),
-          Animated.timing(translateXValue, {
-            toValue: width * 0.4,
-            duration: duration * 0.5,
-            useNativeDriver: true,
-          }),
-        ])
-      ).start();
-
-      // More centered vertical movement
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(translateYValue, {
-            toValue: height * 0.5,
-            duration: duration * 0.9,
-            useNativeDriver: true,
-          }),
-          Animated.timing(translateYValue, {
-            toValue: -height * 0.2,
-            duration: duration * 0.7,
-            useNativeDriver: true,
-          }),
-          Animated.timing(translateYValue, {
-            toValue: height * 0.3,
-            duration: duration * 1.1,
-            useNativeDriver: true,
-          }),
-          Animated.timing(translateYValue, {
-            toValue: height * 0.6,
-            duration: duration * 0.8,
-            useNativeDriver: true,
-          }),
-        ])
-      ).start();
-
-      // Varied rotation speeds
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(rotationValue, {
-            toValue: 180,
-            duration: duration * 0.4,
-            useNativeDriver: true,
-          }),
-          Animated.timing(rotationValue, {
-            toValue: 360,
-            duration: duration * 0.6,
-            useNativeDriver: true,
-          }),
-          Animated.timing(rotationValue, {
-            toValue: 90,
-            duration: duration * 0.3,
-            useNativeDriver: true,
-          }),
-          Animated.timing(rotationValue, {
-            toValue: 270,
-            duration: duration * 0.5,
-            useNativeDriver: true,
-          }),
-          Animated.timing(rotationValue, {
-            toValue: 0,
-            duration: duration * 0.7,
-            useNativeDriver: true,
-          }),
-        ])
-      ).start();
-
-      // More varied scaling
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(scaleValue, {
-            toValue: 1.4,
-            duration: duration * 0.3,
-            useNativeDriver: true,
-          }),
-          Animated.timing(scaleValue, {
-            toValue: 0.6,
-            duration: duration * 0.5,
-            useNativeDriver: true,
-          }),
-          Animated.timing(scaleValue, {
-            toValue: 1.2,
-            duration: duration * 0.4,
-            useNativeDriver: true,
-          }),
-          Animated.timing(scaleValue, {
-            toValue: 0.8,
-            duration: duration * 0.6,
-            useNativeDriver: true,
-          }),
-          Animated.timing(scaleValue, {
-            toValue: 1.1,
-            duration: duration * 0.2,
-            useNativeDriver: true,
-          }),
-        ])
-      ).start();
-    };
-
-    const timer = setTimeout(startAnimations, delay);
-    return () => clearTimeout(timer);
-  }, [delay, duration]);
-
-  const rotate = rotationValue.interpolate({
-    inputRange: [0, 360],
-    outputRange: ['0deg', '360deg'],
-  });
-
-  return (
-    <Animated.View
-      style={{
-        transform: [
-          { translateX: translateXValue },
-          { translateY: translateYValue },
-          { rotate },
-          { scale: scaleValue },
-        ],
-      }}
-    >
-      {children}
-    </Animated.View>
-  );
-};
-
 const Login = () => {
   const router = useRouter();
   const { login } = useAuthContext();
+  const insets = useSafeAreaInsets();
 
   const [formData, setFormData] = useState({
     email: 'lordentity6@gmail.com',
@@ -211,451 +66,123 @@ const Login = () => {
   };
 
   return (
-    <View className="flex-1 bg-white relative">
-      <StatusBar barStyle="dark-content" backgroundColor="white" />
+    <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
+      <StatusBar style="light" backgroundColor="#0ea5e9" />
 
-      {/* Animated Background Shapes */}
-      <View className="absolute inset-0 overflow-hidden">
-        {/* Full screen scattered large shapes - CENTERED */}
-        <View>
-          {[
-            // Center-focused large shapes with varied properties
-            {
-              delay: 0,
-              duration: 6000, // Faster
-              style: {
-                width: 220,
-                height: 220,
-                top: height * 0.3,
-                left: width * 0.2,
-                backgroundColor: '#EF4444',
-                borderRadius: 110,
-                opacity: 0.2, // Higher opacity
-              },
-            },
-            {
-              delay: 500,
-              duration: 9000, // Slower
-              style: {
-                width: 180,
-                height: 180,
-                top: height * 0.4,
-                right: width * 0.15,
-                backgroundColor: '#3B82F6',
-                borderRadius: 90,
-                opacity: 0.15,
-              },
-            },
-            {
-              delay: 1000,
-              duration: 7500,
-              style: {
-                width: 200,
-                height: 200,
-                top: height * 0.5,
-                left: width * 0.4,
-                backgroundColor: '#14B8A6',
-                borderRadius: 40,
-                opacity: 0.25, // Highest opacity
-                transform: [{ rotate: '45deg' }],
-              },
-            },
-            {
-              delay: 200,
-              duration: 5000, // Very fast
-              style: {
-                width: 160,
-                height: 160,
-                top: height * 0.25,
-                left: width * 0.6,
-                backgroundColor: '#F59E0B',
-                borderRadius: 80,
-                opacity: 0.12,
-              },
-            },
-            {
-              delay: 1500,
-              duration: 8000,
-              style: {
-                width: 240,
-                height: 120,
-                top: height * 0.6,
-                right: width * 0.2,
-                backgroundColor: '#8B5CF6',
-                borderRadius: 60,
-                opacity: 0.18,
-              },
-            },
-            {
-              delay: 800,
-              duration: 7000,
-              style: {
-                width: 190,
-                height: 190,
-                top: height * 0.35,
-                left: width * 0.3,
-                backgroundColor: '#EC4899',
-                borderRadius: 95,
-                opacity: 0.16,
-              },
-            },
-            {
-              delay: 2500,
-              duration: 6500,
-              style: {
-                width: 170,
-                height: 170,
-                top: height * 0.55,
-                left: width * 0.5,
-                backgroundColor: '#06B6D4',
-                borderRadius: 85,
-                opacity: 0.22,
-              },
-            },
-            {
-              delay: 300,
-              duration: 8500,
-              style: {
-                width: 210,
-                height: 210,
-                top: height * 0.45,
-                left: width * 0.1,
-                backgroundColor: '#F97316',
-                borderRadius: 105,
-                opacity: 0.14,
-              },
-            },
-            {
-              delay: 1200,
-              duration: 5500, // Fast
-              style: {
-                width: 150,
-                height: 150,
-                top: height * 0.2,
-                right: width * 0.3,
-                backgroundColor: '#10B981',
-                borderRadius: 75,
-                opacity: 0.19,
-              },
-            },
-            {
-              delay: 2000,
-              duration: 7200,
-              style: {
-                width: 230,
-                height: 115,
-                top: height * 0.65,
-                left: width * 0.25,
-                backgroundColor: '#6366F1',
-                borderRadius: 57,
-                opacity: 0.17,
-              },
-            },
-            {
-              delay: 3500,
-              duration: 6800,
-              style: {
-                width: 180,
-                height: 180,
-                top: height * 0.3,
-                left: width * 0.55,
-                backgroundColor: '#8B5CF6',
-                borderRadius: 90,
-                opacity: 0.13,
-              },
-            },
-            {
-              delay: 1800,
-              duration: 8200,
-              style: {
-                width: 200,
-                height: 200,
-                top: height * 0.5,
-                right: width * 0.1,
-                backgroundColor: '#F43F5E',
-                borderRadius: 100,
-                opacity: 0.21,
-              },
-            },
-          ].map((shape, idx) => (
-            <AnimatedShape key={idx} delay={shape.delay} duration={shape.duration}>
-              <View className="absolute" style={shape.style} />
-            </AnimatedShape>
-          ))}
-        </View>
-
-        {/* Mirrored layer for depth - with varied properties too */}
-        <View style={{ transform: [{ scaleY: -1 }] }}>
-          {[
-            {
-              delay: 0,
-              duration: 6000,
-              style: {
-                width: 220,
-                height: 220,
-                top: height * 0.3,
-                left: width * 0.2,
-                backgroundColor: '#EF4444',
-                borderRadius: 110,
-                opacity: 0.2,
-              },
-            },
-            {
-              delay: 500,
-              duration: 9000,
-              style: {
-                width: 180,
-                height: 180,
-                top: height * 0.4,
-                right: width * 0.15,
-                backgroundColor: '#3B82F6',
-                borderRadius: 90,
-                opacity: 0.15,
-              },
-            },
-            {
-              delay: 1000,
-              duration: 7500,
-              style: {
-                width: 200,
-                height: 200,
-                top: height * 0.5,
-                left: width * 0.4,
-                backgroundColor: '#14B8A6',
-                borderRadius: 40,
-                opacity: 0.25,
-                transform: [{ rotate: '45deg' }],
-              },
-            },
-            {
-              delay: 200,
-              duration: 5000,
-              style: {
-                width: 160,
-                height: 160,
-                top: height * 0.25,
-                left: width * 0.6,
-                backgroundColor: '#F59E0B',
-                borderRadius: 80,
-                opacity: 0.12,
-              },
-            },
-            {
-              delay: 1500,
-              duration: 8000,
-              style: {
-                width: 240,
-                height: 120,
-                top: height * 0.6,
-                right: width * 0.2,
-                backgroundColor: '#8B5CF6',
-                borderRadius: 60,
-                opacity: 0.18,
-              },
-            },
-            {
-              delay: 800,
-              duration: 7000,
-              style: {
-                width: 190,
-                height: 190,
-                top: height * 0.35,
-                left: width * 0.3,
-                backgroundColor: '#EC4899',
-                borderRadius: 95,
-                opacity: 0.16,
-              },
-            },
-            {
-              delay: 2500,
-              duration: 6500,
-              style: {
-                width: 170,
-                height: 170,
-                top: height * 0.55,
-                left: width * 0.5,
-                backgroundColor: '#06B6D4',
-                borderRadius: 85,
-                opacity: 0.22,
-              },
-            },
-            {
-              delay: 300,
-              duration: 8500,
-              style: {
-                width: 210,
-                height: 210,
-                top: height * 0.45,
-                left: width * 0.1,
-                backgroundColor: '#F97316',
-                borderRadius: 105,
-                opacity: 0.14,
-              },
-            },
-            {
-              delay: 1200,
-              duration: 5500,
-              style: {
-                width: 150,
-                height: 150,
-                top: height * 0.2,
-                right: width * 0.3,
-                backgroundColor: '#10B981',
-                borderRadius: 75,
-                opacity: 0.19,
-              },
-            },
-            {
-              delay: 2000,
-              duration: 7200,
-              style: {
-                width: 230,
-                height: 115,
-                top: height * 0.65,
-                left: width * 0.25,
-                backgroundColor: '#6366F1',
-                borderRadius: 57,
-                opacity: 0.17,
-              },
-            },
-            {
-              delay: 3500,
-              duration: 6800,
-              style: {
-                width: 180,
-                height: 180,
-                top: height * 0.3,
-                left: width * 0.55,
-                backgroundColor: '#8B5CF6',
-                borderRadius: 90,
-                opacity: 0.13,
-              },
-            },
-            {
-              delay: 1800,
-              duration: 8200,
-              style: {
-                width: 200,
-                height: 200,
-                top: height * 0.5,
-                right: width * 0.1,
-                backgroundColor: '#F43F5E',
-                borderRadius: 100,
-                opacity: 0.21,
-              },
-            },
-          ].map((shape, idx) => (
-            <AnimatedShape key={`mirror-${idx}`} delay={shape.delay} duration={shape.duration}>
-              <View className="absolute" style={shape.style} />
-            </AnimatedShape>
-          ))}
-        </View>
+      {/* Gradient Header */}
+      <View className="h-64 bg-gradient-to-b from-sky-500 to-cyan-400 justify-end pb-12 px-8">
+        <Text className="text-5xl font-bold text-white mb-2">Jobsly</Text>
+        <Text className="text-white text-lg opacity-90">Welcome Back</Text>
       </View>
 
-      {/* Content Container - Above Background */}
-      <View className="flex-1 relative bg-white/70 z-10">
-        {/* Header Section with Images */}
-        <View className="w-[95%] mx-auto h-[250px] mt-[80px] mb-[40px]">
-          <Image
-            source={require("@/assets/placeholders/login.png")}
-            className="w-full h-full"
-            resizeMode="cover"
-          />
-        </View>
-
-        {/* Login Form Section */}
-        <View className="flex-1 px-8">
-          {/* Login Now Title */}
-          <Text className="text-[32px] font-bold text-center text-blue-700 mb-2">Login Now</Text>
-
+      {/* Form Container */}
+      <View className="flex-1 bg-white -mt-8 rounded-t-3xl px-6 pt-8 pb-6 justify-between" style={{ paddingBottom: Math.max(insets.bottom, 24) }}>
+        
+        {/* Form Fields */}
+        <View>
           {/* Subtitle */}
-          <Text className="text-center w-[160px] mx-auto text-blue-600 text-sm mb-8">
-            Please enter the details below to continue.
+          <Text className="text-center text-slate-600 text-base mb-8 font-medium">
+            Enter your details below to continue
           </Text>
 
           {/* Email Input */}
-          <View className="mb-6">
+          <View className="mb-7">
+            <Text className="text-slate-700 font-semibold text-sm mb-3">Email Address</Text>
             <TextInput
-              placeholder="johnstevens@gmail.com"
+              placeholder="nicholas@gmail.com"
               value={email}
               onChangeText={(val) => handleChange('email', val)}
-              className="border-b border-blue-200 pb-3 text-base text-blue-700"
+              className="border-2 border-slate-200 rounded-xl px-4 py-3 text-base text-slate-800"
               keyboardType="email-address"
               autoCapitalize="none"
-              placeholderTextColor="#60A5FA"
+              placeholderTextColor="#CBD5E1"
             />
           </View>
 
           {/* Password Input */}
-          <View className="mb-6 relative">
-            <TextInput
-              placeholder="••••••••••••"
-              value={password}
-              onChangeText={(val) => handleChange('password', val)}
-              secureTextEntry={!showPassword}
-              className="border-b border-blue-200 pb-3 text-base text-blue-700 pr-10"
-              placeholderTextColor="#60A5FA"
-            />
-            <TouchableOpacity
-              onPress={() => setShowPassword(!showPassword)}
-              className="absolute right-0 bottom-3"
-            >
-              <Ionicons
-                name={showPassword ? 'eye-off-outline' : 'eye-outline'}
-                size={20}
-                color="#2563EB"
+          <View className="mb-6">
+            <Text className="text-slate-700 font-semibold text-sm mb-3">Password</Text>
+            <View className="relative flex-row items-center">
+              <TextInput
+                placeholder="••••••••••••"
+                value={password}
+                onChangeText={(val) => handleChange('password', val)}
+                secureTextEntry={!showPassword}
+                className="border-2 border-slate-200 rounded-xl px-4 py-3 text-base text-slate-800 flex-1"
+                placeholderTextColor="#CBD5E1"
               />
-            </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setShowPassword(!showPassword)}
+                className="absolute right-4"
+              >
+                <Ionicons
+                  name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                  size={22}
+                  color="#64748B"
+                />
+              </TouchableOpacity>
+            </View>
           </View>
 
           {/* Forgot Password */}
-          <TouchableOpacity  onPress={() => router.push('https://collbora8r.netlify.app/login')} className="mb-8 self-end">
-            <Text className="text-teal-500 text-sm">Forgot Password?</Text>
+          <TouchableOpacity 
+            onPress={() => router.push('https://collbora8r.netlify.app/login')} 
+            className="mb-8 self-end"
+          >
+            <Text className="text-cyan-500 text-sm font-semibold">Forgot Password?</Text>
           </TouchableOpacity>
 
           {/* Error Message */}
           {errorMessage ? (
-            <View className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 mb-6 flex-row items-center">
+            <View className="bg-red-50 border-l-4 border-red-500 rounded-lg px-4 py-3 mb-6 flex-row items-center">
               <Ionicons name="alert-circle-outline" size={20} color="#DC2626" />
-              <Text className="text-red-600 text-sm ml-2 flex-1">{errorMessage}</Text>
+              <Text className="text-red-600 text-sm ml-3 flex-1">{errorMessage}</Text>
             </View>
           ) : null}
 
-          {/* Login Button - Updated with logo colors */}
+          {/* Login Button */}
           <TouchableOpacity
             disabled={loading}
             onPress={handleSubmit}
-            activeOpacity={0.8}
-            className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-full py-4 mb-8 shadow-lg"
+            activeOpacity={0.85}
+            className="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl py-4 mb-6 shadow-md"
             style={{
-              backgroundColor: '#2563EB', // blue-600 fallback
-              shadowColor: '#1D4ED8',
-              shadowOffset: {
-                width: 0,
-                height: 4,
-              },
-              shadowOpacity: 0.3,
-              shadowRadius: 8,
-              elevation: 8,
+              backgroundColor: '#3B82F6',
+              shadowColor: '#0284C7',
+              shadowOffset: { width: 0, height: 8 },
+              shadowOpacity: 0.25,
+              shadowRadius: 12,
+              elevation: 10,
             }}
           >
             <View className="flex-row items-center justify-center">
               {loading ? (
                 <ActivityIndicator size="small" color="white" />
-              ) : null}
-              <Text className="text-white font-semibold text-base ml-2">
-                {loading ? 'LOGGING IN...' : 'LOGIN'}
-              </Text>
+              ) : (
+                <>
+                  <Text className="text-white font-bold text-base">
+                    {loading ? 'LOGGING IN...' : 'Sign In'}
+                  </Text>
+                </>
+              )}
             </View>
           </TouchableOpacity>
 
-          {/* Sign Up Link */}
-          <View className="flex-row justify-center items-center">
-            <Text className="text-blue-600 text-sm">Don't have an account? </Text>
-            <TouchableOpacity onPress={() => router.push('https://collbora8r.netlify.app/register')}>
-              <Text className="text-teal-500 font-medium text-sm">Register</Text>
-            </TouchableOpacity>
+          {/* Divider */}
+          <View className="flex-row items-center my-3">
+            <View className="flex-1 h-px bg-slate-200" />
+            <Text className="text-slate-400 mx-3 text-sm">Or continue with</Text>
+            <View className="flex-1 h-px bg-slate-200" />
           </View>
+
+        </View>
+
+        {/* Sign Up Link */}
+        <View className="flex-row justify-center items-center">
+          <Text className="text-slate-600 text-sm">Don't have an account? </Text>
+          <TouchableOpacity onPress={() => router.push('https://collbora8r.netlify.app/register')}>
+            <Text className="text-cyan-500 font-bold text-sm">Register here</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </View>

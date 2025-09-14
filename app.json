@@ -14,7 +14,12 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.anonymous.collabora8r"
+    },
+    "androidStatusBar": {
+      "backgroundColor": "#00000000",
+      "translucent": true
     },
     "web": {
       "bundler": "metro",
@@ -23,18 +28,8 @@
     },
     "plugins": [
       "expo-router",
-      [
-        "expo-splash-screen",
-        {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
-        }
-      ],
       "expo-font",
-      "expo-image",
-      "expo-web-browser"
+      "expo-image"
     ],
     "experiments": {
       "typedRoutes": true
