@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 160" width="240" height="160" role="img" shape-rendering="geometricPrecision" stroke-linecap="round" stroke-linejoin="round">
+  <title>Empty: a calm open tray with a small sparkle</title>
+  <path d="M54 94 L76 64 H164 L186 94 V118 A10 10 0 0 1 176 128 H64 A10 10 0 0 1 54 118 Z" fill="#f7f3ed" stroke="#978f86" stroke-width="2.5"/>
+  <path d="M54 94 H94 L100 104 H140 L146 94 H186" fill="none" stroke="#978f86" stroke-width="2.5"/>
+  <path d="M168 24 Q170 36 182 38 Q170 40 168 52 Q166 40 154 38 Q166 36 168 24 Z" fill="#fbe6dd" stroke="#e4572e" stroke-width="2"/>
+  <circle cx="146" cy="30" r="2.5" fill="#c98a12"/>
+  <circle cx="190" cy="56" r="2" fill="#978f86"/>
+</svg>

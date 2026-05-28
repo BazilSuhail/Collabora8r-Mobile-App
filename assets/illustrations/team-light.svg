@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 160" width="240" height="160" role="img" shape-rendering="geometricPrecision" stroke-linecap="round" stroke-linejoin="round">
+  <title>Team: three people standing in a row</title>
+  <path d="M34 126 H206" fill="none" stroke="#978f86" stroke-width="2"/>
+  <circle cx="70" cy="64" r="13" fill="#f7f3ed" stroke="#6b645c" stroke-width="2.5"/>
+  <path d="M48 120 V112 A22 22 0 0 1 92 112 V120 Z" fill="#f7f3ed" stroke="#6b645c" stroke-width="2.5"/>
+  <circle cx="170" cy="64" r="13" fill="#f7f3ed" stroke="#6b645c" stroke-width="2.5"/>
+  <path d="M148 120 V112 A22 22 0 0 1 192 112 V120 Z" fill="#f7f3ed" stroke="#6b645c" stroke-width="2.5"/>
+  <circle cx="120" cy="54" r="15" fill="#fbe6dd" stroke="#e4572e" stroke-width="2.5"/>
+  <path d="M94 120 V108 A26 26 0 0 1 146 108 V120 Z" fill="#fbe6dd" stroke="#e4572e" stroke-width="2.5"/>
+</svg>

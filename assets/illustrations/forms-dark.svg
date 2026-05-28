@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 160" width="240" height="160" role="img" shape-rendering="geometricPrecision" stroke-linecap="round" stroke-linejoin="round">
+  <title>Form: a card with input fields and a submit button with a tick</title>
+  <rect x="62" y="20" width="116" height="120" rx="14" fill="#1e1b19" stroke="#a9a198" stroke-width="2.5"/>
+  <path d="M78 38 H106" fill="none" stroke="#a9a198" stroke-width="2"/>
+  <rect x="78" y="44" width="84" height="18" rx="6" fill="#26221f" stroke="#81796f" stroke-width="2"/>
+  <path d="M88 49 V57" fill="none" stroke="#7a72e6" stroke-width="2"/>
+  <path d="M78 74 H116" fill="none" stroke="#a9a198" stroke-width="2"/>
+  <rect x="78" y="80" width="84" height="18" rx="6" fill="#26221f" stroke="#81796f" stroke-width="2"/>
+  <rect x="78" y="110" width="50" height="18" rx="9" fill="#e15a33" stroke="#e15a33" stroke-width="2"/>
+  <path d="M95 119 L100 124 L111 114" fill="none" stroke="#1e1b19" stroke-width="2.5"/>
+</svg>

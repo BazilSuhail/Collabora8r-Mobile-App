@@ -1,4 +1,224 @@
-@import "tailwindcss";
-@import "uniwind";
+/* Collabor8r mobile theme. Ported from client src/styles/shell.css (:root and :root[data-theme="dark"]).
+ * Uniwind turns every --color-* token into utilities: bg-surface, text-muted, border-border, bg-accent, ...
+ * Client token names (bg, text, line, ember, iris, ...) are kept as aliases so ported classNames keep working.
+ * JS mirror of these values: src/config/theme.js (COLORS) for places that need a raw colour (svg, icons, StatusBar). */
+@import 'tailwindcss';
+@import 'uniwind';
 
-/* Add any custom layers or sources here if needed */
+@theme {
+  --color-background: #f3efe8; /* client --bg */
+  --color-bg: #f3efe8; /* alias of background (client name) */
+  --color-surface: #fffdfa; /* --surface */
+  --color-surface-2: #f7f3ed; /* --surface-2 */
+  --color-float: #fffdfa; /* --float (menus, popovers, sheets) */
+  --color-well: #281e140e; /* --well (inset fills) */
+  --color-foreground: #1d1915; /* --text */
+  --color-text: #1d1915; /* alias of foreground (client name) */
+  --color-muted: #6b645c; /* --muted */
+  --color-faint: #978f86; /* --faint */
+  --color-cream: #fbf8f2; /* --cream */
+  --color-accent: #e4572e; /* --ember */
+  --color-on-accent: #fffaf5; /* --on-ember */
+  --color-ember: #e4572e; /* --ember */
+  --color-on-ember: #fffaf5; /* --on-ember */
+  --color-ember-t: #b53f19; /* --ember-t */
+  --color-ember-soft: #fbe6dd; /* --ember-soft */
+  --color-iris: #5b52d6; /* --iris */
+  --color-on-iris: #fbfaff; /* --on-iris */
+  --color-iris-t: #4a41c4; /* --iris-t */
+  --color-iris-soft: #e8e6fb; /* --iris-soft */
+  --color-spruce: #0a8f74; /* --spruce */
+  --color-on-spruce: #f5fffb; /* --on-spruce */
+  --color-spruce-t: #0a7a63; /* --spruce-t */
+  --color-spruce-soft: #dcf2ec; /* --spruce-soft */
+  --color-saffron: #c98a12; /* --saffron */
+  --color-on-saffron: #1d1915; /* --on-saffron */
+  --color-saffron-t: #8f600a; /* --saffron-t */
+  --color-saffron-soft: #f8ecd2; /* --saffron-soft */
+  --color-ink: #1d1915; /* --ink */
+  --color-on-ink: #fbf8f2; /* --on-ink */
+  --color-border: #281e1417; /* --line */
+  --color-line: #281e1417; /* alias of border (client name) */
+  --color-border-strong: #281e1429; /* --line-2 */
+  --color-line-2: #281e1429; /* alias of border-strong (client name) */
+  --color-danger: #c2401b; /* --bad */
+  --color-bad: #c2401b; /* --bad */
+  --color-danger-solid: #c2401b; /* .btn--danger fill (hardcoded in shell.css) */
+  --color-success: #0a7a63; /* --good */
+  --color-good: #0a7a63; /* --good */
+  --color-warning: #c98a12; /* --saffron (client has no --warn token) */
+  --color-warning-t: #8f600a; /* --saffron-t */
+  --color-side-bg: #1b1714; /* --side-bg (sidebar / bottom nav) */
+  --color-side-text: #efe9e1; /* --side-text */
+  --color-side-muted: #a1978d; /* --side-muted */
+  --color-side-pill: #2e2824; /* --side-pill */
+  --color-side-line: #ffffff14; /* --side-line */
+  --color-glow-a: #e4572e29; /* --glow-a */
+  --color-glow-b: #5b52d61f; /* --glow-b */
+  --color-backdrop: #1d191566; /* dialog backdrop */
+  --color-shadow: #3c2814; /* shadow colour for shadow-* utilities */
+  --color-pp-lane: #281e140e; /* pipeline lane (--pp-lane) */
+  --color-pp-lane-rim: #281e1417; /* pipeline lane rim */
+  --color-pp-card: #fffdfa; /* pipeline card */
+  --color-av-t0: #f7cdbb; /* avatar tint 0 */
+  --color-av-t1: #d4d1f6; /* avatar tint 1 */
+  --color-av-t2: #c4e7dd; /* avatar tint 2 */
+  --color-av-t3: #f3dfae; /* avatar tint 3 */
+  --color-av-ink: #1d1915; /* avatar initials text */
+  --color-white: #ffffff; /* switch knob / checkbox tick */
+  --color-seg-pill: #fffdfa; /* .seg__pill (surface; #ffffff21 in dark) */
+
+  /* Fonts: loaded by expo-font in app/_layout.js from src/config/theme.js FONTS (static TTFs from @expo-google-fonts). */
+  --font-sans: 'Manrope_500Medium';
+  --font-sans-regular: 'Manrope_400Regular';
+  --font-sans-medium: 'Manrope_500Medium';
+  --font-sans-semibold: 'Manrope_600SemiBold';
+  --font-sans-bold: 'Manrope_700Bold';
+  --font-display: 'BricolageGrotesque_600SemiBold';
+  --font-display-medium: 'BricolageGrotesque_500Medium';
+  --font-display-semibold: 'BricolageGrotesque_600SemiBold';
+  --font-display-bold: 'BricolageGrotesque_700Bold';
+  --font-mono: 'monospace'; /* RN system mono; iOS override below */
+
+  /* Radii (--r-card, --r-ctl) */
+  --radius-card: 15px;
+  --radius-ctl: 12px;
+  --radius-sheet: 24px;
+
+  /* Spacing token --gap */
+  --spacing-gap: 16px;
+}
+
+@layer theme {
+  :root {
+    @variant ios {
+      --font-mono: 'Menlo';
+    }
+    @variant light {
+      --color-background: #f3efe8;
+      --color-bg: #f3efe8;
+      --color-surface: #fffdfa;
+      --color-surface-2: #f7f3ed;
+      --color-float: #fffdfa;
+      --color-well: #281e140e;
+      --color-foreground: #1d1915;
+      --color-text: #1d1915;
+      --color-muted: #6b645c;
+      --color-faint: #978f86;
+      --color-cream: #fbf8f2;
+      --color-accent: #e4572e;
+      --color-on-accent: #fffaf5;
+      --color-ember: #e4572e;
+      --color-on-ember: #fffaf5;
+      --color-ember-t: #b53f19;
+      --color-ember-soft: #fbe6dd;
+      --color-iris: #5b52d6;
+      --color-on-iris: #fbfaff;
+      --color-iris-t: #4a41c4;
+      --color-iris-soft: #e8e6fb;
+      --color-spruce: #0a8f74;
+      --color-on-spruce: #f5fffb;
+      --color-spruce-t: #0a7a63;
+      --color-spruce-soft: #dcf2ec;
+      --color-saffron: #c98a12;
+      --color-on-saffron: #1d1915;
+      --color-saffron-t: #8f600a;
+      --color-saffron-soft: #f8ecd2;
+      --color-ink: #1d1915;
+      --color-on-ink: #fbf8f2;
+      --color-border: #281e1417;
+      --color-line: #281e1417;
+      --color-border-strong: #281e1429;
+      --color-line-2: #281e1429;
+      --color-danger: #c2401b;
+      --color-bad: #c2401b;
+      --color-danger-solid: #c2401b;
+      --color-success: #0a7a63;
+      --color-good: #0a7a63;
+      --color-warning: #c98a12;
+      --color-warning-t: #8f600a;
+      --color-side-bg: #1b1714;
+      --color-side-text: #efe9e1;
+      --color-side-muted: #a1978d;
+      --color-side-pill: #2e2824;
+      --color-side-line: #ffffff14;
+      --color-glow-a: #e4572e29;
+      --color-glow-b: #5b52d61f;
+      --color-backdrop: #1d191566;
+      --color-shadow: #3c2814;
+      --color-pp-lane: #281e140e;
+      --color-pp-lane-rim: #281e1417;
+      --color-pp-card: #fffdfa;
+      --color-av-t0: #f7cdbb;
+      --color-av-t1: #d4d1f6;
+      --color-av-t2: #c4e7dd;
+      --color-av-t3: #f3dfae;
+      --color-av-ink: #1d1915;
+      --color-white: #ffffff;
+      --color-seg-pill: #fffdfa;
+    }
+    @variant dark {
+      --color-background: #141210;
+      --color-bg: #141210;
+      --color-surface: #1e1b19;
+      --color-surface-2: #26221f;
+      --color-float: #2a2622;
+      --color-well: #ffffff0f;
+      --color-foreground: #f2ede6;
+      --color-text: #f2ede6;
+      --color-muted: #a9a198;
+      --color-faint: #81796f;
+      --color-cream: #fbf8f2;
+      --color-accent: #e15a33;
+      --color-on-accent: #fffaf5;
+      --color-ember: #e15a33;
+      --color-on-ember: #fffaf5;
+      --color-ember-t: #f39a7b;
+      --color-ember-soft: #e15a3329;
+      --color-iris: #7a72e6;
+      --color-on-iris: #fbfaff;
+      --color-iris-t: #aaa4f5;
+      --color-iris-soft: #7a72e62e;
+      --color-spruce: #1f9e82;
+      --color-on-spruce: #f5fffb;
+      --color-spruce-t: #5ccfb1;
+      --color-spruce-soft: #1f9e822b;
+      --color-saffron: #be8a2a;
+      --color-on-saffron: #17130f;
+      --color-saffron-t: #e2b866;
+      --color-saffron-soft: #be8a2a2e;
+      --color-ink: #f2ede6;
+      --color-on-ink: #1d1915;
+      --color-border: #ffffff16;
+      --color-line: #ffffff16;
+      --color-border-strong: #ffffff29;
+      --color-line-2: #ffffff29;
+      --color-danger: #f39a7b;
+      --color-bad: #f39a7b;
+      --color-danger-solid: #c2401b;
+      --color-success: #5ccfb1;
+      --color-good: #5ccfb1;
+      --color-warning: #be8a2a;
+      --color-warning-t: #e2b866;
+      --color-side-bg: #0f0d0c;
+      --color-side-text: #efe9e1;
+      --color-side-muted: #a1978d;
+      --color-side-pill: #26211d;
+      --color-side-line: #ffffff14;
+      --color-glow-a: #e15a3324;
+      --color-glow-b: #7a72e61f;
+      --color-backdrop: #00000099;
+      --color-shadow: #000000;
+      --color-pp-lane: #ffffff06;
+      --color-pp-lane-rim: #ffffff12;
+      --color-pp-card: #26221f;
+      --color-av-t0: #f7cdbb;
+      --color-av-t1: #d4d1f6;
+      --color-av-t2: #c4e7dd;
+      --color-av-t3: #f3dfae;
+      --color-av-ink: #1d1915;
+      --color-white: #ffffff;
+      --color-seg-pill: #ffffff21;
+    }
+  }
+}

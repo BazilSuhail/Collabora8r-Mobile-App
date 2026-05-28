@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 160" width="240" height="160" role="img" shape-rendering="geometricPrecision" stroke-linecap="round" stroke-linejoin="round">
+  <title>Settings: three sliders beside a gear</title>
+  <path d="M30 52 H140 M30 80 H140 M30 108 H140" fill="none" stroke="#978f86" stroke-width="2.5"/>
+  <path d="M30 52 H70 M30 80 H112 M30 108 H56" fill="none" stroke="#5b52d6" stroke-width="2.5"/>
+  <circle cx="70" cy="52" r="8" fill="#fffdfa" stroke="#5b52d6" stroke-width="2.5"/>
+  <circle cx="112" cy="80" r="8" fill="#e4572e" stroke="#e4572e" stroke-width="2.5"/>
+  <circle cx="56" cy="108" r="8" fill="#fffdfa" stroke="#5b52d6" stroke-width="2.5"/>
+  <path d="M213.7 75.5 L213.7 84.5 L206.3 85.5 L203.7 91.9 L208.1 97.8 L201.8 104.1 L195.9 99.7 L189.5 102.3 L188.5 109.7 L179.5 109.7 L178.5 102.3 L172.1 99.7 L166.2 104.1 L159.9 97.8 L164.3 91.9 L161.7 85.5 L154.3 84.5 L154.3 75.5 L161.7 74.5 L164.3 68.1 L159.9 62.2 L166.2 55.9 L172.1 60.3 L178.5 57.7 L179.5 50.3 L188.5 50.3 L189.5 57.7 L195.9 60.3 L201.8 55.9 L208.1 62.2 L203.7 68.1 L206.3 74.5 Z" fill="#f8ecd2" stroke="#c98a12" stroke-width="2.5"/>
+  <circle cx="184" cy="80" r="9" fill="#fffdfa" stroke="#c98a12" stroke-width="2.5"/>
+</svg>

@@ -1,38 +1,36 @@
 {
   "expo": {
-    "name": "collabora8r",
-    "slug": "collabora8r",
+    "name": "Collabor8r",
+    "slug": "collabr8r-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "collabora8r",
+    "scheme": "collabr8r",
     "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.collabora8r"
     },
     "android": {
+      "package": "com.anonymous.collabora8r",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
-      "package": "com.anonymous.collabora8r"
-    },
-    "androidStatusBar": {
-      "backgroundColor": "#00000000",
-      "translucent": true
+        "foregroundImage": "./assets/images/apple-touch-icon.png",
+        "backgroundColor": "#f3efe8"
+      }
     },
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/apple-touch-icon.png"
     },
     "plugins": [
       "expo-router",
+      "expo-secure-store",
+      "expo-web-browser",
       "expo-font",
       "expo-image"
     ],
-    "experiments": {
-      "typedRoutes": true
-    }
+    "icon": "./assets/images/apple-touch-icon.png",
+    "backgroundColor": "#f3efe8"
   }
 }

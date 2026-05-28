@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 160" width="240" height="160" role="img" shape-rendering="geometricPrecision" stroke-linecap="round" stroke-linejoin="round">
+  <title>Security: a shield holding a key</title>
+  <path d="M120 22 L164 38 V76 C164 106 146 124 120 136 C94 124 76 106 76 76 V38 Z" fill="#dcf2ec" stroke="#0a8f74" stroke-width="2.5"/>
+  <circle cx="106" cy="78" r="13" fill="#fbe6dd" stroke="#e4572e" stroke-width="2.5"/>
+  <circle cx="106" cy="78" r="4" fill="#e4572e"/>
+  <path d="M119 78 H148 M140 78 V88 M148 78 V86" fill="none" stroke="#1d1915" stroke-width="2.5"/>
+</svg>

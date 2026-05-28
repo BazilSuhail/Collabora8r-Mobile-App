@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 160" width="240" height="160" role="img" shape-rendering="geometricPrecision" stroke-linecap="round" stroke-linejoin="round">
+  <title>Sign in: a door with a soft glow and a key</title>
+  <circle cx="120" cy="82" r="62" fill="#be8a2a2e"/>
+  <circle cx="120" cy="82" r="44" fill="#be8a2a2e"/>
+  <path d="M64 136 H180" fill="none" stroke="#81796f" stroke-width="2"/>
+  <rect x="88" y="28" width="64" height="108" rx="10" fill="#26221f" stroke="#a9a198" stroke-width="2.5"/>
+  <rect x="97" y="37" width="46" height="99" rx="6" fill="#1e1b19" stroke="#f2ede6" stroke-width="2.5"/>
+  <circle cx="134" cy="88" r="3.5" fill="#f2ede6"/>
+  <circle cx="176" cy="112" r="9" fill="#e15a3329" stroke="#e15a33" stroke-width="2.5"/>
+  <path d="M185 112 H208 M200 112 V119 M207 112 V118" fill="none" stroke="#e15a33" stroke-width="2.5"/>
+</svg>

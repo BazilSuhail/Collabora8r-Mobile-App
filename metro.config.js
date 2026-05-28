@@ -3,14 +3,9 @@ const { withUniwindConfig } = require('uniwind/metro');
 
 const config = getDefaultConfig(__dirname);
 
+// Illustrations are SVG files bundled as assets (rendered with expo-image).
+if (!config.resolver.assetExts.includes('svg')) config.resolver.assetExts.push('svg');
+
 module.exports = withUniwindConfig(config, {
-  // Point to your CSS entry file
   cssEntryFile: './global.css',
 });
-// // Learn more https://docs.expo.io/guides/customizing-metro
-// const { getDefaultConfig } = require('expo/metro-config');
-
-// /** @type {import('expo/metro-config').MetroConfig} */
-// const config = getDefaultConfig(__dirname);
-
-// module.exports = config;

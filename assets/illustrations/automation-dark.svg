@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 160" width="240" height="160" role="img" shape-rendering="geometricPrecision" stroke-linecap="round" stroke-linejoin="round">
+  <title>Automation rule: a trigger, a condition and an action joined in a flow</title>
+  <rect x="20" y="34" width="200" height="92" rx="15" fill="#26221f" stroke="#ffffff29" stroke-width="2"/>
+  <path d="M68 80 H94" fill="none" stroke="#81796f" stroke-width="2.5"/>
+  <path d="M146 80 H166 M160 74 L166 80 L160 86" fill="none" stroke="#81796f" stroke-width="2.5"/>
+  <circle cx="50" cy="80" r="18" fill="#e15a3329" stroke="#e15a33" stroke-width="2.5"/>
+  <path d="M53 69 L45 82 H52 L48 92 L57 78 H50 Z" fill="#e15a33" stroke="#e15a33" stroke-width="2"/>
+  <path d="M120 56 L144 80 L120 104 L96 80 Z" fill="#7a72e62e" stroke="#7a72e6" stroke-width="2.5"/>
+  <circle cx="120" cy="80" r="3" fill="#7a72e6"/>
+  <rect x="170" y="60" width="40" height="40" rx="10" fill="#1f9e822b" stroke="#1f9e82" stroke-width="2.5"/>
+  <path d="M181 80 L188 87 L200 74" fill="none" stroke="#1f9e82" stroke-width="2.5"/>
+</svg>

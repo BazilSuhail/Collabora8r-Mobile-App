@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 160" width="240" height="160" role="img" shape-rendering="geometricPrecision" stroke-linecap="round" stroke-linejoin="round">
+  <title>Wiki: a stack of pages with text lines and a bookmark</title>
+  <rect x="94" y="24" width="84" height="108" rx="10" fill="#f7f3ed" stroke="#281e1429" stroke-width="2"/>
+  <rect x="84" y="30" width="84" height="108" rx="10" fill="#f7f3ed" stroke="#978f86" stroke-width="2"/>
+  <rect x="72" y="36" width="84" height="108" rx="10" fill="#fffdfa" stroke="#6b645c" stroke-width="2.5"/>
+  <path d="M86 58 H120" fill="none" stroke="#1d1915" stroke-width="2.5"/>
+  <path d="M86 76 H142 M86 90 H136 M86 104 H142 M86 118 H116" fill="none" stroke="#978f86" stroke-width="2"/>
+  <path d="M128 36 V64 L135 58 L142 64 V36 Z" fill="#e4572e" stroke="#e4572e" stroke-width="2"/>
+</svg>

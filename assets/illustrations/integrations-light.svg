@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 160" width="240" height="160" role="img" shape-rendering="geometricPrecision" stroke-linecap="round" stroke-linejoin="round">
+  <title>Integrations: two connectors joined by a plug line</title>
+  <path d="M64 104 C64 140 176 140 176 104" fill="none" stroke="#978f86" stroke-width="2" stroke-dasharray="2 6"/>
+  <rect x="34" y="54" width="60" height="50" rx="12" fill="#e8e6fb" stroke="#5b52d6" stroke-width="2.5"/>
+  <path d="M94 70 H108 M94 88 H108" fill="none" stroke="#5b52d6" stroke-width="2.5"/>
+  <rect x="146" y="54" width="60" height="50" rx="12" fill="#dcf2ec" stroke="#0a8f74" stroke-width="2.5"/>
+  <path d="M146 70 H136 M146 88 H136" fill="none" stroke="#0a8f74" stroke-width="2.5"/>
+  <circle cx="64" cy="79" r="6" fill="#fffdfa" stroke="#5b52d6" stroke-width="2"/>
+  <circle cx="176" cy="79" r="6" fill="#fffdfa" stroke="#0a8f74" stroke-width="2"/>
+  <path d="M112 79 H132" fill="none" stroke="#e4572e" stroke-width="2.5"/>
+  <circle cx="122" cy="79" r="5" fill="#e4572e"/>
+  <path d="M122 60 V66 M122 92 V98 M110 64 L113 68 M134 64 L131 68" fill="none" stroke="#e4572e" stroke-width="2"/>
+</svg>
